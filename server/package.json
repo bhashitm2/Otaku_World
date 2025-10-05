@@ -1,0 +1,41 @@
+{
+  "name": "anime-portal-server",
+  "version": "1.0.0",
+  "description": "Backend API server for anime portal",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^6.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0",
+    "passport": "^0.6.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-twitter": "^1.0.4",
+    "passport-jwt": "^4.0.1",
+    "express-session": "^1.17.3",
+    "express-rate-limit": "^6.7.0",
+    "helmet": "^6.0.1",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0",
+    "axios": "^1.3.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "keywords": [
+    "express",
+    "mongodb",
+    "passport",
+    "anime",
+    "api"
+  ],
+  "author": "Anime Portal Team",
+  "license": "MIT"
+}
