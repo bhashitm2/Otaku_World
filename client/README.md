@@ -1,6 +1,25 @@
-# React + Vite
+# 🎌 Otaku World - Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React-based anime discovery platform built with Vite, featuring real-time anime data from Jikan API.
+
+## ✨ Features
+
+- 🔍 **Anime Search**: Real-time search with debounced input
+- 📺 **Browse Top Anime**: Discover highly-rated anime series and movies
+- 🔥 **Trending Section**: Stay updated with currently airing anime
+- 📖 **Detailed Views**: Comprehensive anime information pages
+- ❤️ **Favorites System**: Save and organize your favorite anime (coming soon)
+- 🔐 **Authentication**: Google OAuth integration
+- 📱 **Responsive Design**: Works seamlessly on all devices
+
+## 🚀 Tech Stack
+
+- **Frontend**: React 19 + Vite
+- **Styling**: Tailwind CSS
+- **Authentication**: Firebase Auth
+- **API**: Jikan API v4 (MyAnimeList unofficial API)
+- **Routing**: React Router DOM
+- **State Management**: React hooks
 
 Currently, two official plugins are available:
 

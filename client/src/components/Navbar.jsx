@@ -8,9 +8,11 @@ const Navbar = () => {
 
   const navLinks = [
     { path: "/", label: "Home" },
-    { path: "/movies", label: "Movies" },
+    { path: "/anime", label: "Anime" },
+    { path: "/manga", label: "Manga" },
+    { path: "/characters", label: "Characters" },
     { path: "/trending", label: "Trending" },
-    { path: "/favorites", label: "Favorites" },
+    { path: "/favorites", label: "My Favorites" },
   ];
 
   const isActive = (path) => location.pathname === path;

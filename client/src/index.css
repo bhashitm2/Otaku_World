@@ -1,3 +1,6 @@
+/* Import premium about section styles */
+@import "./styles/premiumAbout.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

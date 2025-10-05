@@ -14,7 +14,7 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-gray-400 text-center md:text-left">
-              Your ultimate destination for anime and movie discovery.
+              🎌 Your ultimate destination for anime discovery and tracking.
             </p>
           </div>
 
