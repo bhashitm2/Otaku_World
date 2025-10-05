@@ -1,12 +1,12 @@
 {
-  "name": "anime-portal",
+  "name": "otaku-world",
   "version": "1.0.0",
-  "description": "A comprehensive anime portal website with React frontend and Express backend",
+  "description": "Otaku_World - A comprehensive anime portal website with React frontend and Express backend",
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "start": "node server/index.js",
-    "client:dev": "cd client && npm start",
+    "client:dev": "cd client && npm run dev",
     "client:build": "cd client && npm run build",
     "client:install": "cd client && npm install",
     "server:dev": "cd server && npm run dev",
@@ -19,12 +19,13 @@
   "keywords": [
     "anime",
     "manga",
+    "otaku",
     "react",
     "express",
     "mongodb",
     "jikan-api"
   ],
-  "author": "Anime Portal Team",
+  "author": "Otaku_World Team",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"

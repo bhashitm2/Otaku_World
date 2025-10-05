@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth.js";
 import Button from "./Button";
 
 const Navbar = () => {
   const location = useLocation();
+  const { user, logout, loading } = useAuth();
 
   const navLinks = [
     { path: "/", label: "Home" },
@@ -19,8 +21,10 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-primary">🎬</div>
-            <span className="text-xl font-semibold text-white">MovieMate</span>
+            <div className="text-2xl font-bold text-primary">�</div>
+            <span className="text-xl font-semibold text-white">
+              Otaku_World
+            </span>
           </Link>
 
           {/* Navigation Links */}
@@ -40,14 +44,44 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Auth Buttons */}
+          {/* Auth Section */}
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm">
-              Login
-            </Button>
-            <Button variant="primary" size="sm">
-              Sign Up
-            </Button>
+            {loading ? (
+              <div className="animate-pulse">
+                <div className="h-8 w-20 bg-gray-700 rounded"></div>
+              </div>
+            ) : user ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  {user.photoURL && (
+                    <img
+                      src={user.photoURL}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  )}
+                  <span className="text-white text-sm font-medium">
+                    {user.name || user.email}
+                  </span>
+                </div>
+                <Button variant="outline" size="sm" onClick={logout}>
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link to="/login">
+                  <Button variant="outline" size="sm">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="primary" size="sm">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}

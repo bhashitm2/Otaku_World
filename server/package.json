@@ -1,7 +1,7 @@
 {
-  "name": "anime-portal-server",
+  "name": "otaku-world-server",
   "version": "1.0.0",
-  "description": "Backend API server for anime portal",
+  "description": "Backend API server for Otaku_World anime portal",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -18,6 +18,7 @@
     "express": "^4.21.2",
     "express-rate-limit": "^6.11.2",
     "express-session": "^1.18.2",
+    "firebase-admin": "^13.5.0",
     "helmet": "^6.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^6.13.8",
@@ -37,8 +38,9 @@
     "mongodb",
     "passport",
     "anime",
+    "otaku",
     "api"
   ],
-  "author": "Anime Portal Team",
+  "author": "Otaku_World Team",
   "license": "MIT"
 }

@@ -8,9 +8,9 @@ const Footer = () => {
           {/* Brand */}
           <div className="flex flex-col items-center md:items-start">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="text-2xl font-bold text-primary">🎬</div>
+              <div className="text-2xl font-bold text-primary">�</div>
               <span className="text-xl font-semibold text-white">
-                MovieMate
+                Otaku_World
               </span>
             </div>
             <p className="text-gray-400 text-center md:text-left">
@@ -101,7 +101,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="mt-8 pt-8 border-t border-gray-800 text-center">
           <p className="text-gray-400">
-            © {currentYear} MovieMate. All rights reserved. Powered by Jikan
+            © {currentYear} Otaku_World. All rights reserved. Powered by Jikan
             API.
           </p>
         </div>

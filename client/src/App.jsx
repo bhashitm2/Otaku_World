@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import PrivateRoute from "./components/PrivateRoute.jsx";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 
@@ -31,9 +32,14 @@ function App() {
           <Route
             path="/favorites"
             element={
-              <div className="p-8 text-center">
-                <h1 className="text-3xl">Favorites Page - Coming Soon</h1>
-              </div>
+              <PrivateRoute>
+                <div className="p-8 text-center">
+                  <h1 className="text-3xl">Favorites Page - Coming Soon</h1>
+                  <p className="text-gray-400 mt-2">
+                    This page requires authentication
+                  </p>
+                </div>
+              </PrivateRoute>
             }
           />
         </Routes>
