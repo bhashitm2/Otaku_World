@@ -1,55 +1,55 @@
 // src/components/HeroBanner.jsx - Premium anime-themed hero section
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { usePrefersReducedMotion } from '../hooks/useAnimation';
-import { ArrowRight, Play, Star, TrendingUp } from 'lucide-react';
+import React, { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { usePrefersReducedMotion } from "../hooks/useAnimation";
+import { ArrowRight, Play, Star, TrendingUp } from "lucide-react";
 
 const HeroBanner = () => {
   const heroRef = useRef(null);
   const prefersReduced = usePrefersReducedMotion();
-  
+
   useEffect(() => {
     if (prefersReduced) return;
-    
+
     // Animate floating particles with direct anime.js import
     const animateParticles = async () => {
       try {
-        const animeModule = await import('animejs');
+        const animeModule = await import("animejs");
         const anime = animeModule.default || animeModule;
-        
-        if (anime && typeof anime === 'function') {
+
+        if (anime && typeof anime === "function") {
           anime({
-            targets: '.floating-particle',
+            targets: ".floating-particle",
             translateY: [0, -20, 0],
             rotate: [0, 180, 360],
             scale: [1, 1.1, 1],
             duration: 4000,
             loop: true,
             delay: (el, i) => i * 200,
-            easing: 'easeInOutSine'
+            easing: "easeInOutSine",
           });
         }
       } catch {
         // Silently skip animations if anime.js fails to load
-        console.log('Animations disabled - anime.js not available');
+        console.log("Animations disabled - anime.js not available");
       }
     };
-    
+
     animateParticles();
   }, [prefersReduced]);
-  
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
         duration: 0.8,
-        staggerChildren: 0.2
-      }
-    }
+        staggerChildren: 0.2,
+      },
+    },
   };
-  
+
   const itemVariants = {
     hidden: { y: 50, opacity: 0 },
     visible: {
@@ -57,11 +57,11 @@ const HeroBanner = () => {
       opacity: 1,
       transition: {
         duration: 0.6,
-        ease: 'easeOut'
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
-  
+
   const floatingVariants = {
     animate: {
       y: [-10, 10, -10],
@@ -69,13 +69,13 @@ const HeroBanner = () => {
       transition: {
         duration: 6,
         repeat: Infinity,
-        ease: 'easeInOut'
-      }
-    }
+        ease: "easeInOut",
+      },
+    },
   };
-  
+
   return (
-    <section 
+    <section
       ref={heroRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-hero"
     >
@@ -83,7 +83,7 @@ const HeroBanner = () => {
       <div className="absolute inset-0">
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-bg-primary/80 via-transparent to-accent-purple/20" />
-        
+
         {/* Floating Particles */}
         <div className="absolute inset-0">
           {[...Array(20)].map((_, i) => (
@@ -100,18 +100,18 @@ const HeroBanner = () => {
                 delay: i * 0.2,
                 duration: 4 + Math.random() * 2,
                 repeat: Infinity,
-                repeatType: 'reverse'
+                repeatType: "reverse",
               }}
             />
           ))}
         </div>
-        
+
         {/* Geometric Shapes */}
         <div className="absolute top-20 right-20 w-32 h-32 border border-accent-magenta/30 rotate-45 rounded-lg" />
         <div className="absolute bottom-20 left-20 w-24 h-24 border border-accent-gold/30 rotate-12 rounded-full" />
         <div className="absolute top-1/2 left-10 w-16 h-16 bg-gradient-primary opacity-20 rounded-lg rotate-45" />
       </div>
-      
+
       {/* Hero Content */}
       <motion.div
         className="relative z-10 text-center px-6 max-w-6xl mx-auto"
@@ -130,7 +130,7 @@ const HeroBanner = () => {
           </span>
           <TrendingUp className="w-4 h-4 text-accent-neon" />
         </motion.div>
-        
+
         {/* Main Title */}
         <motion.h1
           className="text-6xl md:text-8xl font-display font-bold mb-6 leading-tight"
@@ -140,37 +140,35 @@ const HeroBanner = () => {
           <br />
           <span className="text-text-primary">World</span>
         </motion.h1>
-        
+
         {/* Subtitle with Typing Effect */}
         <motion.p
           className="text-xl md:text-2xl text-text-secondary mb-8 max-w-3xl mx-auto leading-relaxed"
           variants={itemVariants}
         >
-          Discover, track, and explore the ultimate anime universe. 
-          Join millions of otaku in the most advanced anime platform.
+          Discover, track, and explore the ultimate anime universe. Join
+          millions of otaku in the most advanced anime platform.
         </motion.p>
-        
+
         {/* Stats */}
         <motion.div
           className="flex flex-wrap justify-center gap-8 mb-12"
           variants={itemVariants}
         >
           {[
-            { label: 'Anime Series', value: '50,000+' },
-            { label: 'Active Users', value: '2M+' },
-            { label: 'Reviews', value: '10M+' },
+            { label: "Anime Series", value: "50,000+" },
+            { label: "Active Users", value: "2M+" },
+            { label: "Reviews", value: "10M+" },
           ].map((stat, index) => (
             <div key={index} className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-accent-neon font-display">
                 {stat.value}
               </div>
-              <div className="text-sm text-text-tertiary">
-                {stat.label}
-              </div>
+              <div className="text-sm text-text-tertiary">{stat.label}</div>
             </div>
           ))}
         </motion.div>
-        
+
         {/* CTA Buttons */}
         <motion.div
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
@@ -189,7 +187,7 @@ const HeroBanner = () => {
               <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </motion.button>
           </Link>
-          
+
           <Link to="/trending">
             <motion.button
               className="group px-8 py-4 glass-morphism text-text-primary font-medium rounded-xl border border-white/20 hover:border-accent-neon/50 transition-all duration-300"
@@ -203,7 +201,7 @@ const HeroBanner = () => {
             </motion.button>
           </Link>
         </motion.div>
-        
+
         {/* Scroll Indicator */}
         <motion.div
           className="absolute bottom-8 left-1/2 transform -translate-x-1/2"

@@ -278,7 +278,10 @@ export const formatCharacterData = (character) => ({
   name: character.name || "Unknown Character",
   nameKanji: character.name_kanji,
   nicknames: character.nicknames || [],
-  image: character.images?.jpg?.image_url || character.images?.webp?.image_url || "/placeholder-anime.jpg",
+  image:
+    character.images?.jpg?.image_url ||
+    character.images?.webp?.image_url ||
+    "/placeholder-anime.jpg",
   about: character.about,
   favorites: character.favorites,
   url: character.url,
@@ -289,7 +292,7 @@ export const formatCharacterData = (character) => ({
 
 export const formatAnimeData = (anime) => {
   if (!anime) {
-    console.warn('formatAnimeData received undefined anime data');
+    console.warn("formatAnimeData received undefined anime data");
     return {
       id: null,
       title: "Unknown Title",
@@ -317,29 +320,32 @@ export const formatAnimeData = (anime) => {
       url: null,
     };
   }
-  
+
   return {
     id: anime.mal_id,
     title: anime.title || anime.title_english || "Unknown Title",
     titleEnglish: anime.title_english,
     titleJapanese: anime.title_japanese,
-    image: anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "/placeholder-anime.jpg",
+    image:
+      anime.images?.jpg?.large_image_url ||
+      anime.images?.jpg?.image_url ||
+      "/placeholder-anime.jpg",
     imageSmall: anime.images?.jpg?.small_image_url || "/placeholder-anime.jpg",
-  score: anime.score,
-  rank: anime.rank,
-  popularity: anime.popularity,
-  episodes: anime.episodes,
-  status: anime.status,
-  type: anime.type,
-  rating: anime.rating,
-  genres: anime.genres || [],
-  synopsis: anime.synopsis,
-  year: anime.year || anime.aired?.prop?.from?.year,
-  season: anime.season,
-  studios: anime.studios || [],
-  duration: anime.duration,
-  aired: anime.aired,
-  url: anime.url,
+    score: anime.score,
+    rank: anime.rank,
+    popularity: anime.popularity,
+    episodes: anime.episodes,
+    status: anime.status,
+    type: anime.type,
+    rating: anime.rating,
+    genres: anime.genres || [],
+    synopsis: anime.synopsis,
+    year: anime.year || anime.aired?.prop?.from?.year,
+    season: anime.season,
+    studios: anime.studios || [],
+    duration: anime.duration,
+    aired: anime.aired,
+    url: anime.url,
   };
 };
 

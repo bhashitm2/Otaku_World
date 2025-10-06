@@ -46,36 +46,39 @@ const Characters = () => {
     loadTopCharacters();
   }, [loadTopCharacters]);
 
-  const handleSearch = useCallback(async (query) => {
-    if (!query.trim()) {
-      loadTopCharacters();
-      return;
-    }
-
-    try {
-      setSearching(true);
-      setError(null);
-      setSearchTerm(query);
-      setIsSearchMode(true);
-
-      const response = await searchCharacters(query, 1);
-
-      if (response?.data) {
-        setCharacters(response.data);
-        setCurrentPage(response.pagination?.current_page || 1);
-        setHasNextPage(response.pagination?.has_next_page || false);
-        setTotalPages(response.pagination?.last_visible_page || 1);
-      } else {
-        setCharacters([]);
+  const handleSearch = useCallback(
+    async (query) => {
+      if (!query.trim()) {
+        loadTopCharacters();
+        return;
       }
-    } catch (err) {
-      console.error("Error searching characters:", err);
-      setError("Failed to search characters. Please try again.");
-      setCharacters([]);
-    } finally {
-      setSearching(false);
-    }
-  }, [loadTopCharacters]);
+
+      try {
+        setSearching(true);
+        setError(null);
+        setSearchTerm(query);
+        setIsSearchMode(true);
+
+        const response = await searchCharacters(query, 1);
+
+        if (response?.data) {
+          setCharacters(response.data);
+          setCurrentPage(response.pagination?.current_page || 1);
+          setHasNextPage(response.pagination?.has_next_page || false);
+          setTotalPages(response.pagination?.last_visible_page || 1);
+        } else {
+          setCharacters([]);
+        }
+      } catch (err) {
+        console.error("Error searching characters:", err);
+        setError("Failed to search characters. Please try again.");
+        setCharacters([]);
+      } finally {
+        setSearching(false);
+      }
+    },
+    [loadTopCharacters]
+  );
 
   const loadMoreCharacters = async (page) => {
     try {
@@ -121,7 +124,7 @@ const Characters = () => {
   const prefersReduced = usePrefersReducedMotion();
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-bg-primary text-text-primary"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -131,29 +134,36 @@ const Characters = () => {
       <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial from-accent-purple/20 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,rgba(147,51,234,0.1),transparent_50%)]" />
-        
-        <motion.div 
+
+        <motion.div
           className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
           initial={{ y: prefersReduced ? 0 : 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: prefersReduced ? 0 : 0.8, delay: prefersReduced ? 0 : 0.2 }}
+          transition={{
+            duration: prefersReduced ? 0 : 0.8,
+            delay: prefersReduced ? 0 : 0.2,
+          }}
         >
           {/* Premium Header */}
           <div className="text-center mb-12">
             <motion.div
               className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-accent-purple to-accent-pink rounded-2xl mb-6 shadow-lg"
-              whileHover={{ scale: prefersReduced ? 1 : 1.05, rotate: prefersReduced ? 0 : 5 }}
+              whileHover={{
+                scale: prefersReduced ? 1 : 1.05,
+                rotate: prefersReduced ? 0 : 5,
+              }}
               transition={{ duration: 0.2 }}
             >
               <span className="text-3xl">🎭</span>
             </motion.div>
-            
+
             <h1 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple via-accent-pink to-accent-cyan mb-6">
               Anime Characters
             </h1>
-            
+
             <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
-              Discover your favorite anime characters, from legendary heroes to memorable villains.
+              Discover your favorite anime characters, from legendary heroes to
+              memorable villains.
               {isSearchMode
                 ? ` Showing results for "${searchTerm}"`
                 : " Browse the most popular characters from anime series."}
@@ -173,15 +183,18 @@ const Characters = () => {
       </div>
 
       {/* Main Content */}
-      <motion.div 
+      <motion.div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
         initial={{ y: prefersReduced ? 0 : 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: prefersReduced ? 0 : 0.6, delay: prefersReduced ? 0 : 0.4 }}
+        transition={{
+          duration: prefersReduced ? 0 : 0.6,
+          delay: prefersReduced ? 0 : 0.4,
+        }}
       >
         {/* Clear Search Button */}
         {isSearchMode && (
-          <motion.div 
+          <motion.div
             className="text-center mb-8"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -199,7 +212,7 @@ const Characters = () => {
 
         {/* Error Message */}
         {error && (
-          <motion.div 
+          <motion.div
             className="max-w-2xl mx-auto mb-8"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -218,11 +231,14 @@ const Characters = () => {
         )}
 
         {/* Premium Navigation Links */}
-        <motion.div 
+        <motion.div
           className="flex flex-wrap justify-center gap-4 mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: prefersReduced ? 0 : 0.5, delay: prefersReduced ? 0 : 0.6 }}
+          transition={{
+            duration: prefersReduced ? 0 : 0.5,
+            delay: prefersReduced ? 0 : 0.6,
+          }}
         >
           <Link
             to="/anime"
@@ -247,7 +263,7 @@ const Characters = () => {
 
         {/* Results Info */}
         {characters.length > 0 && !loading && (
-          <motion.div 
+          <motion.div
             className="mb-8 text-center"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -256,12 +272,21 @@ const Characters = () => {
             <div className="inline-flex items-center px-6 py-3 bg-surface-dark/30 backdrop-blur-sm rounded-xl border border-border/30">
               {isSearchMode ? (
                 <p className="text-text-secondary">
-                  Found <span className="text-accent-cyan font-semibold">{characters.length}</span> character
-                  {characters.length !== 1 ? "s" : ""} matching <span className="text-accent-purple">"{searchTerm}"</span>
+                  Found{" "}
+                  <span className="text-accent-cyan font-semibold">
+                    {characters.length}
+                  </span>{" "}
+                  character
+                  {characters.length !== 1 ? "s" : ""} matching{" "}
+                  <span className="text-accent-purple">"{searchTerm}"</span>
                 </p>
               ) : (
                 <p className="text-text-secondary">
-                  Showing <span className="text-accent-cyan font-semibold">{characters.length}</span> top characters
+                  Showing{" "}
+                  <span className="text-accent-cyan font-semibold">
+                    {characters.length}
+                  </span>{" "}
+                  top characters
                 </p>
               )}
               {totalPages > 1 && (
@@ -282,7 +307,10 @@ const Characters = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: prefersReduced ? 0 : 0.6, delay: prefersReduced ? 0 : 0.8 }}
+            transition={{
+              duration: prefersReduced ? 0 : 0.6,
+              delay: prefersReduced ? 0 : 0.8,
+            }}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {characters.map((character, index) => (
@@ -290,28 +318,25 @@ const Characters = () => {
                   key={`${character.mal_id}-${character.name}`}
                   initial={{ opacity: 0, y: 20, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ 
-                    duration: prefersReduced ? 0 : 0.4, 
+                  transition={{
+                    duration: prefersReduced ? 0 : 0.4,
                     delay: prefersReduced ? 0 : index * 0.05,
-                    ease: "easeOut"
+                    ease: "easeOut",
                   }}
-                  whileHover={{ 
+                  whileHover={{
                     y: prefersReduced ? 0 : -5,
                     scale: prefersReduced ? 1 : 1.02,
-                    transition: { duration: 0.2 }
+                    transition: { duration: 0.2 },
                   }}
                 >
-                  <CharacterCard
-                    character={character}
-                    index={index}
-                  />
+                  <CharacterCard character={character} index={index} />
                 </motion.div>
               ))}
             </div>
 
             {/* Premium Load More Button */}
             {hasNextPage && (
-              <motion.div 
+              <motion.div
                 className="text-center mt-12"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -338,7 +363,7 @@ const Characters = () => {
             )}
           </motion.div>
         ) : !loading ? (
-          <motion.div 
+          <motion.div
             className="text-center py-20"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -368,11 +393,14 @@ const Characters = () => {
         ) : null}
 
         {/* Premium Quick Links */}
-        <motion.div 
+        <motion.div
           className="mt-16 pt-8 border-t border-border/30"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: prefersReduced ? 0 : 0.5, delay: prefersReduced ? 0 : 1 }}
+          transition={{
+            duration: prefersReduced ? 0 : 0.5,
+            delay: prefersReduced ? 0 : 1,
+          }}
         >
           <div className="text-center">
             <h3 className="text-xl font-bold text-text-primary mb-6">

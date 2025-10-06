@@ -105,7 +105,7 @@ const CharacterDetails = () => {
   ];
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-bg-primary text-text-primary"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -113,7 +113,7 @@ const CharacterDetails = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Premium Breadcrumb */}
-        <motion.nav 
+        <motion.nav
           className="mb-8"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -135,17 +135,22 @@ const CharacterDetails = () => {
                 Characters
               </Link>
               <span className="text-border">›</span>
-              <span className="text-text-primary font-semibold">{character.name}</span>
+              <span className="text-text-primary font-semibold">
+                {character.name}
+              </span>
             </div>
           </div>
         </motion.nav>
 
         {/* Premium Character Header */}
-        <motion.div 
+        <motion.div
           className="bg-gradient-to-br from-surface-dark/50 via-bg-secondary to-surface-dark/30 backdrop-blur-sm rounded-2xl border border-border/20 overflow-hidden mb-12 shadow-2xl"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: prefersReduced ? 0 : 0.6, delay: prefersReduced ? 0 : 0.2 }}
+          transition={{
+            duration: prefersReduced ? 0 : 0.6,
+            delay: prefersReduced ? 0 : 0.2,
+          }}
         >
           <div className="md:flex">
             {/* Premium Character Image */}
@@ -222,9 +227,12 @@ const CharacterDetails = () => {
 
               {/* Premium Quick Stats */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                <motion.div 
+                <motion.div
                   className="bg-gradient-to-br from-accent-cyan/20 to-accent-purple/20 backdrop-blur-sm p-4 rounded-xl text-center border border-accent-cyan/30 hover:border-accent-cyan/50 transition-all duration-300"
-                  whileHover={{ scale: prefersReduced ? 1 : 1.05, y: prefersReduced ? 0 : -2 }}
+                  whileHover={{
+                    scale: prefersReduced ? 1 : 1.05,
+                    y: prefersReduced ? 0 : -2,
+                  }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className="text-3xl font-black text-accent-cyan mb-1">
@@ -233,26 +241,38 @@ const CharacterDetails = () => {
                   <div className="text-text-secondary font-medium">Anime</div>
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   className="bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 backdrop-blur-sm p-4 rounded-xl text-center border border-accent-purple/30 hover:border-accent-purple/50 transition-all duration-300"
-                  whileHover={{ scale: prefersReduced ? 1 : 1.05, y: prefersReduced ? 0 : -2 }}
+                  whileHover={{
+                    scale: prefersReduced ? 1 : 1.05,
+                    y: prefersReduced ? 0 : -2,
+                  }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className="text-3xl font-black text-accent-purple mb-1">
                     {character.voices?.length || 0}
                   </div>
-                  <div className="text-text-secondary font-medium">Voice Actors</div>
+                  <div className="text-text-secondary font-medium">
+                    Voice Actors
+                  </div>
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   className="bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-sm p-4 rounded-xl text-center border border-red-500/30 hover:border-red-500/50 transition-all duration-300"
-                  whileHover={{ scale: prefersReduced ? 1 : 1.05, y: prefersReduced ? 0 : -2 }}
+                  whileHover={{
+                    scale: prefersReduced ? 1 : 1.05,
+                    y: prefersReduced ? 0 : -2,
+                  }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className="text-3xl font-black text-red-400 mb-1">
-                    {character.favorites ? character.favorites.toLocaleString() : "0"}
+                    {character.favorites
+                      ? character.favorites.toLocaleString()
+                      : "0"}
                   </div>
-                  <div className="text-text-secondary font-medium">Favorites</div>
+                  <div className="text-text-secondary font-medium">
+                    Favorites
+                  </div>
                 </motion.div>
               </div>
 
@@ -305,11 +325,14 @@ const CharacterDetails = () => {
         </motion.div>
 
         {/* Premium Tabs */}
-        <motion.div 
+        <motion.div
           className="bg-gradient-to-br from-surface-dark/50 via-bg-secondary to-surface-dark/30 backdrop-blur-sm rounded-2xl border border-border/20 overflow-hidden shadow-2xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: prefersReduced ? 0 : 0.5, delay: prefersReduced ? 0 : 0.4 }}
+          transition={{
+            duration: prefersReduced ? 0 : 0.5,
+            delay: prefersReduced ? 0 : 0.4,
+          }}
         >
           {/* Premium Tab Navigation */}
           <div className="border-b border-border/30">
@@ -346,7 +369,7 @@ const CharacterDetails = () => {
             {activeTab === "overview" && (
               <div className="space-y-8">
                 {character.about && (
-                  <motion.div 
+                  <motion.div
                     className="relative"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -354,9 +377,12 @@ const CharacterDetails = () => {
                   >
                     <div className="flex items-center mb-8">
                       <div className="flex items-center space-x-4">
-                        <motion.div 
+                        <motion.div
                           className="w-16 h-16 bg-gradient-to-br from-accent-purple to-accent-pink rounded-2xl flex items-center justify-center shadow-xl"
-                          whileHover={{ scale: prefersReduced ? 1 : 1.05, rotate: prefersReduced ? 0 : 5 }}
+                          whileHover={{
+                            scale: prefersReduced ? 1 : 1.05,
+                            rotate: prefersReduced ? 0 : 5,
+                          }}
                           transition={{ duration: 0.2 }}
                         >
                           <span className="text-white text-2xl">📖</span>
@@ -425,10 +451,16 @@ const CharacterDetails = () => {
                                         <motion.div
                                           key={index}
                                           className="flex items-start space-x-3 p-4 bg-gradient-to-br from-bg-secondary/50 to-surface-dark/30 backdrop-blur-sm rounded-xl border border-border/20 hover:border-accent-purple/50 transition-all duration-300"
-                                          whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
+                                          whileHover={{
+                                            scale: prefersReduced ? 1 : 1.02,
+                                            y: prefersReduced ? 0 : -2,
+                                          }}
                                           initial={{ opacity: 0, y: 10 }}
                                           animate={{ opacity: 1, y: 0 }}
-                                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                                          transition={{
+                                            duration: 0.3,
+                                            delay: index * 0.1,
+                                          }}
                                         >
                                           <div className="w-2 h-2 bg-accent-cyan rounded-full mt-2 flex-shrink-0"></div>
                                           <div>
@@ -459,11 +491,16 @@ const CharacterDetails = () => {
                                           <motion.p
                                             key={index}
                                             className={`text-text-primary leading-loose ${
-                                              index === 0 ? "text-lg font-medium" : ""
+                                              index === 0
+                                                ? "text-lg font-medium"
+                                                : ""
                                             }`}
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                                            transition={{
+                                              duration: 0.5,
+                                              delay: index * 0.1,
+                                            }}
                                           >
                                             {paragraph}
                                           </motion.p>
@@ -483,11 +520,16 @@ const CharacterDetails = () => {
                                         <motion.p
                                           key={index}
                                           className={`text-text-primary leading-loose ${
-                                            index === 0 ? "text-lg font-medium" : ""
+                                            index === 0
+                                              ? "text-lg font-medium"
+                                              : ""
                                           }`}
                                           initial={{ opacity: 0, y: 20 }}
                                           animate={{ opacity: 1, y: 0 }}
-                                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                                          transition={{
+                                            duration: 0.5,
+                                            delay: index * 0.1,
+                                          }}
                                         >
                                           {paragraph}
                                         </motion.p>
@@ -526,7 +568,10 @@ const CharacterDetails = () => {
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: prefersReduced ? 0 : 0.5, delay: 0.2 }}
+                    transition={{
+                      duration: prefersReduced ? 0 : 0.5,
+                      delay: 0.2,
+                    }}
                   >
                     <h3 className="text-xl font-bold text-text-primary mb-4 flex items-center">
                       <span className="w-1.5 h-6 bg-gradient-to-b from-accent-cyan to-accent-purple rounded-full mr-3"></span>
@@ -537,7 +582,10 @@ const CharacterDetails = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-accent-cyan/20 to-accent-purple/20 backdrop-blur-sm hover:from-accent-cyan/30 hover:to-accent-purple/30 text-accent-cyan border border-accent-cyan/30 hover:border-accent-cyan/50 rounded-xl transition-all duration-300 font-medium"
-                      whileHover={{ scale: prefersReduced ? 1 : 1.05, y: prefersReduced ? 0 : -2 }}
+                      whileHover={{
+                        scale: prefersReduced ? 1 : 1.05,
+                        y: prefersReduced ? 0 : -2,
+                      }}
                       whileTap={{ scale: prefersReduced ? 1 : 0.95 }}
                     >
                       🔗 View Character Details
@@ -562,8 +610,8 @@ const CharacterDetails = () => {
                 {character.anime && character.anime.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                     {character.anime.map((animeItem, index) => (
-                      <motion.div 
-                        key={animeItem.anime.mal_id} 
+                      <motion.div
+                        key={animeItem.anime.mal_id}
                         className="relative"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -608,7 +656,10 @@ const CharacterDetails = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
-                        whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
+                        whileHover={{
+                          scale: prefersReduced ? 1 : 1.02,
+                          y: prefersReduced ? 0 : -2,
+                        }}
                       >
                         <img
                           src={
@@ -627,7 +678,10 @@ const CharacterDetails = () => {
                           </h4>
                           <p className="text-text-secondary mb-3 flex items-center">
                             <span className="w-2 h-2 bg-accent-cyan rounded-full mr-2"></span>
-                            Language: <span className="text-accent-cyan ml-1 font-medium">{voice.language}</span>
+                            Language:{" "}
+                            <span className="text-accent-cyan ml-1 font-medium">
+                              {voice.language}
+                            </span>
                           </p>
                           {voice.person?.url && (
                             <motion.a
@@ -647,7 +701,9 @@ const CharacterDetails = () => {
                 ) : (
                   <div className="text-center py-12 text-text-secondary">
                     <div className="text-6xl mb-4">🎤</div>
-                    <p className="text-xl">No voice actor information available</p>
+                    <p className="text-xl">
+                      No voice actor information available
+                    </p>
                   </div>
                 )}
               </motion.div>
@@ -656,7 +712,7 @@ const CharacterDetails = () => {
         </motion.div>
 
         {/* Premium Back to Characters */}
-        <motion.div 
+        <motion.div
           className="mt-12 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

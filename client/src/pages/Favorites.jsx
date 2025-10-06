@@ -116,7 +116,7 @@ const Favorites = () => {
   const displayData = getDisplayData();
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-bg-primary text-text-primary"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -126,27 +126,33 @@ const Favorites = () => {
       <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial from-red-500/20 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(236,72,153,0.1),transparent_50%)]" />
-        
-        <motion.div 
+
+        <motion.div
           className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
           initial={{ y: prefersReduced ? 0 : 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: prefersReduced ? 0 : 0.8, delay: prefersReduced ? 0 : 0.2 }}
+          transition={{
+            duration: prefersReduced ? 0 : 0.8,
+            delay: prefersReduced ? 0 : 0.2,
+          }}
         >
           {/* Premium Header */}
           <div className="text-center mb-12">
             <motion.div
               className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-pink-500 rounded-2xl mb-6 shadow-lg"
-              whileHover={{ scale: prefersReduced ? 1 : 1.05, rotate: prefersReduced ? 0 : 5 }}
+              whileHover={{
+                scale: prefersReduced ? 1 : 1.05,
+                rotate: prefersReduced ? 0 : 5,
+              }}
               transition={{ duration: 0.2 }}
             >
               <span className="text-3xl">❤️</span>
             </motion.div>
-            
+
             <h1 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-500 to-red-600 mb-6">
               My Favorites
             </h1>
-            
+
             <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
               Your curated collection of favorite anime and characters
             </p>
@@ -156,26 +162,37 @@ const Favorites = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Premium Stats */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: prefersReduced ? 0 : 0.6, delay: prefersReduced ? 0 : 0.4 }}
+          transition={{
+            duration: prefersReduced ? 0 : 0.6,
+            delay: prefersReduced ? 0 : 0.4,
+          }}
         >
-          <motion.div 
+          <motion.div
             className="bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-sm p-8 rounded-2xl text-center border border-red-500/30 hover:border-red-500/50 transition-all duration-300 shadow-lg"
-            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -5 }}
+            whileHover={{
+              scale: prefersReduced ? 1 : 1.02,
+              y: prefersReduced ? 0 : -5,
+            }}
             transition={{ duration: 0.2 }}
           >
             <div className="text-4xl font-black text-red-400 mb-2">
               {totalFavorites}
             </div>
-            <div className="text-text-secondary font-semibold">Total Favorites</div>
+            <div className="text-text-secondary font-semibold">
+              Total Favorites
+            </div>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 backdrop-blur-sm p-8 rounded-2xl text-center border border-accent-purple/30 hover:border-accent-purple/50 transition-all duration-300 shadow-lg"
-            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -5 }}
+            whileHover={{
+              scale: prefersReduced ? 1 : 1.02,
+              y: prefersReduced ? 0 : -5,
+            }}
             transition={{ duration: 0.2 }}
           >
             <div className="text-4xl font-black text-accent-purple mb-2">
@@ -183,10 +200,13 @@ const Favorites = () => {
             </div>
             <div className="text-text-secondary font-semibold">Anime</div>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="bg-gradient-to-br from-accent-cyan/20 to-accent-purple/20 backdrop-blur-sm p-8 rounded-2xl text-center border border-accent-cyan/30 hover:border-accent-cyan/50 transition-all duration-300 shadow-lg"
-            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -5 }}
+            whileHover={{
+              scale: prefersReduced ? 1 : 1.02,
+              y: prefersReduced ? 0 : -5,
+            }}
             transition={{ duration: 0.2 }}
           >
             <div className="text-4xl font-black text-accent-cyan mb-2">

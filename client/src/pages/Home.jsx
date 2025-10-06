@@ -28,10 +28,12 @@ const Home = () => {
             <Link to="/characters" className="group">
               <div className="text-center p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all duration-300 cursor-pointer group-hover:scale-105 transform">
                 <div className="text-4xl mb-4">�</div>
-                <h3 className="text-xl font-semibold mb-3">Explore Characters</h3>
+                <h3 className="text-xl font-semibold mb-3">
+                  Explore Characters
+                </h3>
                 <p className="text-gray-400">
-                  Discover amazing characters from your favorite anime series with detailed
-                  profiles and information.
+                  Discover amazing characters from your favorite anime series
+                  with detailed profiles and information.
                 </p>
               </div>
             </Link>

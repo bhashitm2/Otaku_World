@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PrivateRoute from "./components/PrivateRoute.jsx";
@@ -46,7 +46,10 @@ function App() {
                   <Route path="/anime" element={<Anime />} />
                   <Route path="/anime/:id" element={<AnimeDetails />} />
                   <Route path="/characters" element={<Characters />} />
-                  <Route path="/characters/:id" element={<CharacterDetails />} />
+                  <Route
+                    path="/characters/:id"
+                    element={<CharacterDetails />}
+                  />
                   <Route path="/trending" element={<Trending />} />
                   <Route path="/favorites" element={<Favorites />} />
                   <Route path="/watchlist" element={<Watchlist />} />

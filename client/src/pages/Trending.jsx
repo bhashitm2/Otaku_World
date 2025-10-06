@@ -13,16 +13,14 @@ const Trending = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const prefersReduced = usePrefersReducedMotion();
 
-
-
   // Initial data query
-  const { 
+  const {
     data: initialData,
-    isLoading: initialLoading, 
+    isLoading: initialLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
-    queryKey: ['trending-anime-initial'],
+    queryKey: ["trending-anime-initial"],
     queryFn: () => getTrendingAnime(1, 25),
     staleTime: 2 * 60 * 1000, // 2 minutes for trending data
   });
@@ -37,19 +35,19 @@ const Trending = () => {
 
   const loadMoreAnime = async () => {
     if (!hasMore || loadingMore || initialLoading) return;
-    
+
     try {
       setLoadingMore(true);
       const nextPage = currentPage + 1;
       const response = await getTrendingAnime(nextPage, 25);
-      
+
       if (response?.data) {
-        setAllAnime(prev => [...prev, ...response.data]);
+        setAllAnime((prev) => [...prev, ...response.data]);
         setCurrentPage(nextPage);
         setHasMore(response.pagination?.has_next_page || false);
       }
     } catch (err) {
-      console.error('Error loading more trending anime:', err);
+      console.error("Error loading more trending anime:", err);
     } finally {
       setLoadingMore(false);
     }
@@ -63,7 +61,7 @@ const Trending = () => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-bg-primary text-text-primary"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -73,7 +71,7 @@ const Trending = () => {
       <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial from-accent-magenta/20 via-transparent to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 py-16">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -89,22 +87,28 @@ const Trending = () => {
             {/* Trending Stats */}
             <div className="flex justify-center items-center space-x-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent-magenta mb-1">🔥</div>
+                <div className="text-3xl font-bold text-accent-magenta mb-1">
+                  🔥
+                </div>
                 <div className="text-sm text-text-secondary">Hot Releases</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent-cyan mb-1">📈</div>
+                <div className="text-3xl font-bold text-accent-cyan mb-1">
+                  📈
+                </div>
                 <div className="text-sm text-text-secondary">Rising Fast</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent-yellow mb-1">⭐</div>
+                <div className="text-3xl font-bold text-accent-yellow mb-1">
+                  ⭐
+                </div>
                 <div className="text-sm text-text-secondary">Most Popular</div>
               </div>
             </div>
           </motion.div>
 
           {/* Live Indicator */}
-          <motion.div 
+          <motion.div
             className="text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -122,7 +126,7 @@ const Trending = () => {
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Error State */}
         {error && (
-          <motion.div 
+          <motion.div
             className="bg-surface-secondary border border-red-500/20 rounded-xl p-8 mb-12 text-center"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -130,9 +134,12 @@ const Trending = () => {
           >
             <div className="text-red-400 mb-6">
               <div className="text-6xl mb-4">⚠️</div>
-              <h3 className="text-xl font-semibold mb-2">Failed to load trending anime</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                Failed to load trending anime
+              </h3>
               <p className="text-text-secondary">
-                {error?.message || "Please check your connection and try again."}
+                {error?.message ||
+                  "Please check your connection and try again."}
               </p>
             </div>
             <button
@@ -145,7 +152,7 @@ const Trending = () => {
         )}
 
         {/* Premium Animated Grid */}
-        <AnimatedGrid 
+        <AnimatedGrid
           items={allAnime}
           loading={initialLoading}
           className="mb-12"
@@ -153,7 +160,7 @@ const Trending = () => {
 
         {/* Load More Section */}
         {allAnime.length > 0 && hasMore && (
-          <motion.div 
+          <motion.div
             className="text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -181,14 +188,18 @@ const Trending = () => {
 
         {/* Results Count */}
         {allAnime.length > 0 && (
-          <motion.div 
+          <motion.div
             className="text-center mt-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="text-text-secondary">
-              Showing <span className="text-accent-magenta font-semibold">{allAnime.length}</span> trending anime
+              Showing{" "}
+              <span className="text-accent-magenta font-semibold">
+                {allAnime.length}
+              </span>{" "}
+              trending anime
             </p>
           </motion.div>
         )}

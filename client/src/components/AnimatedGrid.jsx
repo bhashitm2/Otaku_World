@@ -1,21 +1,20 @@
 // src/components/AnimatedGrid.jsx - Premium animated grid component
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useStaggerAnimation, usePrefersReducedMotion } from '../hooks/useAnimation';
-import EnhancedAnimeCard from './EnhancedAnimeCard';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  useStaggerAnimation,
+  usePrefersReducedMotion,
+} from "../hooks/useAnimation";
+import EnhancedAnimeCard from "./EnhancedAnimeCard";
 
-const AnimatedGrid = ({ 
-  items = [], 
-  loading = false,
-  className = ''
-}) => {
+const AnimatedGrid = ({ items = [], loading = false, className = "" }) => {
   const [hoveredId, setHoveredId] = useState(null);
   const { getStaggerDelay } = useStaggerAnimation(items?.length || 0);
   const prefersReduced = usePrefersReducedMotion();
-  
+
   // Handle undefined or empty items
   const safeItems = items || [];
-  
+
   // Container animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -23,23 +22,25 @@ const AnimatedGrid = ({
       opacity: 1,
       transition: {
         duration: prefersReduced ? 0 : 0.6,
-        staggerChildren: prefersReduced ? 0 : 0.05
-      }
-    }
+        staggerChildren: prefersReduced ? 0 : 0.05,
+      },
+    },
   };
-  
+
   // Loading skeleton grid
   const LoadingSkeleton = () => (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ${className}`}>
+    <div
+      className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ${className}`}
+    >
       {[...Array(12)].map((_, index) => (
         <motion.div
           key={index}
           className="bg-surface-secondary rounded-xl overflow-hidden"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ 
+          transition={{
             delay: prefersReduced ? 0 : index * 0.05,
-            duration: prefersReduced ? 0 : 0.3 
+            duration: prefersReduced ? 0 : 0.3,
           }}
         >
           <div className="shimmer w-full h-64" />
@@ -52,7 +53,7 @@ const AnimatedGrid = ({
       ))}
     </div>
   );
-  
+
   // Empty state
   const EmptyState = () => (
     <motion.div
@@ -70,17 +71,17 @@ const AnimatedGrid = ({
       </p>
     </motion.div>
   );
-  
+
   // Show loading state
   if (loading) {
     return <LoadingSkeleton />;
   }
-  
+
   // Show empty state
   if (!safeItems || safeItems.length === 0) {
     return <EmptyState />;
   }
-  
+
   // Standard responsive grid with premium animations
   return (
     <motion.div
@@ -106,15 +107,15 @@ const AnimatedGrid = ({
 };
 
 // Memoized version for performance
-const MemoizedAnimatedGrid = React.memo(AnimatedGrid, (prevProps, nextProps) => {
-  // Safe comparison with fallback for undefined items
-  const prevLength = prevProps.items?.length || 0;
-  const nextLength = nextProps.items?.length || 0;
-  
-  return (
-    prevLength === nextLength &&
-    prevProps.loading === nextProps.loading
-  );
-});
+const MemoizedAnimatedGrid = React.memo(
+  AnimatedGrid,
+  (prevProps, nextProps) => {
+    // Safe comparison with fallback for undefined items
+    const prevLength = prevProps.items?.length || 0;
+    const nextLength = nextProps.items?.length || 0;
+
+    return prevLength === nextLength && prevProps.loading === nextProps.loading;
+  }
+);
 
 export default MemoizedAnimatedGrid;

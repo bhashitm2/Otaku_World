@@ -80,7 +80,12 @@ export const searchCharacters = getCharacters;
 // Get top characters
 export const getTopCharacters = async (req, res) => {
   try {
-    const { page = 1, limit = 25, order_by = "favorites", sort = "desc" } = req.query;
+    const {
+      page = 1,
+      limit = 25,
+      order_by = "favorites",
+      sort = "desc",
+    } = req.query;
 
     const options = { order_by, sort };
     const data = await fetchCharacterData("", parseInt(page), options);

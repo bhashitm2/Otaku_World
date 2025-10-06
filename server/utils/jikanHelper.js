@@ -180,7 +180,11 @@ export const fetchMangaDetails = async (id) => {
   return fetchJikanData(`/manga/${id}/full`, { cacheDuration: 7200 });
 };
 
-export const fetchCharacterData = async (query = "", page = 1, options = {}) => {
+export const fetchCharacterData = async (
+  query = "",
+  page = 1,
+  options = {}
+) => {
   let endpoint = `/characters?page=${page}&limit=25`;
 
   if (query) {

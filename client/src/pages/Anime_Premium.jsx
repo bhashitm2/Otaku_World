@@ -12,24 +12,24 @@ const Anime = () => {
   const prefersReduced = usePrefersReducedMotion();
 
   // Query for top anime (when not searching)
-  const { 
-    data: topAnimeData, 
-    isLoading: topAnimeLoading, 
-    error: topAnimeError 
+  const {
+    data: topAnimeData,
+    isLoading: topAnimeLoading,
+    error: topAnimeError,
   } = useQuery({
-    queryKey: ['top-anime', currentPage],
+    queryKey: ["top-anime", currentPage],
     queryFn: () => getTopAnime(currentPage, 25),
     staleTime: 5 * 60 * 1000,
     enabled: !searchQuery,
   });
 
   // Query for search results
-  const { 
-    data: searchData, 
-    isLoading: searchLoading, 
-    error: searchError 
+  const {
+    data: searchData,
+    isLoading: searchLoading,
+    error: searchError,
   } = useQuery({
-    queryKey: ['search-anime', searchQuery, currentPage],
+    queryKey: ["search-anime", searchQuery, currentPage],
     queryFn: () => searchAnime(searchQuery, currentPage, 25),
     staleTime: 2 * 60 * 1000,
     enabled: !!searchQuery && searchQuery.trim().length > 0,
@@ -54,7 +54,7 @@ const Anime = () => {
 
   const loadMoreAnime = () => {
     if (hasMore && !isLoading) {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
@@ -64,7 +64,7 @@ const Anime = () => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-bg-primary text-text-primary"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -74,7 +74,7 @@ const Anime = () => {
       <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial from-accent-cyan/20 via-transparent to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 py-16">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -99,7 +99,7 @@ const Anime = () => {
           </motion.div>
 
           {/* Current View Indicator */}
-          <motion.div 
+          <motion.div
             className="text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -109,7 +109,10 @@ const Anime = () => {
               <span className="text-text-secondary">
                 {searchQuery ? (
                   <>
-                    Results for: <span className="text-accent-cyan font-semibold">"{searchQuery}"</span>
+                    Results for:{" "}
+                    <span className="text-accent-cyan font-semibold">
+                      "{searchQuery}"
+                    </span>
                   </>
                 ) : (
                   "Top-rated anime collection"
@@ -124,7 +127,7 @@ const Anime = () => {
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Error State */}
         {error && (
-          <motion.div 
+          <motion.div
             className="bg-surface-secondary border border-red-500/20 rounded-xl p-8 mb-12 text-center"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -132,7 +135,9 @@ const Anime = () => {
           >
             <div className="text-red-400 mb-6">
               <div className="text-6xl mb-4">⚠️</div>
-              <h3 className="text-xl font-semibold mb-2">Something went wrong</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                Something went wrong
+              </h3>
               <p className="text-text-secondary">
                 {error?.message || "Failed to load anime. Please try again."}
               </p>
@@ -147,7 +152,7 @@ const Anime = () => {
         )}
 
         {/* Premium Animated Grid */}
-        <AnimatedGrid 
+        <AnimatedGrid
           items={animeList}
           loading={isLoading && currentPage === 1}
           className="mb-12"
@@ -155,7 +160,7 @@ const Anime = () => {
 
         {/* Load More Section */}
         {animeList.length > 0 && hasMore && (
-          <motion.div 
+          <motion.div
             className="text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -183,14 +188,18 @@ const Anime = () => {
 
         {/* Results Count */}
         {animeList.length > 0 && (
-          <motion.div 
+          <motion.div
             className="text-center mt-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="text-text-secondary">
-              Showing <span className="text-accent-cyan font-semibold">{animeList.length}</span> anime
+              Showing{" "}
+              <span className="text-accent-cyan font-semibold">
+                {animeList.length}
+              </span>{" "}
+              anime
             </p>
           </motion.div>
         )}

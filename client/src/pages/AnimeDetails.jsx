@@ -1,10 +1,7 @@
 // src/pages/AnimeDetails.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import {
-  getAnimeDetails,
-  formatAnimeData,
-} from "../services/anime";
+import { getAnimeDetails, formatAnimeData } from "../services/anime";
 import { AnimeDetailsSkeleton } from "../components/Loader";
 import FavoriteButton from "../components/FavoriteButton";
 import WatchlistButton from "../components/WatchlistButton";

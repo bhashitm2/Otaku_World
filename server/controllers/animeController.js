@@ -175,7 +175,7 @@ export const getTrendingAnime = async (req, res) => {
     // Get current season anime for truly trending content
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
-    
+
     // Determine current season
     const month = currentDate.getMonth() + 1; // getMonth() returns 0-11
     let currentSeason;
@@ -189,10 +189,12 @@ export const getTrendingAnime = async (req, res) => {
       currentSeason = "winter";
     }
 
-    console.log(`🔥 Fetching trending anime for ${currentSeason} ${currentYear}`);
+    console.log(
+      `🔥 Fetching trending anime for ${currentSeason} ${currentYear}`
+    );
 
     let allTrendingData = [];
-    
+
     try {
       // Fetch current season anime first
       const seasonData = await fetchSeasons(currentYear, currentSeason);
@@ -200,7 +202,10 @@ export const getTrendingAnime = async (req, res) => {
         allTrendingData = [...seasonData.data];
       }
     } catch (seasonError) {
-      console.warn(`Failed to fetch ${currentSeason} ${currentYear} season:`, seasonError.message);
+      console.warn(
+        `Failed to fetch ${currentSeason} ${currentYear} season:`,
+        seasonError.message
+      );
     }
 
     // If we don't have enough data, supplement with recent popular anime
@@ -212,8 +217,12 @@ export const getTrendingAnime = async (req, res) => {
         });
         if (recentData.data) {
           // Add recent anime but avoid duplicates
-          const existingIds = new Set(allTrendingData.map(anime => anime.mal_id));
-          const newAnime = recentData.data.filter(anime => !existingIds.has(anime.mal_id));
+          const existingIds = new Set(
+            allTrendingData.map((anime) => anime.mal_id)
+          );
+          const newAnime = recentData.data.filter(
+            (anime) => !existingIds.has(anime.mal_id)
+          );
           allTrendingData = [...allTrendingData, ...newAnime];
         }
       } catch (recentError) {
@@ -226,12 +235,19 @@ export const getTrendingAnime = async (req, res) => {
       try {
         const popularData = await fetchTopAnime("anime", "airing", 1);
         if (popularData.data) {
-          const existingIds = new Set(allTrendingData.map(anime => anime.mal_id));
-          const newAnime = popularData.data.filter(anime => !existingIds.has(anime.mal_id));
+          const existingIds = new Set(
+            allTrendingData.map((anime) => anime.mal_id)
+          );
+          const newAnime = popularData.data.filter(
+            (anime) => !existingIds.has(anime.mal_id)
+          );
           allTrendingData = [...allTrendingData, ...newAnime.slice(0, 50)];
         }
       } catch (popularError) {
-        console.warn("Failed to fetch popular airing anime:", popularError.message);
+        console.warn(
+          "Failed to fetch popular airing anime:",
+          popularError.message
+        );
       }
     }
 
