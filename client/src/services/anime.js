@@ -123,17 +123,32 @@ export const getTopAnime = async (page = 1, limit = 25) => {
   }
 };
 
-export const searchAnime = async (query, page = 1, limit = 25) => {
+export const searchAnime = async (
+  query,
+  page = 1,
+  limit = 25,
+  options = {}
+) => {
   if (!query || query.trim().length === 0) {
     throw new Error("Search query cannot be empty");
   }
 
   try {
-    const response = await apiService.anime.search({
+    const searchParams = {
       q: query.trim(),
       page,
       limit,
-    });
+    };
+
+    // Add sorting parameters if provided
+    if (options.order_by) {
+      searchParams.order_by = options.order_by;
+    }
+    if (options.sort) {
+      searchParams.sort = options.sort;
+    }
+
+    const response = await apiService.anime.search(searchParams);
     return response.data;
   } catch (error) {
     console.error("Error searching anime:", error);
@@ -229,17 +244,32 @@ export const getRandomAnime = async () => {
 };
 
 // ================== Character APIs ==================
-export const searchCharacters = async (query, page = 1, limit = 25) => {
+export const searchCharacters = async (
+  query,
+  page = 1,
+  limit = 25,
+  options = {}
+) => {
   if (!query || query.trim().length === 0) {
     throw new Error("Search query cannot be empty");
   }
 
   try {
-    const response = await apiService.characters.search({
+    const searchParams = {
       q: query.trim(),
       page,
       limit,
-    });
+    };
+
+    // Add sorting parameters if provided
+    if (options.order_by) {
+      searchParams.order_by = options.order_by;
+    }
+    if (options.sort) {
+      searchParams.sort = options.sort;
+    }
+
+    const response = await apiService.characters.search(searchParams);
     return response.data;
   } catch (error) {
     console.error("Error searching characters:", error);

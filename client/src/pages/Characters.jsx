@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { searchCharacters, getTopCharacters } from "../services/anime";
 import CharacterCard from "../components/CharacterCard";
 import SearchBar from "../components/SearchBar";
+import SortingControls from "../components/SortingControls";
 import AnimatedGrid from "../components/AnimatedGrid";
 import Loader from "../components/Loader";
 import { usePrefersReducedMotion } from "../hooks/useAnimation";
@@ -19,6 +20,10 @@ const Characters = () => {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [isSearchMode, setIsSearchMode] = useState(false);
+
+  // Fixed sorting: always by favorites, descending (High to Low)
+  const sortBy = "favorites";
+  const sortOrder = "desc";
 
   const loadTopCharacters = useCallback(async () => {
     try {
@@ -59,7 +64,10 @@ const Characters = () => {
         setSearchTerm(query);
         setIsSearchMode(true);
 
-        const response = await searchCharacters(query, 1);
+        const response = await searchCharacters(query, 1, 25, {
+          order_by: sortBy,
+          sort: sortOrder,
+        });
 
         if (response?.data) {
           setCharacters(response.data);
@@ -77,7 +85,7 @@ const Characters = () => {
         setSearching(false);
       }
     },
-    [loadTopCharacters]
+    [loadTopCharacters, sortBy, sortOrder]
   );
 
   const loadMoreCharacters = async (page) => {
@@ -87,7 +95,10 @@ const Characters = () => {
 
       let response;
       if (isSearchMode && searchTerm) {
-        response = await searchCharacters(searchTerm, page);
+        response = await searchCharacters(searchTerm, page, 25, {
+          order_by: sortBy,
+          sort: sortOrder,
+        });
       } else {
         response = await getTopCharacters(page);
       }
@@ -181,6 +192,13 @@ const Characters = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Sorting Controls - Only show for search results */}
+      {isSearchMode && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <SortingControls type="character" className="max-w-4xl mx-auto" />
+        </div>
+      )}
 
       {/* Main Content */}
       <motion.div

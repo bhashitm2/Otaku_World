@@ -562,36 +562,6 @@ const CharacterDetails = () => {
                     </div>
                   </motion.div>
                 )}
-
-                {/* Premium External Links */}
-                {character.url && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: prefersReduced ? 0 : 0.5,
-                      delay: 0.2,
-                    }}
-                  >
-                    <h3 className="text-xl font-bold text-text-primary mb-4 flex items-center">
-                      <span className="w-1.5 h-6 bg-gradient-to-b from-accent-cyan to-accent-purple rounded-full mr-3"></span>
-                      External Links
-                    </h3>
-                    <motion.a
-                      href={character.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-accent-cyan/20 to-accent-purple/20 backdrop-blur-sm hover:from-accent-cyan/30 hover:to-accent-purple/30 text-accent-cyan border border-accent-cyan/30 hover:border-accent-cyan/50 rounded-xl transition-all duration-300 font-medium"
-                      whileHover={{
-                        scale: prefersReduced ? 1 : 1.05,
-                        y: prefersReduced ? 0 : -2,
-                      }}
-                      whileTap={{ scale: prefersReduced ? 1 : 0.95 }}
-                    >
-                      🔗 View Character Details
-                    </motion.a>
-                  </motion.div>
-                )}
               </div>
             )}
 
@@ -683,17 +653,6 @@ const CharacterDetails = () => {
                               {voice.language}
                             </span>
                           </p>
-                          {voice.person?.url && (
-                            <motion.a
-                              href={voice.person.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center text-sm text-accent-purple hover:text-accent-pink transition-colors duration-200 font-medium"
-                              whileHover={{ x: 2 }}
-                            >
-                              View Profile →
-                            </motion.a>
-                          )}
                         </div>
                       </motion.div>
                     ))}

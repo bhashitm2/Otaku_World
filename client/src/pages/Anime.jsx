@@ -1,16 +1,22 @@
 // src/pages/Anime.jsx - Premium Anime Browse Page
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion"; // Force HMR refresh
 import { getTopAnime, searchAnime } from "../services/anime";
 import AnimatedGrid from "../components/AnimatedGrid";
 import SearchBar from "../components/SearchBar";
+import SortingControls from "../components/SortingControls";
 import { usePrefersReducedMotion } from "../hooks/useAnimation";
 
 const Anime = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [allAnime, setAllAnime] = useState([]); // Store accumulated anime
   const prefersReduced = usePrefersReducedMotion();
+
+  // Fixed sorting: always by score, descending (High to Low)
+  const sortBy = "score";
+  const sortOrder = "desc";
 
   // Query for top anime (when not searching)
   const {
@@ -30,8 +36,12 @@ const Anime = () => {
     isLoading: searchLoading,
     error: searchError,
   } = useQuery({
-    queryKey: ["search-anime", searchQuery, currentPage],
-    queryFn: () => searchAnime(searchQuery, currentPage, 25),
+    queryKey: ["search-anime", searchQuery, currentPage, sortBy, sortOrder],
+    queryFn: () =>
+      searchAnime(searchQuery, currentPage, 25, {
+        order_by: sortBy,
+        sort: sortOrder,
+      }),
     staleTime: 2 * 60 * 1000,
     enabled: !!searchQuery && searchQuery.trim().length > 0,
   });
@@ -40,8 +50,34 @@ const Anime = () => {
   const currentData = searchQuery ? searchData : topAnimeData;
   const isLoading = searchQuery ? searchLoading : topAnimeLoading;
   const error = searchQuery ? searchError : topAnimeError;
-  const animeList = currentData?.data || [];
   const hasMore = currentData?.pagination?.has_next_page || false;
+
+  // Effect to accumulate anime data when new data arrives
+  useEffect(() => {
+    if (currentData?.data) {
+      if (currentPage === 1) {
+        // First page or new search - replace all data
+        setAllAnime(currentData.data);
+      } else {
+        // Subsequent pages - append to existing data
+        setAllAnime((prev) => {
+          const newAnime = currentData.data.filter(
+            (newItem) =>
+              !prev.some(
+                (existingItem) => existingItem.mal_id === newItem.mal_id
+              )
+          );
+          return [...prev, ...newAnime];
+        });
+      }
+    }
+  }, [currentData, currentPage]);
+
+  // Reset accumulated data when search changes
+  useEffect(() => {
+    setAllAnime([]);
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -124,6 +160,13 @@ const Anime = () => {
         </div>
       </div>
 
+      {/* Sorting Controls - Only show for search results */}
+      {searchQuery && (
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <SortingControls type="anime" className="max-w-4xl mx-auto" />
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Error State */}
@@ -154,32 +197,63 @@ const Anime = () => {
 
         {/* Premium Animated Grid */}
         <AnimatedGrid
-          items={animeList}
+          items={allAnime}
           loading={isLoading && currentPage === 1}
-          className="mb-12"
+          className="mb-8"
         />
 
-        {/* Load More Section */}
-        {animeList.length > 0 && hasMore && (
+        {/* Loading Indicator for Additional Pages */}
+        {isLoading && currentPage > 1 && (
           <motion.div
-            className="text-center"
+            className="flex justify-center items-center py-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex items-center space-x-3 px-6 py-3 bg-surface-secondary/50 backdrop-blur-sm rounded-xl border border-accent-cyan/20">
+              <div className="w-5 h-5 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-text-secondary">Loading more anime...</span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Load More Section */}
+        {allAnime.length > 0 && hasMore && (
+          <motion.div
+            className="text-center py-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            {/* Visual separator if we have loaded multiple pages */}
+            {currentPage > 1 && (
+              <div className="flex items-center justify-center mb-8">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent-cyan/30 to-transparent"></div>
+                <span className="px-4 text-sm text-text-secondary bg-bg-primary">
+                  Page {currentPage}
+                </span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent-cyan/30 to-transparent"></div>
+              </div>
+            )}
             <button
               onClick={loadMoreAnime}
               disabled={isLoading}
-              className="group relative bg-gradient-to-r from-accent-cyan to-accent-magenta text-bg-primary px-12 py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-accent-cyan/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative bg-gradient-to-r from-accent-cyan to-accent-magenta text-bg-primary px-12 py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-accent-cyan/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
               {isLoading && currentPage > 1 ? (
-                <span className="flex items-center">
+                <span className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-bg-primary border-t-transparent rounded-full animate-spin mr-3"></div>
-                  Loading more...
+                  Loading more anime...
                 </span>
               ) : (
                 <>
-                  <span className="relative z-10">Load More Anime</span>
+                  <span className="relative z-10 flex items-center justify-center">
+                    <span className="mr-2">📺</span>
+                    Load More Anime
+                    <span className="ml-2 transition-transform duration-200 group-hover:translate-x-1">
+                      →
+                    </span>
+                  </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-accent-magenta to-accent-cyan rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </>
               )}
@@ -188,7 +262,7 @@ const Anime = () => {
         )}
 
         {/* Results Count */}
-        {animeList.length > 0 && (
+        {allAnime.length > 0 && (
           <motion.div
             className="text-center mt-8"
             initial={{ opacity: 0 }}
@@ -198,9 +272,12 @@ const Anime = () => {
             <p className="text-text-secondary">
               Showing{" "}
               <span className="text-accent-cyan font-semibold">
-                {animeList.length}
+                {allAnime.length}
               </span>{" "}
               anime
+              {hasMore && (
+                <span className="text-gray-500 ml-2">(More available)</span>
+              )}
             </p>
           </motion.div>
         )}

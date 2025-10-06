@@ -5,7 +5,7 @@ import { formatAnimeData } from "../services/anime";
 import FavoriteButton from "./FavoriteButton";
 import WatchlistButton from "./WatchlistButton";
 
-const AnimeCard = ({ anime }) => {
+const AnimeCard = React.memo(({ anime }) => {
   const formattedAnime = formatAnimeData(anime);
 
   // Don't render if anime data is invalid
@@ -133,6 +133,8 @@ const AnimeCard = ({ anime }) => {
       </div>
     </Link>
   );
-};
+});
+
+AnimeCard.displayName = "AnimeCard";
 
 export default AnimeCard;

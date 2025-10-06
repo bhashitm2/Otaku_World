@@ -82,7 +82,7 @@ const SearchBar = ({
           value={query}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className="w-full pl-10 pr-12 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 bg-white shadow-sm"
+          className="w-full pl-10 pr-12 py-3 border-2 border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors duration-200 bg-gray-800 text-white placeholder-gray-400 shadow-sm"
         />
 
         {/* Clear Button */}
@@ -111,7 +111,7 @@ const SearchBar = ({
 
       {/* Search Suggestions (Optional Enhancement) */}
       {query && query.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 text-sm text-gray-500 bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm z-10">
+        <div className="absolute top-full left-0 right-0 mt-1 text-sm text-gray-300 bg-gray-800 border border-gray-600 rounded-md px-3 py-2 shadow-lg z-10">
           {isSearching ? (
             <span>Searching for "{query}"...</span>
           ) : (

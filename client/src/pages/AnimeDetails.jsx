@@ -162,16 +162,6 @@ const AnimeDetails = () => {
                     size="lg"
                   />
                 </div>
-                {anime.url && (
-                  <a
-                    href={anime.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-semibold text-center hover:from-green-600 hover:to-teal-600 transition-all duration-200 transform hover:scale-105"
-                  >
-                    🔗 View Full Details
-                  </a>
-                )}
               </div>
             </div>
           </div>

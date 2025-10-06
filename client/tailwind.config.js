@@ -82,6 +82,8 @@ export default {
         shimmer: "shimmer 1.5s infinite",
         "pulse-neon": "pulse-neon 2s ease-in-out infinite",
         glow: "glow 3s ease-in-out infinite",
+        "pulse-slow": "pulse 4s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
       },
 
       keyframes: {
@@ -99,6 +101,10 @@ export default {
         glow: {
           "0%, 100%": { boxShadow: theme.shadows.glow },
           "50%": { boxShadow: "0 0 40px rgba(139, 92, 246, 0.6)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-20px)" },
         },
       },
 
@@ -129,6 +135,12 @@ export default {
             "linear-gradient(90deg, var(--color-surface-primary) 25%, var(--color-surface-secondary) 50%, var(--color-surface-primary) 75%)",
           "background-size": "200px 100%",
           animation: "shimmer 1.5s infinite",
+        },
+        ".animation-delay-2000": {
+          "animation-delay": "2s",
+        },
+        ".animation-delay-4000": {
+          "animation-delay": "4s",
         },
       };
       addUtilities(newUtilities);

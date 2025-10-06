@@ -27,7 +27,11 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-primary">�</div>
+            <img
+              src="/Main_Logo.png"
+              alt="Otaku World Logo"
+              className="w-10 h-10 object-contain"
+            />
             <span className="text-xl font-semibold text-white">
               Otaku_World
             </span>
@@ -75,18 +79,11 @@ const Navbar = () => {
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link to="/login">
-                  <Button variant="outline" size="sm">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button variant="primary" size="sm">
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
+              <Link to="/login">
+                <Button variant="primary" size="sm">
+                  Login
+                </Button>
+              </Link>
             )}
           </div>
 

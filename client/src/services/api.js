@@ -2,9 +2,13 @@
 import axios from "axios";
 import { auth } from "./firebaseClient";
 
+// Export BASE_URL for consistency
+export const BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 // Create API instance with backend URL
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: BASE_URL,
   timeout: 30000, // 30 second timeout
   headers: {
     "Content-Type": "application/json",
@@ -25,16 +29,54 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Response interceptor for error handling
+// Enhanced response interceptor with retry logic
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid - could trigger logout
-      console.error("Unauthorized request:", error);
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // Try to refresh token
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          await user.getIdToken(true); // Force refresh
+          const token = await user.getIdToken();
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          console.error("Token refresh failed:", refreshError);
+          // Could trigger logout here
+        }
+      }
     } else if (error.response?.status === 429) {
       console.warn("Rate limit exceeded:", error.response.data);
+
+      // Exponential backoff retry for rate limiting
+      if (!originalRequest._retryCount) {
+        originalRequest._retryCount = 0;
+      }
+
+      if (originalRequest._retryCount < 3) {
+        originalRequest._retryCount++;
+        const delay = Math.pow(2, originalRequest._retryCount) * 1000; // 2s, 4s, 8s
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return api(originalRequest);
+      }
+    } else if (
+      error.code === "NETWORK_ERROR" ||
+      error.code === "ECONNABORTED"
+    ) {
+      // Network error or timeout - retry once
+      if (!originalRequest._networkRetry) {
+        originalRequest._networkRetry = true;
+        return api(originalRequest);
+      }
     }
+
     return Promise.reject(error);
   }
 );

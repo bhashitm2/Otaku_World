@@ -7,6 +7,14 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { rateLimiter } from "./middleware/rateLimiter.js";
+import { performanceMonitor, memoryMonitor } from "./middleware/performance.js";
+import {
+  securityConfig,
+  validateSecurity,
+  corsConfig,
+  validateSecurityHeaders,
+  validateEnvironment,
+} from "./utils/securityValidator.js";
 
 // Import routes
 import animeRoutes from "./routes/animeRoutes.js";
@@ -19,45 +27,18 @@ import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
 
-// Security middleware
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:", "http:"],
-        scriptSrc: ["'self'"],
-        connectSrc: [
-          "'self'",
-          "https://api.jikan.moe",
-          "https://firestore.googleapis.com",
-        ],
-      },
-    },
-  })
-);
+// Validate environment security
+validateEnvironment();
 
-// CORS configuration
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? ["https://otaku-world.vercel.app", "https://otaku-world.web.app"]
-        : [
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://127.0.0.1:5173",
-          ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  })
-);
+// Enhanced security middleware
+app.use(helmet(securityConfig.helmet));
+app.use(cors(corsConfig));
+app.use(validateSecurityHeaders);
+app.use(validateSecurity);
 
 // General middleware
 app.use(compression());
+app.use(performanceMonitor);
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -80,15 +61,52 @@ app.use(globalLimiter);
 // Custom rate limiter for specific routes
 app.use(rateLimiter);
 
-// Health check endpoint
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Otaku World API is running",
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || "1.0.0",
-    environment: process.env.NODE_ENV || "development",
-  });
+// Enhanced health check endpoint
+app.get("/health", async (req, res) => {
+  const startTime = Date.now();
+
+  try {
+    // Basic health info
+    const healthData = {
+      success: true,
+      status: "ok",
+      message: "Otaku World API is running",
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || "1.0.0",
+      environment: process.env.NODE_ENV || "development",
+      uptime: process.uptime(),
+      responseTime: Date.now() - startTime,
+    };
+
+    // Memory usage
+    const memUsage = process.memoryUsage();
+    healthData.memory = {
+      rss: Math.round(memUsage.rss / 1024 / 1024) + " MB",
+      heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024) + " MB",
+      heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) + " MB",
+      external: Math.round(memUsage.external / 1024 / 1024) + " MB",
+    };
+
+    // If cache stats are available
+    if (typeof getCacheStats === "function") {
+      try {
+        const { getCacheStats } = await import("./utils/apiCaching.js");
+        healthData.cache = getCacheStats();
+      } catch (error) {
+        healthData.cache = { error: "Cache stats unavailable" };
+      }
+    }
+
+    res.status(200).json(healthData);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      status: "error",
+      message: "Health check failed",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // API routes
