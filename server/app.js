@@ -1,0 +1,162 @@
+// server/app.js
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { rateLimiter } from "./middleware/rateLimiter.js";
+
+// Import routes
+import animeRoutes from "./routes/animeRoutes.js";
+import mangaRoutes from "./routes/mangaRoutes.js";
+import characterRoutes from "./routes/characterRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import favoritesRoutes from "./routes/favoritesRoutes.js";
+import watchlistRoutes from "./routes/watchlistRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+
+const app = express();
+
+// Security middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:", "http:"],
+        scriptSrc: ["'self'"],
+        connectSrc: [
+          "'self'",
+          "https://api.jikan.moe",
+          "https://firestore.googleapis.com",
+        ],
+      },
+    },
+  })
+);
+
+// CORS configuration
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === "production"
+        ? ["https://otaku-world.vercel.app", "https://otaku-world.web.app"]
+        : [
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+          ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
+
+// General middleware
+app.use(compression());
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Global rate limiting
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === "production" ? 1000 : 2000, // More lenient in development
+  message: {
+    success: false,
+    message: "Too many requests from this IP, please try again later",
+    retryAfter: "15 minutes",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(globalLimiter);
+
+// Custom rate limiter for specific routes
+app.use(rateLimiter);
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Otaku World API is running",
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || "1.0.0",
+    environment: process.env.NODE_ENV || "development",
+  });
+});
+
+// API routes
+app.use("/api/anime", animeRoutes);
+app.use("/api/manga", mangaRoutes);
+app.use("/api/characters", characterRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/favorites", favoritesRoutes);
+app.use("/api/watchlist", watchlistRoutes);
+app.use("/api/auth", authRoutes);
+
+// API documentation endpoint
+app.get("/api", (req, res) => {
+  res.json({
+    success: true,
+    message: "Otaku World API v1.0",
+    documentation: {
+      anime: "/api/anime",
+      manga: "/api/manga",
+      characters: "/api/characters",
+      users: "/api/users",
+      favorites: "/api/favorites",
+      watchlist: "/api/watchlist",
+      auth: "/api/auth",
+    },
+    endpoints: {
+      health: "/health",
+      cache: "/api/cache/stats",
+    },
+    rateLimit: {
+      global: "1000 requests per 15 minutes",
+      search: "100 requests per hour",
+      authenticated: "500 requests per hour",
+    },
+  });
+});
+
+// Cache statistics endpoint (for monitoring)
+app.get("/api/cache/stats", async (req, res) => {
+  try {
+    const { getCacheStats } = await import("./utils/apiCaching.js");
+    const stats = getCacheStats();
+    res.json({
+      success: true,
+      cache: stats,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve cache statistics",
+      error: error.message,
+    });
+  }
+});
+
+// 404 handler
+app.use("*", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "API endpoint not found",
+    path: req.originalUrl,
+    method: req.method,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Global error handler (must be last middleware)
+app.use(errorHandler);
+
+export default app;

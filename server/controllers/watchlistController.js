@@ -1,10 +1,10 @@
-// server/controllers/favoritesController.js
-import Favorite from "../models/Favorite.js";
+// server/controllers/watchlistController.js
+import Watchlist from "../models/Watchlist.js";
 
-// Get user's favorites
-export const getFavorites = async (req, res) => {
+// Get user's watchlist
+export const getWatchlist = async (req, res) => {
   try {
-    const { type, page = 1, limit = 50 } = req.query;
+    const { status, type, page = 1, limit = 50 } = req.query;
     const userUid = req.user.uid;
 
     const options = {
@@ -12,17 +12,22 @@ export const getFavorites = async (req, res) => {
       skip: (parseInt(page) - 1) * parseInt(limit),
     };
 
-    const favorites = await Favorite.findUserFavorites(userUid, type, options);
-    const total = await Favorite.countDocuments({
+    const watchlist = await Watchlist.findUserWatchlist(
       userUid,
+      { status, type },
+      options
+    );
+    const total = await Watchlist.countDocuments({
+      userUid,
+      ...(status && { watchStatus: status }),
       ...(type && { type }),
     });
 
-    const stats = await Favorite.getUserStats(userUid);
+    const stats = await Watchlist.getUserStats(userUid);
 
     res.json({
       success: true,
-      data: favorites,
+      data: watchlist,
       pagination: {
         currentPage: parseInt(page),
         totalPages: Math.ceil(total / parseInt(limit)),
@@ -33,17 +38,17 @@ export const getFavorites = async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Error fetching favorites:", error);
+    console.error("Error fetching watchlist:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch favorites",
+      message: "Failed to fetch watchlist",
       error: error.message,
     });
   }
 };
 
-// Add to favorites
-export const addToFavorites = async (req, res) => {
+// Add to watchlist
+export const addToWatchlist = async (req, res) => {
   try {
     const {
       itemId,
@@ -52,10 +57,11 @@ export const addToFavorites = async (req, res) => {
       image,
       genres,
       score,
-      status,
       episodes,
       chapters,
       volumes,
+      watchStatus,
+      progress,
       userNotes,
       userRating,
       tags,
@@ -70,21 +76,21 @@ export const addToFavorites = async (req, res) => {
       });
     }
 
-    // Check if already in favorites
-    const existingFavorite = await Favorite.findUserFavorite(
+    // Check if already in watchlist
+    const existingWatchlist = await Watchlist.findUserWatchlistItem(
       userUid,
       itemId,
       type
     );
 
-    if (existingFavorite) {
+    if (existingWatchlist) {
       return res.status(409).json({
         success: false,
-        message: "Item already in favorites",
+        message: "Item already in watchlist",
       });
     }
 
-    const favorite = new Favorite({
+    const watchlistItem = new Watchlist({
       userUid,
       itemId,
       title,
@@ -92,42 +98,48 @@ export const addToFavorites = async (req, res) => {
       image: image || "",
       genres: genres || [],
       score,
-      status,
       episodes,
       chapters,
       volumes,
+      watchStatus: watchStatus || "planning",
+      progress: {
+        episodesWatched: progress?.episodesWatched || 0,
+        chaptersRead: progress?.chaptersRead || 0,
+        volumesRead: progress?.volumesRead || 0,
+        lastUpdated: new Date(),
+      },
       userNotes: userNotes || "",
       userRating,
       tags: tags || [],
     });
 
-    await favorite.save();
+    await watchlistItem.save();
 
     res.status(201).json({
       success: true,
-      message: "Added to favorites successfully",
-      data: favorite,
+      message: "Added to watchlist successfully",
+      data: watchlistItem,
     });
   } catch (error) {
-    console.error("Error adding to favorites:", error);
+    console.error("Error adding to watchlist:", error);
 
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
-        message: "Item already in favorites",
+        message: "Item already in watchlist",
       });
     }
 
     res.status(500).json({
       success: false,
-      message: "Failed to add to favorites",
+      message: "Failed to add to watchlist",
       error: error.message,
     });
   }
 };
 
-// Remove from favorites
-export const removeFromFavorites = async (req, res) => {
+// Remove from watchlist
+export const removeFromWatchlist = async (req, res) => {
   try {
     const { itemId, type } = req.params;
     const userUid = req.user.uid;
@@ -139,7 +151,7 @@ export const removeFromFavorites = async (req, res) => {
       });
     }
 
-    const result = await Favorite.removeUserFavorite(
+    const result = await Watchlist.removeUserWatchlistItem(
       userUid,
       parseInt(itemId),
       type
@@ -148,68 +160,74 @@ export const removeFromFavorites = async (req, res) => {
     if (result.deletedCount === 0) {
       return res.status(404).json({
         success: false,
-        message: "Favorite not found",
+        message: "Watchlist item not found",
       });
     }
 
     res.json({
       success: true,
-      message: "Removed from favorites successfully",
+      message: "Removed from watchlist successfully",
     });
   } catch (error) {
-    console.error("Error removing from favorites:", error);
+    console.error("Error removing from watchlist:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to remove from favorites",
+      message: "Failed to remove from watchlist",
       error: error.message,
     });
   }
 };
 
-// Update favorite metadata
-export const updateFavorite = async (req, res) => {
+// Update watchlist item
+export const updateWatchlist = async (req, res) => {
   try {
     const { itemId, type } = req.params;
-    const { userNotes, userRating, tags } = req.body;
+    const { watchStatus, progress, userNotes, userRating, tags } = req.body;
     const userUid = req.user.uid;
 
-    const favorite = await Favorite.findUserFavorite(
+    const watchlistItem = await Watchlist.findUserWatchlistItem(
       userUid,
       parseInt(itemId),
       type
     );
 
-    if (!favorite) {
+    if (!watchlistItem) {
       return res.status(404).json({
         success: false,
-        message: "Favorite not found",
+        message: "Watchlist item not found",
       });
     }
 
-    await favorite.updateMetadata({ userNotes, userRating, tags });
+    await watchlistItem.updateProgress({
+      watchStatus,
+      progress,
+      userNotes,
+      userRating,
+      tags,
+    });
 
     res.json({
       success: true,
-      message: "Favorite updated successfully",
-      data: favorite,
+      message: "Watchlist updated successfully",
+      data: watchlistItem,
     });
   } catch (error) {
-    console.error("Error updating favorite:", error);
+    console.error("Error updating watchlist:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to update favorite",
+      message: "Failed to update watchlist",
       error: error.message,
     });
   }
 };
 
-// Check if item is favorited
-export const checkFavorite = async (req, res) => {
+// Check if item is in watchlist
+export const checkWatchlist = async (req, res) => {
   try {
     const { itemId, type } = req.params;
     const userUid = req.user.uid;
 
-    const favorite = await Favorite.findUserFavorite(
+    const watchlistItem = await Watchlist.findUserWatchlistItem(
       userUid,
       parseInt(itemId),
       type
@@ -217,14 +235,14 @@ export const checkFavorite = async (req, res) => {
 
     res.json({
       success: true,
-      isFavorite: !!favorite,
-      data: favorite || null,
+      inWatchlist: !!watchlistItem,
+      data: watchlistItem || null,
     });
   } catch (error) {
-    console.error("Error checking favorite:", error);
+    console.error("Error checking watchlist:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to check favorite status",
+      message: "Failed to check watchlist status",
       error: error.message,
     });
   }

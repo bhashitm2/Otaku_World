@@ -1,6 +1,10 @@
 // src/services/firebaseClient.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  TwitterAuthProvider,
+} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -22,4 +26,10 @@ googleProvider.addScope("email");
 googleProvider.addScope("profile");
 googleProvider.setCustomParameters({
   prompt: "select_account",
+});
+
+// Configure Twitter Provider
+export const twitterProvider = new TwitterAuthProvider();
+twitterProvider.setCustomParameters({
+  lang: "en",
 });

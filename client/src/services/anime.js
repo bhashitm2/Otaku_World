@@ -1,5 +1,8 @@
 // src/services/anime.js
-const BASE_URL = "https://api.jikan.moe/v4";
+import { apiService } from "./api.js";
+
+// Use backend API instead of direct Jikan API calls
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Request queue to prevent too many simultaneous requests
 class RequestQueue {
@@ -37,6 +40,7 @@ class RequestQueue {
   }
 }
 
+/* Unused - backend handles all of this
 const requestQueue = new RequestQueue();
 
 // Enhanced request delay to respect Jikan API rate limits
@@ -46,7 +50,9 @@ let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 1500; // 1.5 seconds
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [2000, 5000, 10000]; // Progressive retry delays
+*/
 
+/* Unused - backend handles requests
 const makeRequest = async (url, retryCount = 0) => {
   const now = Date.now();
   const timeSinceLastRequest = now - lastRequestTime;
@@ -104,12 +110,17 @@ const makeRequest = async (url, retryCount = 0) => {
     throw error;
   }
 };
+*/
 
 // ================== Anime APIs ==================
 export const getTopAnime = async (page = 1, limit = 25) => {
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/top/anime?page=${page}&limit=${limit}`)
-  );
+  try {
+    const response = await apiService.anime.getTop({ page, limit });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top anime:", error);
+    throw error;
+  }
 };
 
 export const searchAnime = async (query, page = 1, limit = 25) => {
@@ -117,59 +128,104 @@ export const searchAnime = async (query, page = 1, limit = 25) => {
     throw new Error("Search query cannot be empty");
   }
 
-  const encodedQuery = encodeURIComponent(query.trim());
-  return await requestQueue.add(() =>
-    makeRequest(
-      `${BASE_URL}/anime?q=${encodedQuery}&page=${page}&limit=${limit}`
-    )
-  );
+  try {
+    const response = await apiService.anime.search({
+      q: query.trim(),
+      page,
+      limit,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error searching anime:", error);
+    throw error;
+  }
 };
 
 export const getAnimeDetails = async (id) => {
   if (!id) throw new Error("Anime ID is required");
 
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/anime/${id}/full`)
-  );
+  try {
+    const response = await apiService.anime.getDetails(id);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching anime details:", error);
+    throw error;
+  }
 };
 
 export const getAnimeRecommendations = async (id) => {
   if (!id) throw new Error("Anime ID is required");
 
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/anime/${id}/recommendations`)
-  );
+  try {
+    const response = await apiService.anime.getRecommendations(id);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching anime recommendations:", error);
+    throw error;
+  }
 };
 
 export const getCurrentSeason = async (page = 1) => {
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/seasons/now?page=${page}`)
-  );
+  try {
+    const response = await apiService.anime.getSeasonal({ page });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching current season anime:", error);
+    throw error;
+  }
 };
 
 export const getUpcomingSeason = async (page = 1) => {
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/seasons/upcoming?page=${page}`)
-  );
+  try {
+    const response = await apiService.anime.getSeasonal({
+      page,
+      filter: "upcoming",
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching upcoming season anime:", error);
+    throw error;
+  }
 };
 
 export const getTrendingAnime = async (page = 1) => {
-  // Using current season anime as "trending"
-  return await getCurrentSeason(page);
+  try {
+    const response = await apiService.anime.getTrending({ page });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching trending anime:", error);
+    throw error;
+  }
 };
 
 export const getAnimeGenres = async () => {
-  return await requestQueue.add(() => makeRequest(`${BASE_URL}/genres/anime`));
+  try {
+    const response = await apiService.anime.getGenres();
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching anime genres:", error);
+    throw error;
+  }
 };
 
 export const getAnimeByGenre = async (genreId, page = 1) => {
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/anime?genres=${genreId}&page=${page}`)
-  );
+  try {
+    const response = await apiService.anime.getByGenre(genreId, { page });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching anime by genre:", error);
+    throw error;
+  }
 };
 
 export const getRandomAnime = async () => {
-  return await requestQueue.add(() => makeRequest(`${BASE_URL}/random/anime`));
+  try {
+    const response = await apiService.anime.getRandom();
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching random anime:", error);
+    throw error;
+  }
 };
 
 // ================== Character APIs ==================
@@ -178,33 +234,50 @@ export const searchCharacters = async (query, page = 1, limit = 25) => {
     throw new Error("Search query cannot be empty");
   }
 
-  const encodedQuery = encodeURIComponent(query.trim());
-  return await requestQueue.add(() =>
-    makeRequest(
-      `${BASE_URL}/characters?q=${encodedQuery}&page=${page}&limit=${limit}`
-    )
-  );
+  try {
+    const response = await apiService.characters.search({
+      q: query.trim(),
+      page,
+      limit,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error searching characters:", error);
+    throw error;
+  }
 };
 
 export const getCharacterDetails = async (id) => {
   if (!id) throw new Error("Character ID is required");
 
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/characters/${id}/full`)
-  );
+  try {
+    const response = await apiService.characters.getDetails(id);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching character details:", error);
+    throw error;
+  }
 };
 
 export const getTopCharacters = async (page = 1, limit = 25) => {
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/top/characters?page=${page}&limit=${limit}`)
-  );
+  try {
+    const response = await apiService.characters.getTop({ page, limit });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top characters:", error);
+    throw error;
+  }
 };
 
 // ================== Manga APIs ==================
 export const getTopManga = async (page = 1, limit = 25) => {
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/top/manga?page=${page}&limit=${limit}`)
-  );
+  try {
+    const response = await apiService.manga.getTop({ page, limit });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top manga:", error);
+    throw error;
+  }
 };
 
 export const searchManga = async (query, page = 1, limit = 25) => {
@@ -212,20 +285,29 @@ export const searchManga = async (query, page = 1, limit = 25) => {
     throw new Error("Search query cannot be empty");
   }
 
-  const encodedQuery = encodeURIComponent(query.trim());
-  return await requestQueue.add(() =>
-    makeRequest(
-      `${BASE_URL}/manga?q=${encodedQuery}&page=${page}&limit=${limit}`
-    )
-  );
+  try {
+    const response = await apiService.manga.search({
+      q: query.trim(),
+      page,
+      limit,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error searching manga:", error);
+    throw error;
+  }
 };
 
 export const getMangaDetails = async (id) => {
   if (!id) throw new Error("Manga ID is required");
 
-  return await requestQueue.add(() =>
-    makeRequest(`${BASE_URL}/manga/${id}/full`)
-  );
+  try {
+    const response = await apiService.manga.getDetails(id);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching manga details:", error);
+    throw error;
+  }
 };
 
 export const getRelatedManga = async (animeId) => {

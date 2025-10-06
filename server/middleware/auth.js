@@ -1,74 +1,140 @@
-import admin from "../config/firebaseAdmin.js";
+// server/middleware/auth.js
+import { verifyFirebaseToken } from "../utils/firebaseAdmin.js";
+import User from "../models/User.js";
 
-// Middleware to verify Firebase ID token
-const verifyFirebaseToken = async (req, res, next) => {
+// Firebase authentication middleware
+export const protect = async (req, res, next) => {
+  await verifyFirebaseToken(req, res, next);
+};
+
+// Enhanced protection with user sync
+export const protectAndSync = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization || "";
+    // First verify Firebase token
+    await verifyFirebaseToken(req, res, async () => {
+      try {
+        // Sync user with MongoDB if not exists
+        let user = await User.findByUid(req.user.uid);
 
-    if (!authHeader.startsWith("Bearer ")) {
+        if (!user) {
+          // Create new user in MongoDB
+          user = new User({
+            uid: req.user.uid,
+            email: req.user.email,
+            name: req.user.name || req.user.email.split("@")[0],
+            avatar: req.user.picture || "",
+            emailVerified: req.user.emailVerified || false,
+            provider: req.user.firebase?.sign_in_provider || "unknown",
+            lastLogin: new Date(),
+          });
+
+          await user.save();
+          console.log(`✅ New user created: ${user.email}`);
+        } else {
+          // Update last login
+          await user.updateLastLogin();
+        }
+
+        // Attach MongoDB user to request
+        req.mongoUser = user;
+        next();
+      } catch (error) {
+        console.error("User sync error:", error);
+        return res.status(500).json({
+          success: false,
+          message: "User synchronization failed",
+        });
+      }
+    });
+  } catch (error) {
+    // Error already handled by verifyFirebaseToken
+    return;
+  }
+};
+
+// Role-based authorization
+export const requireRole = (roles = []) => {
+  return (req, res, next) => {
+    if (!req.mongoUser) {
       return res.status(401).json({
-        error: "No token provided",
-        message: 'Authorization header must start with "Bearer "',
+        success: false,
+        message: "User not authenticated",
       });
     }
 
-    const idToken = authHeader.split("Bearer ")[1];
+    const userRoles = Array.isArray(req.mongoUser.role)
+      ? req.mongoUser.role
+      : [req.mongoUser.role];
 
-    if (!idToken) {
-      return res.status(401).json({
-        error: "No token provided",
-        message: "Bearer token is missing",
+    const hasRole = roles.some((role) => userRoles.includes(role));
+
+    if (!hasRole) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied. Required roles: ${roles.join(", ")}`,
       });
     }
-
-    // Verify the Firebase ID token
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-
-    // Add Firebase user info to request object
-    req.firebaseUser = {
-      uid: decodedToken.uid,
-      email: decodedToken.email,
-      name: decodedToken.name,
-      picture: decodedToken.picture,
-      emailVerified: decodedToken.email_verified,
-      provider: decodedToken.firebase.sign_in_provider,
-    };
 
     next();
-  } catch (error) {
-    console.error("Firebase token verification error:", error);
+  };
+};
 
-    // Handle specific Firebase Auth errors
-    if (error.code === "auth/id-token-expired") {
-      return res.status(401).json({
-        error: "Token expired",
-        message: "Please sign in again",
-      });
-    } else if (error.code === "auth/id-token-revoked") {
-      return res.status(401).json({
-        error: "Token revoked",
-        message: "Please sign in again",
-      });
+// Admin middleware
+export const admin = requireRole(["admin"]);
+
+// Moderator or admin middleware
+export const moderator = requireRole(["admin", "moderator"]);
+
+// Optional authentication (doesn't fail if no token)
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      await protectAndSync(req, res, next);
     } else {
-      return res.status(401).json({
-        error: "Invalid token",
-        message: "Authentication failed",
+      next();
+    }
+  } catch (error) {
+    // Continue without authentication
+    next();
+  }
+};
+
+// Rate limiting per user
+export const rateLimitPerUser = (
+  maxRequests = 100,
+  windowMs = 15 * 60 * 1000
+) => {
+  const userRequests = new Map();
+
+  return (req, res, next) => {
+    const userId = req.user?.uid || req.ip;
+    const now = Date.now();
+
+    if (!userRequests.has(userId)) {
+      userRequests.set(userId, { count: 0, resetTime: now + windowMs });
+    }
+
+    const userLimit = userRequests.get(userId);
+
+    if (now > userLimit.resetTime) {
+      userLimit.count = 0;
+      userLimit.resetTime = now + windowMs;
+    }
+
+    if (userLimit.count >= maxRequests) {
+      return res.status(429).json({
+        success: false,
+        message: "Rate limit exceeded. Please try again later.",
+        resetTime: new Date(userLimit.resetTime).toISOString(),
       });
     }
-  }
+
+    userLimit.count++;
+    next();
+  };
 };
 
-// Legacy auth middleware (kept for backward compatibility)
-const verifyAuth = (req, res, next) => {
-  const token = req.headers.authorization;
-
-  if (!token) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  // For now, just pass through - implement JWT verification later
-  next();
-};
-
-export default verifyFirebaseToken;
-export { verifyAuth };
+// Legacy export for backward compatibility
+export default protect;

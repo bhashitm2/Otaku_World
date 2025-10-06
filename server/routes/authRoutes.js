@@ -1,14 +1,13 @@
 import express from "express";
-import verifyFirebaseToken from "../middleware/auth.js";
+import { protectAndSync } from "../middleware/auth.js";
 import User from "../models/User.js";
 
 const router = express.Router();
 
 // POST /api/auth/sync - Sync Firebase user with database
-router.post("/sync", verifyFirebaseToken, async (req, res) => {
+router.post("/sync", protectAndSync, async (req, res) => {
   try {
-    const { uid, email, name, picture, emailVerified, provider } =
-      req.firebaseUser;
+    const { uid, email, name, picture, emailVerified, provider } = req.user;
 
     // Upsert user in MongoDB
     const user = await User.findOneAndUpdate(
@@ -54,9 +53,9 @@ router.post("/sync", verifyFirebaseToken, async (req, res) => {
 });
 
 // GET /api/auth/profile - Get current user profile
-router.get("/profile", verifyFirebaseToken, async (req, res) => {
+router.get("/profile", protectAndSync, async (req, res) => {
   try {
-    const { uid } = req.firebaseUser;
+    const { uid } = req.user;
 
     const user = await User.findOne({ uid });
 
@@ -91,9 +90,9 @@ router.get("/profile", verifyFirebaseToken, async (req, res) => {
 });
 
 // PUT /api/auth/profile - Update user profile
-router.put("/profile", verifyFirebaseToken, async (req, res) => {
+router.put("/profile", protectAndSync, async (req, res) => {
   try {
-    const { uid } = req.firebaseUser;
+    const { uid } = req.user;
     const { name, avatar } = req.body;
 
     const user = await User.findOneAndUpdate(
@@ -140,9 +139,9 @@ router.put("/profile", verifyFirebaseToken, async (req, res) => {
 });
 
 // DELETE /api/auth/account - Delete user account
-router.delete("/account", verifyFirebaseToken, async (req, res) => {
+router.delete("/account", protectAndSync, async (req, res) => {
   try {
-    const { uid } = req.firebaseUser;
+    const { uid } = req.user;
 
     // Delete user from database
     const deletedUser = await User.findOneAndDelete({ uid });
@@ -165,6 +164,76 @@ router.delete("/account", verifyFirebaseToken, async (req, res) => {
       message: "Failed to delete user account",
     });
   }
+});
+
+// POST /api/auth/verify - Verify Firebase token
+router.post("/verify", protectAndSync, (req, res) => {
+  // If middleware passes, token is valid
+  res.json({
+    success: true,
+    message: "Token verified successfully",
+    user: {
+      uid: req.user.uid,
+      email: req.user.email,
+      displayName: req.user.name || req.user.displayName,
+      photoURL: req.user.picture || req.user.photoURL,
+      emailVerified: req.user.email_verified || false,
+      role: req.user.role || "user",
+    },
+  });
+});
+
+// GET /api/auth/me - Get current user info
+router.get("/me", protectAndSync, (req, res) => {
+  res.json({
+    success: true,
+    user: {
+      uid: req.user.uid,
+      email: req.user.email,
+      displayName: req.user.name || req.user.displayName,
+      photoURL: req.user.picture || req.user.photoURL,
+      emailVerified: req.user.email_verified || false,
+      role: req.user.role || "user",
+      createdAt: req.user.createdAt,
+      lastLoginAt: req.user.lastLoginAt,
+      preferences: req.user.preferences,
+    },
+  });
+});
+
+// POST /api/auth/refresh - Refresh user data
+router.post("/refresh", protectAndSync, async (req, res) => {
+  try {
+    // The protectAndSync middleware will handle syncing user data
+    res.json({
+      success: true,
+      message: "User data refreshed successfully",
+      user: {
+        uid: req.user.uid,
+        email: req.user.email,
+        displayName: req.user.name || req.user.displayName,
+        photoURL: req.user.picture || req.user.photoURL,
+        emailVerified: req.user.email_verified || false,
+        role: req.user.role || "user",
+      },
+    });
+  } catch (error) {
+    console.error("Error refreshing user data:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to refresh user data",
+      error: error.message,
+    });
+  }
+});
+
+// POST /api/auth/signout - Sign out endpoint
+router.post("/signout", (req, res) => {
+  res.json({
+    success: true,
+    message:
+      "Signed out successfully. Please clear your local Firebase session.",
+  });
 });
 
 export default router;
