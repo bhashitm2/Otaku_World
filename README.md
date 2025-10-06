@@ -355,11 +355,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Developer
 
-**Your Name**
+**Bhashit Maheshwari**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
-- Email: your.email@example.com
+- GitHub: [@bhashitm2](https://github.com/bhashitm2)
+- LinkedIn: [Your Bhashit Maheshwari](https://www.linkedin.com/in/bhashit-maheshwari-1b4206254/)
+- Email: bhashitm2@gmail.com
 
 ## 🙏 Acknowledgments
 
@@ -368,14 +368,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [React Community](https://reactjs.org/) - For the amazing ecosystem
 - [TailwindCSS](https://tailwindcss.com/) - For the utility-first CSS framework
 
-## 📈 Stats
-
-- ⭐ **Performance Score**: 90+
-- 📱 **Mobile Responsive**: 100%
-- 🔒 **Security Grade**: A+
-- ⚡ **Load Time**: <2 seconds
-- 🎨 **UI Components**: 25+
-- 📊 **API Endpoints**: 15+
 
 ---
 
