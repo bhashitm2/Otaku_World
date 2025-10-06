@@ -1,36 +1,13 @@
 {
   "version": 2,
-  "name": "otaku-world-frontend",
-  "builds": [
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
-  "routes": [
-    {
-      "src": "/assets/(.*)",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
-  "env": {
-    "VITE_API_URL": "@api-url",
-    "VITE_FIREBASE_PROJECT_ID": "@firebase-project-id",
-    "VITE_FIREBASE_API_KEY": "@firebase-api-key",
-    "VITE_FIREBASE_AUTH_DOMAIN": "@firebase-auth-domain",
-    "VITE_FIREBASE_STORAGE_BUCKET": "@firebase-storage-bucket",
-    "VITE_FIREBASE_MESSAGING_SENDER_ID": "@firebase-messaging-sender-id",
-    "VITE_FIREBASE_APP_ID": "@firebase-app-id"
-  },
   "headers": [
     {
       "source": "/(.*)",
@@ -59,9 +36,13 @@
       ]
     }
   ],
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
+  "env": {
+    "VITE_API_URL": "https://otaku-world.onrender.com/api",
+    "VITE_FIREBASE_PROJECT_ID": "otakuworld-c8f17",
+    "VITE_FIREBASE_API_KEY": "AIzaSyCe6B_ygxxi46FQARUUsu_pXMWjFN1mwTQ",
+    "VITE_FIREBASE_AUTH_DOMAIN": "otakuworld-c8f17.firebaseapp.com",
+    "VITE_FIREBASE_STORAGE_BUCKET": "otakuworld-c8f17.firebasestorage.app",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID": "327932734265",
+    "VITE_FIREBASE_APP_ID": "1:327932734265:web:a2ed657b4de6faf98cd6e8"
   }
 }
