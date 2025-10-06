@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import Loader from "./components/Loader";
+import BackendStatus from "./components/BackendStatus";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { WatchlistProvider } from "./context/WatchlistContext";
 import { ToastProvider } from "./components/ui/Toast";
@@ -41,42 +42,44 @@ function App() {
       <ToastProvider>
         <FavoritesProvider>
           <WatchlistProvider>
-            <div className="min-h-screen bg-bg-primary text-text-primary flex flex-col font-body">
-              <Navbar />
-              <main className="flex-1">
-                <Suspense fallback={<Loader />}>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/anime" element={<Anime />} />
-                    <Route path="/anime/:id" element={<AnimeDetails />} />
-                    <Route path="/characters" element={<Characters />} />
-                    <Route
-                      path="/characters/:id"
-                      element={<CharacterDetails />}
-                    />
-                    <Route path="/trending" element={<Trending />} />
-                    <Route
-                      path="/favorites"
-                      element={
-                        <PrivateRoute>
-                          <Favorites />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/watchlist"
-                      element={
-                        <PrivateRoute>
-                          <Watchlist />
-                        </PrivateRoute>
-                      }
-                    />
-                  </Routes>
-                </Suspense>
-              </main>
-              <Footer />
-            </div>
+            <BackendStatus>
+              <div className="min-h-screen bg-bg-primary text-text-primary flex flex-col font-body">
+                <Navbar />
+                <main className="flex-1">
+                  <Suspense fallback={<Loader />}>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/anime" element={<Anime />} />
+                      <Route path="/anime/:id" element={<AnimeDetails />} />
+                      <Route path="/characters" element={<Characters />} />
+                      <Route
+                        path="/characters/:id"
+                        element={<CharacterDetails />}
+                      />
+                      <Route path="/trending" element={<Trending />} />
+                      <Route
+                        path="/favorites"
+                        element={
+                          <PrivateRoute>
+                            <Favorites />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/watchlist"
+                        element={
+                          <PrivateRoute>
+                            <Watchlist />
+                          </PrivateRoute>
+                        }
+                      />
+                    </Routes>
+                  </Suspense>
+                </main>
+                <Footer />
+              </div>
+            </BackendStatus>
           </WatchlistProvider>
         </FavoritesProvider>
       </ToastProvider>

@@ -9,7 +9,7 @@ export const BASE_URL =
 // Create API instance with backend URL
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 30000, // 30 second timeout
+  timeout: 120000, // 120 second timeout for cold start
   headers: {
     "Content-Type": "application/json",
   },
@@ -68,11 +68,16 @@ api.interceptors.response.use(
       }
     } else if (
       error.code === "NETWORK_ERROR" ||
-      error.code === "ECONNABORTED"
+      error.code === "ECONNABORTED" ||
+      error.message?.includes("timeout")
     ) {
-      // Network error or timeout - retry once
+      // Network error or timeout - retry with longer timeout for cold start
       if (!originalRequest._networkRetry) {
         originalRequest._networkRetry = true;
+        originalRequest.timeout = 180000; // 3 minutes for cold start
+        console.warn(
+          "Backend might be sleeping, retrying with extended timeout..."
+        );
         return api(originalRequest);
       }
     }
@@ -164,7 +169,23 @@ export const apiService = {
   health: () =>
     api.get("/health", {
       baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
+      timeout: 180000, // 3 minutes for cold start
     }),
+
+  // Wake up the backend server (for Render free tier)
+  wakeUp: async () => {
+    try {
+      console.log("Waking up backend server...");
+      const response = await api.get("/", {
+        timeout: 180000, // 3 minutes
+      });
+      console.log("Backend server is awake!");
+      return response;
+    } catch (error) {
+      console.warn("Backend wake up failed:", error.message);
+      throw error;
+    }
+  },
 };
 
 export default api;
