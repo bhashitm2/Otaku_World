@@ -44,6 +44,9 @@
     "VITE_FIREBASE_AUTH_DOMAIN": "otakuworld-c8f17.firebaseapp.com",
     "VITE_FIREBASE_STORAGE_BUCKET": "otakuworld-c8f17.firebasestorage.app",
     "VITE_FIREBASE_MESSAGING_SENDER_ID": "327932734265",
-    "VITE_FIREBASE_APP_ID": "1:327932734265:web:a2ed657b4de6faf98cd6e8"
+    "VITE_FIREBASE_APP_ID": "1:327932734265:web:a2ed657b4de6faf98cd6e8",
+    "VITE_JIKAN_API_BASE_URL": "https://api.jikan.moe/v4",
+    "VITE_APP_NAME": "Otaku_World",
+    "VITE_APP_VERSION": "1.0.0"
   }
 }
