@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npx vite build",
     "build:analyze": "npm run build && node scripts/analyze-bundle.js",
     "lint": "eslint .",
     "preview": "vite preview"
