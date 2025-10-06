@@ -133,17 +133,37 @@ export const corsConfig = {
       "http://localhost:3000",
       "http://localhost:5173",
       "http://127.0.0.1:5173",
-      // Add production domains here
+      // Production domains
       process.env.FRONTEND_URL,
+      "https://otaku-world-c8lxsn6r7-bhashit-maheshwari-s-projects.vercel.app",
+      // Allow all Vercel deployment URLs for this project
+      /^https:\/\/otaku-world-.*\.vercel\.app$/,
+      // Allow main domain when you get one
+      /^https:\/\/.*otaku.*world.*\.vercel\.app$/i,
     ].filter(Boolean);
 
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    // Check string origins
+    const isAllowedString = allowedOrigins.some(
+      (allowedOrigin) =>
+        typeof allowedOrigin === "string" && allowedOrigin === origin
+    );
+
+    // Check regex origins
+    const isAllowedRegex = allowedOrigins.some(
+      (allowedOrigin) =>
+        allowedOrigin instanceof RegExp && allowedOrigin.test(origin)
+    );
+
+    if (isAllowedString || isAllowedRegex) {
       callback(null, true);
     } else {
-      logger.warn("CORS blocked request", { origin, allowedOrigins });
+      logger.warn("CORS blocked request", {
+        origin,
+        allowedOrigins: allowedOrigins.map((o) => o.toString()),
+      });
       callback(new Error("Not allowed by CORS"));
     }
   },
