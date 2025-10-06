@@ -61,6 +61,32 @@ app.use(globalLimiter);
 // Custom rate limiter for specific routes
 app.use(rateLimiter);
 
+// Root route - API welcome message
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "🎌 Welcome to Otaku World API",
+    version: "1.0.0",
+    status: "online",
+    endpoints: {
+      health: "/health",
+      documentation: "/api",
+      anime: "/api/anime",
+      characters: "/api/characters",
+      auth: "/api/auth",
+      favorites: "/api/favorites",
+      watchlist: "/api/watchlist",
+    },
+    developer: "Bhashit Maheshwari",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Favicon handler
+app.get("/favicon.ico", (req, res) => {
+  res.status(204).end();
+});
+
 // Enhanced health check endpoint
 app.get("/health", async (req, res) => {
   const startTime = Date.now();
