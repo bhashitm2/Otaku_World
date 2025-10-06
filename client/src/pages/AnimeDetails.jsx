@@ -8,6 +8,8 @@ import {
 } from "../services/anime";
 import { AnimeDetailsSkeleton } from "../components/Loader";
 import MangaCard from "../components/MangaCard";
+import FavoriteButton from "../components/FavoriteButton";
+import WatchlistButton from "../components/WatchlistButton";
 import {
   formatTextToParagraphs,
   estimateReadingTime,
@@ -169,12 +171,20 @@ const AnimeDetails = () => {
 
               {/* Action Buttons */}
               <div className="mt-6 space-y-3">
-                <button className="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-red-600 transition-all duration-200 transform hover:scale-105">
-                  ❤️ Add to Favorites
-                </button>
-                <button className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105">
-                  📚 Add to Watchlist
-                </button>
+                <div className="w-full">
+                  <FavoriteButton
+                    item={{ ...anime, mal_id: anime.id, type: "anime" }}
+                    className="w-full h-12 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+                    size="lg"
+                  />
+                </div>
+                <div className="w-full">
+                  <WatchlistButton
+                    item={{ ...anime, mal_id: anime.id, type: "anime" }}
+                    className="w-full h-12 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+                    size="lg"
+                  />
+                </div>
                 {anime.url && (
                   <a
                     href={anime.url}

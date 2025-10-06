@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { formatCharacterData } from "../services/anime";
+import FavoriteButton from "./FavoriteButton";
 
 const CharacterCard = ({ character, compact = false }) => {
   const formattedCharacter = formatCharacterData(character);
@@ -74,6 +75,18 @@ const CharacterCard = ({ character, compact = false }) => {
         {/* Type badge */}
         <div className="absolute top-2 left-2 bg-indigo-600 text-white px-2 py-1 rounded-md text-xs font-semibold uppercase">
           👤 Character
+        </div>
+
+        {/* Action buttons */}
+        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <FavoriteButton
+            item={{
+              ...formattedCharacter,
+              mal_id: formattedCharacter.id,
+              type: "character",
+            }}
+            size="sm"
+          />
         </div>
 
         {/* Overlay with quick actions */}

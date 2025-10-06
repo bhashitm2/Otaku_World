@@ -2,6 +2,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { formatMangaData } from "../services/anime";
+import FavoriteButton from "./FavoriteButton";
+import WatchlistButton from "./WatchlistButton";
 
 const MangaCard = ({ manga, compact = false }) => {
   const formattedManga = formatMangaData(manga);
@@ -73,6 +75,26 @@ const MangaCard = ({ manga, compact = false }) => {
         {/* Type badge */}
         <div className="absolute top-2 left-2 bg-purple-600 text-white px-2 py-1 rounded-md text-xs font-semibold uppercase">
           📚 {formattedManga.type || "Manga"}
+        </div>
+
+        {/* Action buttons */}
+        <div className="absolute bottom-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <FavoriteButton
+            item={{
+              ...formattedManga,
+              mal_id: formattedManga.id,
+              type: "manga",
+            }}
+            size="sm"
+          />
+          <WatchlistButton
+            item={{
+              ...formattedManga,
+              mal_id: formattedManga.id,
+              type: "manga",
+            }}
+            size="sm"
+          />
         </div>
 
         {/* Overlay with quick actions */}

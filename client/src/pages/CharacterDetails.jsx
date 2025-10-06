@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { getCharacterDetails } from "../services/anime";
 import AnimeCard from "../components/AnimeCard";
 import MangaCard from "../components/MangaCard";
+import FavoriteButton from "../components/FavoriteButton";
 import Loader, { CharacterDetailsSkeleton } from "../components/Loader";
 import {
   formatTextToParagraphs,
@@ -161,11 +162,23 @@ const CharacterDetails = () => {
                   )}
                 </div>
 
-                {character.favorites && (
-                  <div className="bg-red-100 text-red-800 px-4 py-2 rounded-lg font-semibold">
-                    ❤️ {character.favorites.toLocaleString()} favorites
-                  </div>
-                )}
+                <div className="flex items-center space-x-3">
+                  {character.favorites && (
+                    <div className="bg-red-100 text-red-800 px-4 py-2 rounded-lg font-semibold">
+                      ❤️ {character.favorites.toLocaleString()} favorites
+                    </div>
+                  )}
+                  <FavoriteButton
+                    item={{
+                      mal_id: character.mal_id,
+                      name: character.name,
+                      title: character.name,
+                      images: character.images,
+                      type: "character",
+                    }}
+                    size="lg"
+                  />
+                </div>
               </div>
 
               {/* Nicknames */}

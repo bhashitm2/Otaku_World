@@ -12,7 +12,12 @@ const Navbar = () => {
     { path: "/manga", label: "Manga" },
     { path: "/characters", label: "Characters" },
     { path: "/trending", label: "Trending" },
-    { path: "/favorites", label: "My Favorites" },
+    ...(user
+      ? [
+          { path: "/favorites", label: "My Favorites" },
+          { path: "/watchlist", label: "My Watchlist" },
+        ]
+      : []),
   ];
 
   const isActive = (path) => location.pathname === path;

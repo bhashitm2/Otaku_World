@@ -3,6 +3,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getMangaDetails, formatMangaData } from "../services/anime";
 import Loader, { MangaDetailsSkeleton } from "../components/Loader";
+import FavoriteButton from "../components/FavoriteButton";
+import WatchlistButton from "../components/WatchlistButton";
 import {
   formatTextToParagraphs,
   estimateReadingTime,
@@ -146,12 +148,20 @@ const MangaDetails = () => {
 
               {/* Action Buttons */}
               <div className="mt-6 space-y-3">
-                <button className="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-red-600 transition-all duration-200 transform hover:scale-105">
-                  ❤️ Add to Favorites
-                </button>
-                <button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105">
-                  📚 Add to Reading List
-                </button>
+                <div className="w-full">
+                  <FavoriteButton
+                    item={{ ...manga, mal_id: manga.id, type: "manga" }}
+                    className="w-full h-12 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+                    size="lg"
+                  />
+                </div>
+                <div className="w-full">
+                  <WatchlistButton
+                    item={{ ...manga, mal_id: manga.id, type: "manga" }}
+                    className="w-full h-12 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+                    size="lg"
+                  />
+                </div>
                 {manga.url && (
                   <a
                     href={manga.url}
