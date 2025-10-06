@@ -180,11 +180,25 @@ export const fetchMangaDetails = async (id) => {
   return fetchJikanData(`/manga/${id}/full`, { cacheDuration: 7200 });
 };
 
-export const fetchCharacterData = async (query = "", page = 1) => {
+export const fetchCharacterData = async (query = "", page = 1, options = {}) => {
   let endpoint = `/characters?page=${page}&limit=25`;
 
   if (query) {
     endpoint += `&q=${encodeURIComponent(query)}`;
+  }
+
+  // Sort by favorites (likes) by default for top characters
+  if (!query) {
+    endpoint += `&order_by=favorites&sort=desc`;
+  }
+
+  // Allow custom sorting options
+  if (options.order_by) {
+    endpoint += `&order_by=${options.order_by}`;
+  }
+
+  if (options.sort) {
+    endpoint += `&sort=${options.sort}`;
   }
 
   return fetchJikanData(endpoint, { cacheDuration: 3600 });

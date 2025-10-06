@@ -1,25 +1,25 @@
-// src/pages/Anime.jsx - Premium Anime Browse Page
+// src/pages/Manga.jsx - Premium Manga Browse Page
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion"; // Force HMR refresh
-import { getTopAnime, searchAnime } from "../services/anime";
+import { getTopManga, searchManga } from "../services/anime";
 import AnimatedGrid from "../components/AnimatedGrid";
 import SearchBar from "../components/SearchBar";
 import { usePrefersReducedMotion } from "../hooks/useAnimation";
 
-const Anime = () => {
+const Manga = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const prefersReduced = usePrefersReducedMotion();
 
-  // Query for top anime (when not searching)
+  // Query for top manga (when not searching)
   const { 
-    data: topAnimeData, 
-    isLoading: topAnimeLoading, 
-    error: topAnimeError 
+    data: topMangaData, 
+    isLoading: topMangaLoading, 
+    error: topMangaError 
   } = useQuery({
-    queryKey: ['top-anime', currentPage],
-    queryFn: () => getTopAnime(currentPage, 25),
+    queryKey: ['top-manga', currentPage],
+    queryFn: () => getTopManga(currentPage, 25),
     staleTime: 5 * 60 * 1000,
     enabled: !searchQuery,
   });
@@ -30,17 +30,17 @@ const Anime = () => {
     isLoading: searchLoading, 
     error: searchError 
   } = useQuery({
-    queryKey: ['search-anime', searchQuery, currentPage],
-    queryFn: () => searchAnime(searchQuery, currentPage, 25),
+    queryKey: ['search-manga', searchQuery, currentPage],
+    queryFn: () => searchManga(searchQuery, currentPage, 25),
     staleTime: 2 * 60 * 1000,
     enabled: !!searchQuery && searchQuery.trim().length > 0,
   });
 
   // Determine current data and loading state
-  const currentData = searchQuery ? searchData : topAnimeData;
-  const isLoading = searchQuery ? searchLoading : topAnimeLoading;
-  const error = searchQuery ? searchError : topAnimeError;
-  const animeList = currentData?.data || [];
+  const currentData = searchQuery ? searchData : topMangaData;
+  const isLoading = searchQuery ? searchLoading : topMangaLoading;
+  const error = searchQuery ? searchError : topMangaError;
+  const mangaList = currentData?.data || [];
   const hasMore = currentData?.pagination?.has_next_page || false;
 
   const handleSearch = (query) => {
@@ -53,7 +53,7 @@ const Anime = () => {
     setCurrentPage(1);
   };
 
-  const loadMoreAnime = () => {
+  const loadMoreManga = () => {
     if (hasMore && !isLoading) {
       setCurrentPage(prev => prev + 1);
     }
@@ -73,7 +73,7 @@ const Anime = () => {
     >
       {/* Premium Header Section */}
       <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial from-accent-cyan/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-radial from-accent-yellow/20 via-transparent to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 py-16">
           <motion.div 
             className="text-center mb-12"
@@ -81,11 +81,11 @@ const Anime = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: prefersReduced ? 0 : 0.8, delay: 0.2 }}
           >
-            <h1 className="font-display text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-accent-cyan via-accent-magenta to-accent-cyan bg-clip-text text-transparent">
-              Browse Anime
+            <h1 className="font-display text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-accent-yellow via-accent-orange to-accent-yellow bg-clip-text text-transparent">
+              Browse Manga
             </h1>
             <p className="text-xl text-text-secondary mb-8 max-w-2xl mx-auto">
-              Discover your next favorite anime from our vast collection
+              Explore the finest collection of manga from every genre
             </p>
 
             {/* Premium Search Bar */}
@@ -93,7 +93,7 @@ const Anime = () => {
               <SearchBar
                 onSearch={handleSearch}
                 onClear={handleClearSearch}
-                placeholder="Search anime titles, genres, or characters..."
+                placeholder="Search manga titles, authors, or genres..."
                 className="w-full"
               />
             </div>
@@ -106,14 +106,14 @@ const Anime = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: prefersReduced ? 0 : 0.6, delay: 0.4 }}
           >
-            <div className="inline-flex items-center px-4 py-2 bg-surface-secondary/80 backdrop-blur-sm rounded-full border border-accent-cyan/20">
+            <div className="inline-flex items-center px-4 py-2 bg-surface-secondary/80 backdrop-blur-sm rounded-full border border-accent-yellow/20">
               <span className="text-text-secondary">
                 {searchQuery ? (
                   <>
-                    Results for: <span className="text-accent-cyan font-semibold">"{searchQuery}"</span>
+                    Results for: <span className="text-accent-yellow font-semibold">"{searchQuery}"</span>
                   </>
                 ) : (
-                  "Top-rated anime collection"
+                  "Top-rated manga collection"
                 )}
               </span>
             </div>
@@ -135,12 +135,12 @@ const Anime = () => {
               <div className="text-6xl mb-4">⚠️</div>
               <h3 className="text-xl font-semibold mb-2">Something went wrong</h3>
               <p className="text-text-secondary">
-                {error?.message || "Failed to load anime. Please try again."}
+                {error?.message || "Failed to load manga. Please try again."}
               </p>
             </div>
             <button
               onClick={retryLoad}
-              className="bg-accent-cyan hover:bg-accent-cyan/80 text-bg-primary px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105"
+              className="bg-accent-yellow hover:bg-accent-yellow/80 text-bg-primary px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105"
             >
               Try Again
             </button>
@@ -149,13 +149,13 @@ const Anime = () => {
 
         {/* Premium Animated Grid */}
         <AnimatedGrid 
-          items={animeList}
+          items={mangaList}
           loading={isLoading && currentPage === 1}
           className="mb-12"
         />
 
         {/* Load More Section */}
-        {animeList.length > 0 && hasMore && (
+        {mangaList.length > 0 && hasMore && (
           <motion.div 
             className="text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -163,19 +163,19 @@ const Anime = () => {
             transition={{ duration: 0.6 }}
           >
             <button
-              onClick={loadMoreAnime}
+              onClick={loadMoreManga}
               disabled={isLoading}
-              className="group relative bg-gradient-to-r from-accent-cyan to-accent-magenta text-bg-primary px-12 py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-accent-cyan/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative bg-gradient-to-r from-accent-yellow to-accent-orange text-bg-primary px-12 py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-accent-yellow/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading && currentPage > 1 ? (
                 <span className="flex items-center">
                   <div className="w-5 h-5 border-2 border-bg-primary border-t-transparent rounded-full animate-spin mr-3"></div>
-                  Loading more...
+                  Loading more manga...
                 </span>
               ) : (
                 <>
-                  <span className="relative z-10">Load More Anime</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-accent-magenta to-accent-cyan rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className="relative z-10">Load More Manga</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-accent-orange to-accent-yellow rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </>
               )}
             </button>
@@ -183,7 +183,7 @@ const Anime = () => {
         )}
 
         {/* Results Count */}
-        {animeList.length > 0 && (
+        {mangaList.length > 0 && (
           <motion.div 
             className="text-center mt-8"
             initial={{ opacity: 0 }}
@@ -191,7 +191,7 @@ const Anime = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="text-text-secondary">
-              Showing <span className="text-accent-cyan font-semibold">{animeList.length}</span> anime
+              Showing <span className="text-accent-yellow font-semibold">{mangaList.length}</span> manga
             </p>
           </motion.div>
         )}
@@ -200,4 +200,4 @@ const Anime = () => {
   );
 };
 
-export default Anime;
+export default Manga;

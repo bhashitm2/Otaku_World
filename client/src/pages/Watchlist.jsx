@@ -1,18 +1,17 @@
-// src/pages/Watchlist.jsx
+// src/pages/Watchlist.jsx - Premium Watchlist Page
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { useWatchlist } from "../hooks/useWatchlist";
 import { useAuth } from "../hooks/useAuth";
-import { WATCH_STATUS_OPTIONS } from "../services/firestoreService";
 import AnimeCard from "../components/AnimeCard";
-import MangaCard from "../components/MangaCard";
 import Loader from "../components/Loader";
+import { usePrefersReducedMotion } from "../hooks/useAnimation";
 
 const Watchlist = () => {
   const { user } = useAuth();
+  const prefersReduced = usePrefersReducedMotion();
   const {
     watchlist,
-    animeWatchlist,
-    mangaWatchlist,
     watching,
     completed,
     planToWatch,
@@ -24,7 +23,6 @@ const Watchlist = () => {
   } = useWatchlist();
 
   const [activeTab, setActiveTab] = useState("all");
-  const [activeType, setActiveType] = useState("all"); // 'all', 'anime', 'manga'
 
   if (!user) {
     return (
@@ -49,7 +47,7 @@ const Watchlist = () => {
             Sign in to view your watchlist
           </h2>
           <p className="text-gray-600">
-            You need to be logged in to access your anime and manga watchlist.
+            You need to be logged in to access your anime watchlist.
           </p>
         </div>
       </div>
@@ -97,46 +95,6 @@ const Watchlist = () => {
     );
   }
 
-  const statusTabs = [
-    { id: "all", label: "All", count: totalWatchlist },
-    {
-      id: "watching",
-      label: "Watching",
-      count: watching.length,
-      color: "bg-green-500",
-    },
-    {
-      id: "completed",
-      label: "Completed",
-      count: completed.length,
-      color: "bg-blue-500",
-    },
-    {
-      id: "plan_to_watch",
-      label: "Plan to Watch",
-      count: planToWatch.length,
-      color: "bg-purple-500",
-    },
-    {
-      id: "on_hold",
-      label: "On Hold",
-      count: onHold.length,
-      color: "bg-yellow-500",
-    },
-    {
-      id: "dropped",
-      label: "Dropped",
-      count: dropped.length,
-      color: "bg-red-500",
-    },
-  ];
-
-  const typeTabs = [
-    { id: "all", label: "All", count: totalWatchlist },
-    { id: "anime", label: "Anime", count: animeWatchlist.length },
-    { id: "manga", label: "Manga", count: mangaWatchlist.length },
-  ];
-
   const getDisplayData = () => {
     let data = watchlist;
 
@@ -145,136 +103,136 @@ const Watchlist = () => {
       data = data.filter((item) => item.watchStatus === activeTab);
     }
 
-    // Filter by type
-    if (activeType !== "all") {
-      data = data.filter((item) => item.type === activeType);
-    }
-
     return data;
   };
 
   const displayData = getDisplayData();
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            My Watchlist
-          </h1>
-          <p className="text-gray-600">Track your anime and manga progress</p>
-        </div>
+    <motion.div 
+      className="min-h-screen bg-bg-primary text-text-primary"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: prefersReduced ? 0 : 0.6 }}
+    >
+      {/* Premium Header Section */}
+      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-radial from-accent-purple/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,rgba(59,130,246,0.1),transparent_50%)]" />
+        
+        <motion.div 
+          className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
+          initial={{ y: prefersReduced ? 0 : 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: prefersReduced ? 0 : 0.8, delay: prefersReduced ? 0 : 0.2 }}
+        >
+          {/* Premium Header */}
+          <div className="text-center mb-12">
+            <motion.div
+              className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-accent-purple to-accent-cyan rounded-2xl mb-6 shadow-lg"
+              whileHover={{ scale: prefersReduced ? 1 : 1.05, rotate: prefersReduced ? 0 : 5 }}
+              transition={{ duration: 0.2 }}
+            >
+              <span className="text-3xl">📺</span>
+            </motion.div>
+            
+            <h1 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple via-accent-cyan to-accent-purple mb-6">
+              My Watchlist
+            </h1>
+            
+            <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
+              Track your anime viewing progress and manage your queue
+            </p>
+          </div>
+        </motion.div>
+      </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Premium Stats */}
+        <motion.div 
+          className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReduced ? 0 : 0.6, delay: prefersReduced ? 0 : 0.4 }}
+        >
+          <motion.button 
+            onClick={() => setActiveTab("all")}
+            className={`bg-gradient-to-br from-surface-dark/30 to-surface-dark/10 backdrop-blur-sm p-4 rounded-xl text-center border transition-all duration-300 hover:scale-105 ${
+              activeTab === "all" ? "border-accent-purple/50 bg-accent-purple/10" : "border-border/30 hover:border-accent-purple/50"
+            }`}
+            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
+          >
+            <div className="text-2xl font-black text-text-primary mb-1">
               {totalWatchlist}
             </div>
-            <div className="text-gray-600 text-sm">Total</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-text-secondary text-sm font-medium">Total</div>
+          </motion.button>
+          
+          <motion.button 
+            onClick={() => setActiveTab("watching")}
+            className={`bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm p-4 rounded-xl text-center border transition-all duration-300 hover:scale-105 ${
+              activeTab === "watching" ? "border-green-500/50 bg-green-500/10" : "border-green-500/30 hover:border-green-500/50"
+            }`}
+            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
+          >
+            <div className="text-2xl font-black text-green-400 mb-1">
               {watching.length}
             </div>
-            <div className="text-gray-600 text-sm">Watching</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-text-secondary text-sm font-medium">Watching</div>
+          </motion.button>
+          
+          <motion.button 
+            onClick={() => setActiveTab("completed")}
+            className={`bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-sm p-4 rounded-xl text-center border transition-all duration-300 hover:scale-105 ${
+              activeTab === "completed" ? "border-blue-500/50 bg-blue-500/10" : "border-blue-500/30 hover:border-blue-500/50"
+            }`}
+            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
+          >
+            <div className="text-2xl font-black text-blue-400 mb-1">
               {completed.length}
             </div>
-            <div className="text-gray-600 text-sm">Completed</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-text-secondary text-sm font-medium">Completed</div>
+          </motion.button>
+          
+          <motion.button 
+            onClick={() => setActiveTab("plan_to_watch")}
+            className={`bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 backdrop-blur-sm p-4 rounded-xl text-center border transition-all duration-300 hover:scale-105 ${
+              activeTab === "plan_to_watch" ? "border-accent-purple/50 bg-accent-purple/10" : "border-accent-purple/30 hover:border-accent-purple/50"
+            }`}
+            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
+          >
+            <div className="text-2xl font-black text-accent-purple mb-1">
               {planToWatch.length}
             </div>
-            <div className="text-gray-600 text-sm">Plan to Watch</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-text-secondary text-sm font-medium">Plan to Watch</div>
+          </motion.button>
+          
+          <motion.button 
+            onClick={() => setActiveTab("on_hold")}
+            className={`bg-gradient-to-br from-yellow-500/20 to-orange-500/20 backdrop-blur-sm p-4 rounded-xl text-center border transition-all duration-300 hover:scale-105 ${
+              activeTab === "on_hold" ? "border-yellow-500/50 bg-yellow-500/10" : "border-yellow-500/30 hover:border-yellow-500/50"
+            }`}
+            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
+          >
+            <div className="text-2xl font-black text-yellow-400 mb-1">
               {onHold.length}
             </div>
-            <div className="text-gray-600 text-sm">On Hold</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-text-secondary text-sm font-medium">On Hold</div>
+          </motion.button>
+          
+          <motion.button 
+            onClick={() => setActiveTab("dropped")}
+            className={`bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-sm p-4 rounded-xl text-center border transition-all duration-300 hover:scale-105 ${
+              activeTab === "dropped" ? "border-red-500/50 bg-red-500/10" : "border-red-500/30 hover:border-red-500/50"
+            }`}
+            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
+          >
+            <div className="text-2xl font-black text-red-400 mb-1">
               {dropped.length}
             </div>
-            <div className="text-gray-600 text-sm">Dropped</div>
-          </div>
-        </div>
-
-        {/* Type Filter */}
-        <div className="flex justify-center mb-4">
-          <div className="bg-white rounded-lg shadow-md p-1 flex">
-            {typeTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveType(tab.id)}
-                className={`
-                  px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2
-                  ${
-                    activeType === tab.id
-                      ? "bg-gray-900 text-white shadow-md"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                  }
-                `}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`
-                  px-2 py-1 text-xs rounded-full
-                  ${
-                    activeType === tab.id
-                      ? "bg-white/20 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }
-                `}
-                >
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Status Tabs */}
-        <div className="flex flex-wrap justify-center mb-8">
-          <div className="bg-white rounded-lg shadow-md p-1 flex flex-wrap gap-1">
-            {statusTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`
-                  px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2
-                  ${
-                    activeTab === tab.id
-                      ? tab.color
-                        ? `${tab.color} text-white shadow-md`
-                        : "bg-blue-600 text-white shadow-md"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                  }
-                `}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`
-                  px-2 py-1 text-xs rounded-full
-                  ${
-                    activeTab === tab.id
-                      ? "bg-white/20 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }
-                `}
-                >
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+            <div className="text-text-secondary text-sm font-medium">Dropped</div>
+          </motion.button>
+        </motion.div>
 
         {/* Content */}
         {displayData.length === 0 ? (
@@ -298,20 +256,26 @@ const Watchlist = () => {
               No items in your watchlist yet
             </h3>
             <p className="text-gray-600">
-              Start exploring and add some anime or manga to your watchlist!
+              Start exploring and add some anime to your watchlist!
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {displayData.map((item) => {
               // Convert stored item back to component format
+              // Handle empty or invalid image URLs
+              const imageUrl = item.image && item.image.trim() !== '' 
+                ? item.image 
+                : "/placeholder-anime.jpg";
+              
               const componentItem = {
                 mal_id: item.itemId,
                 title: item.title,
                 images: {
                   jpg: {
-                    image_url: item.image,
-                    large_image_url: item.image,
+                    image_url: imageUrl,
+                    large_image_url: imageUrl,
+                    small_image_url: imageUrl,
                   },
                 },
                 score: item.score,
@@ -323,53 +287,24 @@ const Watchlist = () => {
                 type: item.type,
               };
 
+              // Debug: Log problematic images
+              if (!item.image || item.image.trim() === '') {
+                console.log(`Using placeholder for ${item.title} - original image:`, item.image);
+              }
+
               // Create custom card with watchlist info
-              const CardComponent =
-                item.type === "anime" ? AnimeCard : MangaCard;
+              const CardComponent = AnimeCard;
 
               return (
                 <div key={`${item.type}-${item.itemId}`} className="relative">
-                  <CardComponent {...{ [item.type]: componentItem }} />
-
-                  {/* Watchlist Status Overlay */}
-                  <div className="absolute top-2 left-2 z-10">
-                    <span
-                      className={`
-                      px-2 py-1 rounded-md text-xs font-semibold text-white
-                      ${
-                        WATCH_STATUS_OPTIONS.find(
-                          (opt) => opt.value === item.watchStatus
-                        )?.color || "bg-gray-500"
-                      }
-                    `}
-                    >
-                      {WATCH_STATUS_OPTIONS.find(
-                        (opt) => opt.value === item.watchStatus
-                      )?.label || item.watchStatus}
-                    </span>
-                  </div>
-
-                  {/* Progress Info */}
-                  {(item.progress > 0 || item.userScore) && (
-                    <div className="absolute bottom-16 left-2 right-2 bg-black bg-opacity-75 text-white p-2 rounded-md text-xs">
-                      {item.progress > 0 && (
-                        <div>
-                          Progress: {item.progress}/
-                          {item.episodes || item.chapters || "?"}
-                        </div>
-                      )}
-                      {item.userScore && (
-                        <div>Your Score: {item.userScore}/10</div>
-                      )}
-                    </div>
-                  )}
+                  <CardComponent anime={componentItem} />
                 </div>
               );
             })}
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

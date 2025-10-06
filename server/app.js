@@ -10,7 +10,7 @@ import { rateLimiter } from "./middleware/rateLimiter.js";
 
 // Import routes
 import animeRoutes from "./routes/animeRoutes.js";
-import mangaRoutes from "./routes/mangaRoutes.js";
+// mangaRoutes removed - manga functionality disabled
 import characterRoutes from "./routes/characterRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import favoritesRoutes from "./routes/favoritesRoutes.js";
@@ -93,7 +93,7 @@ app.get("/health", (req, res) => {
 
 // API routes
 app.use("/api/anime", animeRoutes);
-app.use("/api/manga", mangaRoutes);
+// app.use("/api/manga", mangaRoutes); // manga functionality disabled
 app.use("/api/characters", characterRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/favorites", favoritesRoutes);
@@ -107,7 +107,6 @@ app.get("/api", (req, res) => {
     message: "Otaku World API v1.0",
     documentation: {
       anime: "/api/anime",
-      manga: "/api/manga",
       characters: "/api/characters",
       users: "/api/users",
       favorites: "/api/favorites",

@@ -1,7 +1,6 @@
 // src/pages/Anime.jsx - Premium Anime Browse Page
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion"; // Force HMR refresh
 import { getTopAnime, searchAnime } from "../services/anime";
 import AnimatedGrid from "../components/AnimatedGrid";
 import SearchBar from "../components/SearchBar";

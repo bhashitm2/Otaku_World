@@ -1,18 +1,21 @@
-// src/pages/Favorites.jsx
+// src/pages/Favorites.jsx - Premium Favorites Page
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { useFavorites } from "../hooks/useFavorites";
 import { useAuth } from "../hooks/useAuth";
 import AnimeCard from "../components/AnimeCard";
-import MangaCard from "../components/MangaCard";
+// MangaCard removed - manga functionality disabled
 import CharacterCard from "../components/CharacterCard";
+import AnimatedGrid from "../components/AnimatedGrid";
 import Loader from "../components/Loader";
+import { usePrefersReducedMotion } from "../hooks/useAnimation";
 
 const Favorites = () => {
   const { user } = useAuth();
+  const prefersReduced = usePrefersReducedMotion();
   const {
     favorites,
     favoriteAnime,
-    favoriteManga,
     favoriteCharacters,
     totalFavorites,
     loading,
@@ -44,7 +47,7 @@ const Favorites = () => {
             Sign in to view your favorites
           </h2>
           <p className="text-gray-600">
-            You need to be logged in to access your favorite anime, manga, and
+            You need to be logged in to access your favorite anime and
             characters.
           </p>
         </div>
@@ -96,7 +99,6 @@ const Favorites = () => {
   const tabs = [
     { id: "all", label: "All", count: totalFavorites },
     { id: "anime", label: "Anime", count: favoriteAnime.length },
-    { id: "manga", label: "Manga", count: favoriteManga.length },
     { id: "characters", label: "Characters", count: favoriteCharacters.length },
   ];
 
@@ -104,8 +106,6 @@ const Favorites = () => {
     switch (activeTab) {
       case "anime":
         return favoriteAnime;
-      case "manga":
-        return favoriteManga;
       case "characters":
         return favoriteCharacters;
       default:
@@ -116,45 +116,85 @@ const Favorites = () => {
   const displayData = getDisplayData();
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            My Favorites
-          </h1>
-          <p className="text-gray-600">
-            Your collection of favorite anime, manga, and characters
-          </p>
-        </div>
+    <motion.div 
+      className="min-h-screen bg-bg-primary text-text-primary"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: prefersReduced ? 0 : 0.6 }}
+    >
+      {/* Premium Header Section */}
+      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-radial from-red-500/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(236,72,153,0.1),transparent_50%)]" />
+        
+        <motion.div 
+          className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
+          initial={{ y: prefersReduced ? 0 : 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: prefersReduced ? 0 : 0.8, delay: prefersReduced ? 0 : 0.2 }}
+        >
+          {/* Premium Header */}
+          <div className="text-center mb-12">
+            <motion.div
+              className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-pink-500 rounded-2xl mb-6 shadow-lg"
+              whileHover={{ scale: prefersReduced ? 1 : 1.05, rotate: prefersReduced ? 0 : 5 }}
+              transition={{ duration: 0.2 }}
+            >
+              <span className="text-3xl">❤️</span>
+            </motion.div>
+            
+            <h1 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-500 to-red-600 mb-6">
+              My Favorites
+            </h1>
+            
+            <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
+              Your curated collection of favorite anime and characters
+            </p>
+          </div>
+        </motion.div>
+      </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-3xl font-bold text-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Premium Stats */}
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReduced ? 0 : 0.6, delay: prefersReduced ? 0 : 0.4 }}
+        >
+          <motion.div 
+            className="bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-sm p-8 rounded-2xl text-center border border-red-500/30 hover:border-red-500/50 transition-all duration-300 shadow-lg"
+            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -5 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="text-4xl font-black text-red-400 mb-2">
               {totalFavorites}
             </div>
-            <div className="text-gray-600">Total Favorites</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-text-secondary font-semibold">Total Favorites</div>
+          </motion.div>
+          
+          <motion.div 
+            className="bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 backdrop-blur-sm p-8 rounded-2xl text-center border border-accent-purple/30 hover:border-accent-purple/50 transition-all duration-300 shadow-lg"
+            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -5 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="text-4xl font-black text-accent-purple mb-2">
               {favoriteAnime.length}
             </div>
-            <div className="text-gray-600">Anime</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-3xl font-bold text-purple-600">
-              {favoriteManga.length}
-            </div>
-            <div className="text-gray-600">Manga</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-3xl font-bold text-indigo-600">
+            <div className="text-text-secondary font-semibold">Anime</div>
+          </motion.div>
+          
+          <motion.div 
+            className="bg-gradient-to-br from-accent-cyan/20 to-accent-purple/20 backdrop-blur-sm p-8 rounded-2xl text-center border border-accent-cyan/30 hover:border-accent-cyan/50 transition-all duration-300 shadow-lg"
+            whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -5 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="text-4xl font-black text-accent-cyan mb-2">
               {favoriteCharacters.length}
             </div>
-            <div className="text-gray-600">Characters</div>
-          </div>
-        </div>
+            <div className="text-text-secondary font-semibold">Characters</div>
+          </motion.div>
+        </motion.div>
 
         {/* Tabs */}
         <div className="flex flex-wrap justify-center mb-8">
@@ -247,13 +287,6 @@ const Favorites = () => {
                       anime={componentItem}
                     />
                   );
-                case "manga":
-                  return (
-                    <MangaCard
-                      key={`${item.type}-${item.itemId}`}
-                      manga={componentItem}
-                    />
-                  );
                 case "character":
                   return (
                     <CharacterCard
@@ -268,7 +301,7 @@ const Favorites = () => {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

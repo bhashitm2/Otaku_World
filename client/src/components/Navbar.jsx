@@ -9,7 +9,6 @@ const Navbar = () => {
   const navLinks = [
     { path: "/", label: "Home" },
     { path: "/anime", label: "Anime" },
-    { path: "/manga", label: "Manga" },
     { path: "/characters", label: "Characters" },
     { path: "/trending", label: "Trending" },
     ...(user

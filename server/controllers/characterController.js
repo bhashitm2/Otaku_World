@@ -7,9 +7,13 @@ import {
 // Get characters list with search
 export const getCharacters = async (req, res) => {
   try {
-    const { q = "", page = 1, limit = 25 } = req.query;
+    const { q = "", page = 1, limit = 25, order_by, sort } = req.query;
 
-    const data = await fetchCharacterData(q, parseInt(page));
+    const options = {};
+    if (order_by) options.order_by = order_by;
+    if (sort) options.sort = sort;
+
+    const data = await fetchCharacterData(q, parseInt(page), options);
 
     res.json({
       success: true,
@@ -76,9 +80,10 @@ export const searchCharacters = getCharacters;
 // Get top characters
 export const getTopCharacters = async (req, res) => {
   try {
-    const { page = 1, limit = 25 } = req.query;
+    const { page = 1, limit = 25, order_by = "favorites", sort = "desc" } = req.query;
 
-    const data = await fetchCharacterData("", parseInt(page));
+    const options = { order_by, sort };
+    const data = await fetchCharacterData("", parseInt(page), options);
 
     res.json({
       success: true,

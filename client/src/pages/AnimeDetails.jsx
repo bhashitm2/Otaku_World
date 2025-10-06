@@ -4,10 +4,8 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   getAnimeDetails,
   formatAnimeData,
-  getRelatedManga,
 } from "../services/anime";
 import { AnimeDetailsSkeleton } from "../components/Loader";
-import MangaCard from "../components/MangaCard";
 import FavoriteButton from "../components/FavoriteButton";
 import WatchlistButton from "../components/WatchlistButton";
 import {
@@ -19,9 +17,7 @@ const AnimeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [anime, setAnime] = useState(null);
-  const [relatedManga, setRelatedManga] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingManga, setLoadingManga] = useState(false);
   const [error, setError] = useState(null);
 
   const loadAnimeDetails = useCallback(async (animeId) => {
@@ -32,9 +28,6 @@ const AnimeDetails = () => {
       const response = await getAnimeDetails(animeId);
       const formattedAnime = formatAnimeData(response.data);
       setAnime(formattedAnime);
-
-      // Load related manga in background
-      loadRelatedManga(animeId);
     } catch (err) {
       console.error("Error fetching anime details:", err);
       setError("Failed to load anime details. Please try again.");
@@ -48,19 +41,6 @@ const AnimeDetails = () => {
       loadAnimeDetails(id);
     }
   }, [id, loadAnimeDetails]);
-
-  const loadRelatedManga = async (animeId) => {
-    try {
-      setLoadingManga(true);
-      const mangaList = await getRelatedManga(animeId);
-      setRelatedManga(mangaList);
-    } catch (err) {
-      console.error("Error fetching related manga:", err);
-      // Don't show error for manga - it's optional content
-    } finally {
-      setLoadingManga(false);
-    }
-  };
 
   const retryLoad = () => {
     if (id) {
@@ -192,7 +172,7 @@ const AnimeDetails = () => {
                     rel="noopener noreferrer"
                     className="block w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-semibold text-center hover:from-green-600 hover:to-teal-600 transition-all duration-200 transform hover:scale-105"
                   >
-                    🔗 View on MyAnimeList
+                    🔗 View Full Details
                   </a>
                 )}
               </div>
@@ -456,59 +436,6 @@ const AnimeDetails = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Related Manga Section */}
-            {relatedManga && relatedManga.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                  📚 Related Manga
-                </h3>
-                <div className="bg-gray-800 bg-opacity-30 rounded-lg p-6 border border-gray-700">
-                  <div className="mb-4">
-                    <p className="text-gray-300 text-sm">
-                      Explore the manga that inspired this anime or continue the
-                      story beyond the anime.
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    {relatedManga.map((manga) => (
-                      <div key={manga.data.mal_id}>
-                        <MangaCard manga={manga.data} compact={true} />
-                      </div>
-                    ))}
-                  </div>
-                  {relatedManga.length > 0 && (
-                    <div className="mt-4 text-center">
-                      <div className="inline-flex items-center gap-2 text-sm text-gray-400">
-                        <span>💡</span>
-                        <span>
-                          Tip: Many anime are adapted from manga. Reading the
-                          manga often provides more detail and continues the
-                          story!
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Loading state for manga */}
-            {loadingManga && (
-              <div className="mb-8">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                  📚 Related Manga
-                </h3>
-                <div className="bg-gray-800 bg-opacity-30 rounded-lg p-6 border border-gray-700">
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
-                    <span className="ml-3 text-gray-400">
-                      Loading related manga...
-                    </span>
                   </div>
                 </div>
               </div>

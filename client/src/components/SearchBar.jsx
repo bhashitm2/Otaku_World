@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 const SearchBar = ({
   onSearch,
-  onClear,
+  onClear = () => {},
   placeholder = "Search anime...",
   className = "",
 }) => {
@@ -24,13 +24,8 @@ const SearchBar = ({
         onSearch(query.trim());
         setIsSearching(false);
       }, 500); // 500ms debounce
-    } else if (query.trim().length === 0) {
-      // Clear search results when query is empty
-      debounceTimer.current = setTimeout(() => {
-        onClear();
-        setIsSearching(false);
-      }, 300);
     }
+    // Removed automatic onClear call when query is empty to prevent infinite loops
 
     // Cleanup timer on unmount
     return () => {
@@ -38,7 +33,7 @@ const SearchBar = ({
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [query, onSearch, onClear]);
+  }, [query, onSearch]); // Removed onClear from dependencies
 
   const handleInputChange = (e) => {
     setQuery(e.target.value);

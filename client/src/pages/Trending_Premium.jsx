@@ -1,57 +1,28 @@
-// src/pages/Anime.jsx - Premium Anime Browse Page
+// src/pages/Trending.jsx - Premium Trending Page
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion"; // Force HMR refresh
-import { getTopAnime, searchAnime } from "../services/anime";
+import { getTrendingAnime } from "../services/anime";
 import AnimatedGrid from "../components/AnimatedGrid";
-import SearchBar from "../components/SearchBar";
 import { usePrefersReducedMotion } from "../hooks/useAnimation";
 
-const Anime = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+const Trending = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const prefersReduced = usePrefersReducedMotion();
 
-  // Query for top anime (when not searching)
+  // Premium query for trending anime
   const { 
-    data: topAnimeData, 
-    isLoading: topAnimeLoading, 
-    error: topAnimeError 
+    data: trendingData, 
+    isLoading, 
+    error 
   } = useQuery({
-    queryKey: ['top-anime', currentPage],
-    queryFn: () => getTopAnime(currentPage, 25),
-    staleTime: 5 * 60 * 1000,
-    enabled: !searchQuery,
+    queryKey: ['trending-anime', currentPage],
+    queryFn: () => getTrendingAnime(currentPage, 25),
+    staleTime: 2 * 60 * 1000, // 2 minutes for trending data
   });
 
-  // Query for search results
-  const { 
-    data: searchData, 
-    isLoading: searchLoading, 
-    error: searchError 
-  } = useQuery({
-    queryKey: ['search-anime', searchQuery, currentPage],
-    queryFn: () => searchAnime(searchQuery, currentPage, 25),
-    staleTime: 2 * 60 * 1000,
-    enabled: !!searchQuery && searchQuery.trim().length > 0,
-  });
-
-  // Determine current data and loading state
-  const currentData = searchQuery ? searchData : topAnimeData;
-  const isLoading = searchQuery ? searchLoading : topAnimeLoading;
-  const error = searchQuery ? searchError : topAnimeError;
-  const animeList = currentData?.data || [];
-  const hasMore = currentData?.pagination?.has_next_page || false;
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery("");
-    setCurrentPage(1);
-  };
+  const animeList = trendingData?.data || [];
+  const hasMore = trendingData?.pagination?.has_next_page || false;
 
   const loadMoreAnime = () => {
     if (hasMore && !isLoading) {
@@ -73,7 +44,7 @@ const Anime = () => {
     >
       {/* Premium Header Section */}
       <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial from-accent-cyan/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-radial from-accent-magenta/20 via-transparent to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 py-16">
           <motion.div 
             className="text-center mb-12"
@@ -81,41 +52,40 @@ const Anime = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: prefersReduced ? 0 : 0.8, delay: 0.2 }}
           >
-            <h1 className="font-display text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-accent-cyan via-accent-magenta to-accent-cyan bg-clip-text text-transparent">
-              Browse Anime
+            <h1 className="font-display text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-accent-magenta via-accent-cyan to-accent-magenta bg-clip-text text-transparent">
+              Trending Now
             </h1>
             <p className="text-xl text-text-secondary mb-8 max-w-2xl mx-auto">
-              Discover your next favorite anime from our vast collection
+              The hottest anime everyone's talking about right now
             </p>
 
-            {/* Premium Search Bar */}
-            <div className="max-w-2xl mx-auto">
-              <SearchBar
-                onSearch={handleSearch}
-                onClear={handleClearSearch}
-                placeholder="Search anime titles, genres, or characters..."
-                className="w-full"
-              />
+            {/* Trending Stats */}
+            <div className="flex justify-center items-center space-x-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-accent-magenta mb-1">🔥</div>
+                <div className="text-sm text-text-secondary">Hot Releases</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-accent-cyan mb-1">📈</div>
+                <div className="text-sm text-text-secondary">Rising Fast</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-accent-yellow mb-1">⭐</div>
+                <div className="text-sm text-text-secondary">Most Popular</div>
+              </div>
             </div>
           </motion.div>
 
-          {/* Current View Indicator */}
+          {/* Live Indicator */}
           <motion.div 
             className="text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: prefersReduced ? 0 : 0.6, delay: 0.4 }}
           >
-            <div className="inline-flex items-center px-4 py-2 bg-surface-secondary/80 backdrop-blur-sm rounded-full border border-accent-cyan/20">
-              <span className="text-text-secondary">
-                {searchQuery ? (
-                  <>
-                    Results for: <span className="text-accent-cyan font-semibold">"{searchQuery}"</span>
-                  </>
-                ) : (
-                  "Top-rated anime collection"
-                )}
-              </span>
+            <div className="inline-flex items-center px-4 py-2 bg-surface-secondary/80 backdrop-blur-sm rounded-full border border-accent-magenta/20">
+              <div className="w-2 h-2 bg-accent-magenta rounded-full animate-pulse mr-2"></div>
+              <span className="text-text-secondary">Live trending data</span>
             </div>
           </motion.div>
         </div>
@@ -133,16 +103,16 @@ const Anime = () => {
           >
             <div className="text-red-400 mb-6">
               <div className="text-6xl mb-4">⚠️</div>
-              <h3 className="text-xl font-semibold mb-2">Something went wrong</h3>
+              <h3 className="text-xl font-semibold mb-2">Failed to load trending anime</h3>
               <p className="text-text-secondary">
-                {error?.message || "Failed to load anime. Please try again."}
+                {error?.message || "Please check your connection and try again."}
               </p>
             </div>
             <button
               onClick={retryLoad}
-              className="bg-accent-cyan hover:bg-accent-cyan/80 text-bg-primary px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105"
+              className="bg-accent-magenta hover:bg-accent-magenta/80 text-bg-primary px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105"
             >
-              Try Again
+              Retry
             </button>
           </motion.div>
         )}
@@ -165,17 +135,17 @@ const Anime = () => {
             <button
               onClick={loadMoreAnime}
               disabled={isLoading}
-              className="group relative bg-gradient-to-r from-accent-cyan to-accent-magenta text-bg-primary px-12 py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-accent-cyan/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative bg-gradient-to-r from-accent-magenta to-accent-cyan text-bg-primary px-12 py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-accent-magenta/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading && currentPage > 1 ? (
                 <span className="flex items-center">
                   <div className="w-5 h-5 border-2 border-bg-primary border-t-transparent rounded-full animate-spin mr-3"></div>
-                  Loading more...
+                  Loading more trending...
                 </span>
               ) : (
                 <>
-                  <span className="relative z-10">Load More Anime</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-accent-magenta to-accent-cyan rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className="relative z-10">Load More Trending</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-accent-cyan to-accent-magenta rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </>
               )}
             </button>
@@ -191,7 +161,7 @@ const Anime = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="text-text-secondary">
-              Showing <span className="text-accent-cyan font-semibold">{animeList.length}</span> anime
+              Showing <span className="text-accent-magenta font-semibold">{animeList.length}</span> trending anime
             </p>
           </motion.div>
         )}
@@ -200,4 +170,4 @@ const Anime = () => {
   );
 };
 
-export default Anime;
+export default Trending;

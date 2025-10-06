@@ -15,7 +15,7 @@ const CharacterCard = ({ character, compact = false }) => {
       >
         <div className="flex">
           <img
-            src={formattedCharacter.image}
+            src={formattedCharacter.image || "/placeholder-anime.jpg"}
             alt={formattedCharacter.name}
             className="w-16 h-20 object-cover"
             loading="lazy"
@@ -56,7 +56,7 @@ const CharacterCard = ({ character, compact = false }) => {
     >
       <div className="relative">
         <img
-          src={formattedCharacter.image}
+          src={formattedCharacter.image || "/placeholder-anime.jpg"}
           alt={formattedCharacter.name}
           className="w-full h-64 object-cover group-hover:brightness-75 transition-all duration-300"
           loading="lazy"

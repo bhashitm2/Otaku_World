@@ -8,6 +8,11 @@ import WatchlistButton from "./WatchlistButton";
 const AnimeCard = ({ anime }) => {
   const formattedAnime = formatAnimeData(anime);
 
+  // Don't render if anime data is invalid
+  if (!formattedAnime.id) {
+    return null;
+  }
+
   return (
     <Link
       to={`/anime/${formattedAnime.id}`}
@@ -15,7 +20,7 @@ const AnimeCard = ({ anime }) => {
     >
       <div className="relative">
         <img
-          src={formattedAnime.image}
+          src={formattedAnime.image || "/placeholder-anime.jpg"}
           alt={formattedAnime.title}
           className="w-full h-64 object-cover group-hover:brightness-75 transition-all duration-300"
           loading="lazy"

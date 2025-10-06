@@ -1,11 +1,14 @@
-// src/pages/CharacterDetails.jsx
+// src/pages/CharacterDetails.jsx - Premium Character Details Page
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { getCharacterDetails } from "../services/anime";
 import AnimeCard from "../components/AnimeCard";
-import MangaCard from "../components/MangaCard";
+// MangaCard removed - manga functionality disabled
+import AnimatedGrid from "../components/AnimatedGrid";
 import FavoriteButton from "../components/FavoriteButton";
 import Loader, { CharacterDetailsSkeleton } from "../components/Loader";
+import { usePrefersReducedMotion } from "../hooks/useAnimation";
 import {
   formatTextToParagraphs,
   estimateReadingTime,
@@ -14,6 +17,7 @@ import {
 
 const CharacterDetails = () => {
   const { id } = useParams();
+  const prefersReduced = usePrefersReducedMotion();
   const [character, setCharacter] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -94,11 +98,6 @@ const CharacterDetails = () => {
       icon: "🎌",
     },
     {
-      id: "manga",
-      label: `Manga (${character.manga?.length || 0})`,
-      icon: "📚",
-    },
-    {
       id: "voices",
       label: `Voice Actors (${character.voices?.length || 0})`,
       icon: "🎤",
@@ -106,66 +105,86 @@ const CharacterDetails = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="mb-6">
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <Link
-              to="/"
-              className="hover:text-indigo-600 transition-colors duration-200"
-            >
-              Home
-            </Link>
-            <span>›</span>
-            <Link
-              to="/characters"
-              className="hover:text-indigo-600 transition-colors duration-200"
-            >
-              Characters
-            </Link>
-            <span>›</span>
-            <span className="text-gray-900 font-medium">{character.name}</span>
+    <motion.div 
+      className="min-h-screen bg-bg-primary text-text-primary"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: prefersReduced ? 0 : 0.6 }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Premium Breadcrumb */}
+        <motion.nav 
+          className="mb-8"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReduced ? 0 : 0.4 }}
+        >
+          <div className="flex items-center space-x-3 text-sm">
+            <div className="flex items-center space-x-3 px-4 py-2 bg-surface-dark/30 backdrop-blur-sm rounded-xl border border-border/30">
+              <Link
+                to="/"
+                className="text-accent-cyan hover:text-accent-purple transition-colors duration-200 font-medium"
+              >
+                Home
+              </Link>
+              <span className="text-border">›</span>
+              <Link
+                to="/characters"
+                className="text-accent-purple hover:text-accent-pink transition-colors duration-200 font-medium"
+              >
+                Characters
+              </Link>
+              <span className="text-border">›</span>
+              <span className="text-text-primary font-semibold">{character.name}</span>
+            </div>
           </div>
-        </nav>
+        </motion.nav>
 
-        {/* Character Header */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+        {/* Premium Character Header */}
+        <motion.div 
+          className="bg-gradient-to-br from-surface-dark/50 via-bg-secondary to-surface-dark/30 backdrop-blur-sm rounded-2xl border border-border/20 overflow-hidden mb-12 shadow-2xl"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReduced ? 0 : 0.6, delay: prefersReduced ? 0 : 0.2 }}
+        >
           <div className="md:flex">
-            {/* Character Image */}
-            <div className="md:w-1/3 lg:w-1/4">
-              <img
-                src={
-                  character.images?.jpg?.image_url ||
-                  character.images?.webp?.image_url ||
-                  "/placeholder-anime.jpg"
-                }
-                alt={character.name}
-                className="w-full h-96 md:h-full object-cover"
-                onError={(e) => {
-                  e.target.src = "/placeholder-anime.jpg";
-                }}
-              />
+            {/* Premium Character Image */}
+            <div className="md:w-1/3 lg:w-1/4 relative">
+              <div className="relative overflow-hidden">
+                <img
+                  src={
+                    character.images?.jpg?.image_url ||
+                    character.images?.webp?.image_url ||
+                    "/placeholder-anime.jpg"
+                  }
+                  alt={character.name}
+                  className="w-full h-96 md:h-full object-cover transition-transform duration-500 hover:scale-105"
+                  onError={(e) => {
+                    e.target.src = "/placeholder-anime.jpg";
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-bg-primary/50 via-transparent to-transparent" />
+              </div>
             </div>
 
-            {/* Character Info */}
-            <div className="md:w-2/3 lg:w-3/4 p-6">
-              <div className="flex items-start justify-between mb-4">
+            {/* Premium Character Info */}
+            <div className="md:w-2/3 lg:w-3/4 p-8">
+              <div className="flex items-start justify-between mb-6">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple via-accent-pink to-accent-cyan mb-3">
                     {character.name}
                   </h1>
                   {character.name_kanji && (
-                    <p className="text-lg text-gray-600 mb-2">
+                    <p className="text-xl text-text-secondary mb-3 font-medium">
                       {character.name_kanji}
                     </p>
                   )}
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-4">
                   {character.favorites && (
-                    <div className="bg-red-100 text-red-800 px-4 py-2 rounded-lg font-semibold">
-                      ❤️ {character.favorites.toLocaleString()} favorites
+                    <div className="bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm text-red-400 px-6 py-3 rounded-xl font-bold border border-red-500/30 shadow-lg">
+                      ❤️ {character.favorites.toLocaleString()}
                     </div>
                   )}
                   <FavoriteButton
@@ -181,17 +200,18 @@ const CharacterDetails = () => {
                 </div>
               </div>
 
-              {/* Nicknames */}
+              {/* Premium Nicknames */}
               {character.nicknames && character.nicknames.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-text-primary mb-3 flex items-center">
+                    <span className="w-1.5 h-6 bg-gradient-to-b from-accent-purple to-accent-pink rounded-full mr-3"></span>
                     Also known as:
                   </h3>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {character.nicknames.map((nickname, index) => (
                       <span
                         key={index}
-                        className="bg-indigo-100 text-indigo-800 text-sm px-3 py-1 rounded-full"
+                        className="bg-gradient-to-r from-accent-purple/20 to-accent-pink/20 text-accent-purple border border-accent-purple/30 text-sm px-4 py-2 rounded-xl font-medium backdrop-blur-sm"
                       >
                         {nickname}
                       </span>
@@ -200,72 +220,76 @@ const CharacterDetails = () => {
                 </div>
               )}
 
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-blue-50 p-3 rounded-lg text-center transform hover:scale-105 transition-transform duration-200">
-                  <div className="text-2xl font-bold text-blue-600">
+              {/* Premium Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                <motion.div 
+                  className="bg-gradient-to-br from-accent-cyan/20 to-accent-purple/20 backdrop-blur-sm p-4 rounded-xl text-center border border-accent-cyan/30 hover:border-accent-cyan/50 transition-all duration-300"
+                  whileHover={{ scale: prefersReduced ? 1 : 1.05, y: prefersReduced ? 0 : -2 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="text-3xl font-black text-accent-cyan mb-1">
                     {character.anime?.length || 0}
                   </div>
-                  <div className="text-sm text-blue-800">Anime Appearances</div>
-                </div>
-                <div className="bg-green-50 p-3 rounded-lg text-center transform hover:scale-105 transition-transform duration-200">
-                  <div className="text-2xl font-bold text-green-600">
-                    {character.manga?.length || 0}
-                  </div>
-                  <div className="text-sm text-green-800">
-                    Manga Appearances
-                  </div>
-                </div>
-                <div className="bg-purple-50 p-3 rounded-lg text-center transform hover:scale-105 transition-transform duration-200">
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-text-secondary font-medium">Anime</div>
+                </motion.div>
+
+                <motion.div 
+                  className="bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 backdrop-blur-sm p-4 rounded-xl text-center border border-accent-purple/30 hover:border-accent-purple/50 transition-all duration-300"
+                  whileHover={{ scale: prefersReduced ? 1 : 1.05, y: prefersReduced ? 0 : -2 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="text-3xl font-black text-accent-purple mb-1">
                     {character.voices?.length || 0}
                   </div>
-                  <div className="text-sm text-purple-800">Voice Actors</div>
-                </div>
-                <div className="bg-red-50 p-3 rounded-lg text-center transform hover:scale-105 transition-transform duration-200">
-                  <div className="text-2xl font-bold text-red-600">
-                    {character.favorites
-                      ? character.favorites.toLocaleString()
-                      : "0"}
+                  <div className="text-text-secondary font-medium">Voice Actors</div>
+                </motion.div>
+
+                <motion.div 
+                  className="bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-sm p-4 rounded-xl text-center border border-red-500/30 hover:border-red-500/50 transition-all duration-300"
+                  whileHover={{ scale: prefersReduced ? 1 : 1.05, y: prefersReduced ? 0 : -2 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="text-3xl font-black text-red-400 mb-1">
+                    {character.favorites ? character.favorites.toLocaleString() : "0"}
                   </div>
-                  <div className="text-sm text-red-800">Fan Favorites</div>
-                </div>
+                  <div className="text-text-secondary font-medium">Favorites</div>
+                </motion.div>
               </div>
 
-              {/* Character Key Info Preview */}
+              {/* Premium Character Key Info Preview */}
               {character.about &&
                 (() => {
                   const { attributes } = parseCharacterAttributes(
                     character.about
                   );
                   if (attributes.length > 0) {
-                    const keyAttributes = attributes.slice(0, 4); // Show only first 4 key attributes
+                    const keyAttributes = attributes.slice(0, 4);
                     return (
-                      <div className="mb-6">
-                        <h3 className="text-md font-semibold text-gray-800 mb-3 flex items-center">
-                          <span className="w-1 h-5 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full mr-2"></span>
+                      <div className="mb-8">
+                        <h3 className="text-xl font-bold text-text-primary mb-4 flex items-center">
+                          <span className="w-1.5 h-6 bg-gradient-to-b from-accent-cyan to-accent-purple rounded-full mr-3"></span>
                           Key Information
                         </h3>
-                        <div className="bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg p-4 border border-gray-200">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="bg-gradient-to-br from-surface-dark/30 to-surface-dark/10 backdrop-blur-sm rounded-xl p-6 border border-border/30">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {keyAttributes.map((attr, index) => (
                               <div
                                 key={index}
-                                className="flex items-center space-x-2"
+                                className="flex items-center space-x-3"
                               >
-                                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full flex-shrink-0"></span>
-                                <span className="font-medium text-gray-700 text-sm">
+                                <span className="w-2 h-2 bg-accent-cyan rounded-full flex-shrink-0"></span>
+                                <span className="font-semibold text-text-primary text-sm">
                                   {attr.key}:
                                 </span>
-                                <span className="text-gray-600 text-sm truncate">
+                                <span className="text-text-secondary text-sm truncate">
                                   {attr.value}
                                 </span>
                               </div>
                             ))}
                           </div>
                           {attributes.length > 4 && (
-                            <div className="mt-3 text-center">
-                              <span className="text-xs text-indigo-600 font-medium">
+                            <div className="mt-4 text-center">
+                              <span className="text-sm text-accent-purple font-medium">
                                 View complete details in Biography →
                               </span>
                             </div>
@@ -278,81 +302,104 @@ const CharacterDetails = () => {
                 })()}
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Tab Navigation */}
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
+        {/* Premium Tabs */}
+        <motion.div 
+          className="bg-gradient-to-br from-surface-dark/50 via-bg-secondary to-surface-dark/30 backdrop-blur-sm rounded-2xl border border-border/20 overflow-hidden shadow-2xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReduced ? 0 : 0.5, delay: prefersReduced ? 0 : 0.4 }}
+        >
+          {/* Premium Tab Navigation */}
+          <div className="border-b border-border/30">
+            <nav className="flex space-x-8 px-8 py-2">
               {tabs.map((tab) => (
-                <button
+                <motion.button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                  className={`py-4 px-4 font-medium text-sm transition-all duration-300 relative ${
                     activeTab === tab.id
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      ? "text-accent-purple"
+                      : "text-text-secondary hover:text-text-primary"
                   }`}
+                  whileHover={{ scale: prefersReduced ? 1 : 1.02 }}
+                  whileTap={{ scale: prefersReduced ? 1 : 0.98 }}
                 >
-                  <span className="mr-2">{tab.icon}</span>
+                  <span className="mr-2 text-lg">{tab.icon}</span>
                   {tab.label}
-                </button>
+                  {activeTab === tab.id && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-accent-pink rounded-full"
+                      layoutId="activeTab"
+                      transition={{ duration: 0.3 }}
+                    />
+                  )}
+                </motion.button>
               ))}
             </nav>
           </div>
 
-          {/* Tab Content */}
-          <div className="p-6">
-            {/* Overview Tab */}
+          {/* Premium Tab Content */}
+          <div className="p-8">
+            {/* Premium Overview Tab */}
             {activeTab === "overview" && (
               <div className="space-y-8">
                 {character.about && (
-                  <div className="relative">
-                    <div className="flex items-center mb-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                          <span className="text-white text-xl">📖</span>
-                        </div>
+                  <motion.div 
+                    className="relative"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: prefersReduced ? 0 : 0.5 }}
+                  >
+                    <div className="flex items-center mb-8">
+                      <div className="flex items-center space-x-4">
+                        <motion.div 
+                          className="w-16 h-16 bg-gradient-to-br from-accent-purple to-accent-pink rounded-2xl flex items-center justify-center shadow-xl"
+                          whileHover={{ scale: prefersReduced ? 1 : 1.05, rotate: prefersReduced ? 0 : 5 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <span className="text-white text-2xl">📖</span>
+                        </motion.div>
                         <div>
-                          <h3 className="text-2xl font-bold text-gray-900 gradient-text">
+                          <h3 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple via-accent-pink to-accent-cyan mb-2">
                             Character Biography
                           </h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-lg text-text-secondary">
                             Learn more about {character.name}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="relative bg-gradient-to-br from-white via-indigo-50 to-purple-50 rounded-2xl p-8 premium-shadow border border-indigo-100 premium-about-container">
-                      {/* Decorative elements */}
-                      <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-indigo-200 to-purple-200 rounded-full opacity-10 -translate-x-16 -translate-y-16 floating-element"></div>
-                      <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full opacity-10 translate-x-12 translate-y-12 floating-element"></div>
+                    <div className="relative bg-gradient-to-br from-surface-dark/40 via-bg-secondary/30 to-surface-dark/20 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-border/20">
+                      {/* Premium Decorative elements */}
+                      <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 rounded-full opacity-20 -translate-x-16 -translate-y-16"></div>
+                      <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-br from-accent-cyan/20 to-accent-purple/20 rounded-full opacity-20 translate-x-12 translate-y-12"></div>
 
-                      {/* Quote mark */}
-                      <div className="absolute top-6 left-6 text-6xl text-indigo-200 font-serif leading-none select-none floating-element">
+                      {/* Premium Quote mark */}
+                      <div className="absolute top-6 left-6 text-6xl text-accent-purple/30 font-serif leading-none select-none">
                         "
                       </div>
 
                       <div className="relative z-10 pl-8">
-                        {/* Reading time indicator */}
-                        <div className="mb-6 flex flex-wrap items-center gap-4 text-sm text-indigo-600">
-                          <div className="flex items-center space-x-2 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-200">
-                            <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
-                            <span className="font-medium">
+                        {/* Premium Reading indicators */}
+                        <div className="mb-8 flex flex-wrap items-center gap-4 text-sm">
+                          <div className="flex items-center space-x-2 bg-gradient-to-r from-accent-purple/20 to-accent-pink/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-accent-purple/30">
+                            <span className="w-2 h-2 bg-accent-purple rounded-full animate-pulse"></span>
+                            <span className="font-medium text-accent-purple">
                               ~{estimateReadingTime(character.about)} min read
                             </span>
                           </div>
-                          <div className="flex items-center space-x-2 bg-purple-50 px-3 py-1.5 rounded-full border border-purple-200">
+                          <div className="flex items-center space-x-2 bg-gradient-to-r from-accent-cyan/20 to-accent-purple/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-accent-cyan/30">
                             <span>📖</span>
-                            <span className="font-medium text-purple-600">
+                            <span className="font-medium text-accent-cyan">
                               Complete Biography
                             </span>
                           </div>
-                          <div className="flex items-center space-x-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
-                            <span>�</span>
-                            <span className="font-medium text-gray-600">
+                          <div className="flex items-center space-x-2 bg-gradient-to-r from-surface-dark/30 to-surface-dark/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-border/30">
+                            <span>👤</span>
+                            <span className="font-medium text-text-primary">
                               {character.name}
                             </span>
                           </div>
@@ -365,71 +412,87 @@ const CharacterDetails = () => {
 
                             return (
                               <div className="space-y-8">
-                                {/* Character Attributes */}
+                                {/* Premium Character Attributes */}
                                 {attributes.length > 0 && (
-                                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
-                                    <h4 className="text-lg font-semibold text-indigo-800 mb-4 flex items-center">
+                                  <div className="bg-gradient-to-br from-surface-dark/30 to-surface-dark/10 backdrop-blur-sm rounded-xl p-6 border border-border/30 mb-8">
+                                    <h4 className="text-xl font-bold text-text-primary mb-6 flex items-center">
+                                      <span className="w-1.5 h-6 bg-gradient-to-b from-accent-cyan to-accent-purple rounded-full mr-3"></span>
                                       <span className="mr-2">ℹ️</span>
                                       Character Information
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                       {attributes.map((attr, index) => (
-                                        <div
+                                        <motion.div
                                           key={index}
-                                          className="flex items-start space-x-3 p-3 bg-white rounded-lg shadow-sm border border-indigo-100"
+                                          className="flex items-start space-x-3 p-4 bg-gradient-to-br from-bg-secondary/50 to-surface-dark/30 backdrop-blur-sm rounded-xl border border-border/20 hover:border-accent-purple/50 transition-all duration-300"
+                                          whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
+                                          initial={{ opacity: 0, y: 10 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          transition={{ duration: 0.3, delay: index * 0.1 }}
                                         >
-                                          <div className="w-2 h-2 bg-indigo-400 rounded-full mt-2 flex-shrink-0"></div>
+                                          <div className="w-2 h-2 bg-accent-cyan rounded-full mt-2 flex-shrink-0"></div>
                                           <div>
-                                            <span className="font-semibold text-indigo-700 text-sm">
+                                            <span className="font-semibold text-accent-purple text-sm">
                                               {attr.key}:
                                             </span>
-                                            <span className="text-gray-700 ml-2 text-sm">
+                                            <span className="text-text-primary ml-2 text-sm">
                                               {attr.value}
                                             </span>
                                           </div>
-                                        </div>
+                                        </motion.div>
                                       ))}
                                     </div>
                                   </div>
                                 )}
 
-                                {/* Character Description */}
+                                {/* Premium Character Description */}
                                 {description && (
-                                  <div className="text-gray-800 leading-relaxed text-justify space-y-6">
-                                    <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center border-b border-indigo-200 pb-2">
+                                  <div className="text-text-primary leading-relaxed text-justify space-y-6">
+                                    <h4 className="text-xl font-bold text-text-primary mb-6 flex items-center border-b border-border/30 pb-3">
+                                      <span className="w-1.5 h-6 bg-gradient-to-b from-accent-purple to-accent-pink rounded-full mr-3"></span>
                                       <span className="mr-2">📖</span>
                                       Biography
                                     </h4>
-                                    {formatTextToParagraphs(description).map(
-                                      (paragraph, index) => (
-                                        <p
-                                          key={index}
-                                          className={`premium-paragraph text-gray-700 leading-loose ${
-                                            index === 0 ? "drop-cap" : ""
-                                          }`}
-                                        >
-                                          {paragraph}
-                                        </p>
-                                      )
-                                    )}
+                                    <div className="space-y-6">
+                                      {formatTextToParagraphs(description).map(
+                                        (paragraph, index) => (
+                                          <motion.p
+                                            key={index}
+                                            className={`text-text-primary leading-loose ${
+                                              index === 0 ? "text-lg font-medium" : ""
+                                            }`}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                                          >
+                                            {paragraph}
+                                          </motion.p>
+                                        )
+                                      )}
+                                    </div>
                                   </div>
                                 )}
 
-                                {/* Fallback if no attributes found, show original text */}
+                                {/* Premium Fallback if no attributes found */}
                                 {attributes.length === 0 && (
-                                  <div className="text-gray-800 leading-relaxed text-justify space-y-6">
-                                    {formatTextToParagraphs(
-                                      character.about
-                                    ).map((paragraph, index) => (
-                                      <p
-                                        key={index}
-                                        className={`premium-paragraph text-gray-700 leading-loose ${
-                                          index === 0 ? "drop-cap" : ""
-                                        }`}
-                                      >
-                                        {paragraph}
-                                      </p>
-                                    ))}
+                                  <div className="text-text-primary leading-relaxed text-justify space-y-6">
+                                    <div className="space-y-6">
+                                      {formatTextToParagraphs(
+                                        character.about
+                                      ).map((paragraph, index) => (
+                                        <motion.p
+                                          key={index}
+                                          className={`text-text-primary leading-loose ${
+                                            index === 0 ? "text-lg font-medium" : ""
+                                          }`}
+                                          initial={{ opacity: 0, y: 20 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                                        >
+                                          {paragraph}
+                                        </motion.p>
+                                      ))}
+                                    </div>
                                   </div>
                                 )}
                               </div>
@@ -437,114 +500,115 @@ const CharacterDetails = () => {
                           })()}
                         </div>
 
-                        {/* Bottom accent */}
-                        <div className="mt-8 pt-6 border-t border-indigo-200">
+                        {/* Premium Bottom accent */}
+                        <div className="mt-8 pt-6 border-t border-border/30">
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2 text-sm text-indigo-600">
-                              <span className="w-2 h-2 bg-indigo-400 rounded-full"></span>
+                            <div className="flex items-center space-x-2 text-sm text-accent-purple">
+                              <span className="w-2 h-2 bg-accent-purple rounded-full"></span>
                               <span className="font-medium">
                                 Character Profile
                               </span>
                             </div>
-                            <div className="text-xs text-gray-500 flex items-center space-x-2">
+                            <div className="text-xs text-text-secondary flex items-center space-x-2">
                               <span>Source: {character.name}</span>
                               <span>•</span>
-                              <span>MyAnimeList Database</span>
+                              <span>Anime Database</span>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
-                {/* Character URLs */}
+                {/* Premium External Links */}
                 {character.url && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: prefersReduced ? 0 : 0.5, delay: 0.2 }}
+                  >
+                    <h3 className="text-xl font-bold text-text-primary mb-4 flex items-center">
+                      <span className="w-1.5 h-6 bg-gradient-to-b from-accent-cyan to-accent-purple rounded-full mr-3"></span>
                       External Links
                     </h3>
-                    <a
+                    <motion.a
                       href={character.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg transition-colors duration-200"
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-accent-cyan/20 to-accent-purple/20 backdrop-blur-sm hover:from-accent-cyan/30 hover:to-accent-purple/30 text-accent-cyan border border-accent-cyan/30 hover:border-accent-cyan/50 rounded-xl transition-all duration-300 font-medium"
+                      whileHover={{ scale: prefersReduced ? 1 : 1.05, y: prefersReduced ? 0 : -2 }}
+                      whileTap={{ scale: prefersReduced ? 1 : 0.95 }}
                     >
-                      🔗 View on MyAnimeList
-                    </a>
-                  </div>
+                      🔗 View Character Details
+                    </motion.a>
+                  </motion.div>
                 )}
               </div>
             )}
 
-            {/* Anime Tab */}
+            {/* Premium Anime Tab */}
             {activeTab === "anime" && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: prefersReduced ? 0 : 0.5 }}
+              >
+                <h3 className="text-2xl font-bold text-text-primary mb-6 flex items-center">
+                  <span className="w-1.5 h-6 bg-gradient-to-b from-accent-cyan to-accent-purple rounded-full mr-3"></span>
+                  <span className="mr-2">🎌</span>
                   Anime Appearances ({character.anime?.length || 0})
                 </h3>
                 {character.anime && character.anime.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {character.anime.map((animeItem) => (
-                      <div key={animeItem.anime.mal_id} className="relative">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {character.anime.map((animeItem, index) => (
+                      <motion.div 
+                        key={animeItem.anime.mal_id} 
+                        className="relative"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                      >
                         <AnimeCard anime={animeItem.anime} />
                         {animeItem.role && (
-                          <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                          <div className="absolute top-2 left-2 bg-gradient-to-r from-accent-purple/90 to-accent-pink/90 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-medium border border-accent-purple/50">
                             {animeItem.role}
                           </div>
                         )}
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-2">🎌</div>
-                    <p>No anime appearances found</p>
+                  <div className="text-center py-12 text-text-secondary">
+                    <div className="text-6xl mb-4">🎌</div>
+                    <p className="text-xl">No anime appearances found</p>
                   </div>
                 )}
-              </div>
+              </motion.div>
             )}
 
-            {/* Manga Tab */}
-            {activeTab === "manga" && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Manga Appearances ({character.manga?.length || 0})
-                </h3>
-                {character.manga && character.manga.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {character.manga.map((mangaItem) => (
-                      <div key={mangaItem.manga.mal_id} className="relative">
-                        <MangaCard manga={mangaItem.manga} />
-                        {mangaItem.role && (
-                          <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
-                            {mangaItem.role}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-2">📚</div>
-                    <p>No manga appearances found</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Voice Actors Tab */}
+            {/* Premium Voice Actors Tab */}
             {activeTab === "voices" && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: prefersReduced ? 0 : 0.5 }}
+              >
+                <h3 className="text-2xl font-bold text-text-primary mb-6 flex items-center">
+                  <span className="w-1.5 h-6 bg-gradient-to-b from-accent-purple to-accent-pink rounded-full mr-3"></span>
+                  <span className="mr-2">🎤</span>
                   Voice Actors ({character.voices?.length || 0})
                 </h3>
                 {character.voices && character.voices.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {character.voices.map((voice, index) => (
-                      <div
+                      <motion.div
                         key={index}
-                        className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg"
+                        className="flex items-start space-x-6 p-6 bg-gradient-to-br from-surface-dark/30 to-surface-dark/10 backdrop-blur-sm rounded-xl border border-border/30 hover:border-accent-purple/50 transition-all duration-300"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                        whileHover={{ scale: prefersReduced ? 1 : 1.02, y: prefersReduced ? 0 : -2 }}
                       >
                         <img
                           src={
@@ -552,55 +616,62 @@ const CharacterDetails = () => {
                             "/placeholder-anime.jpg"
                           }
                           alt={voice.person?.name}
-                          className="w-16 h-20 object-cover rounded-lg"
+                          className="w-20 h-24 object-cover rounded-xl shadow-lg"
                           onError={(e) => {
                             e.target.src = "/placeholder-anime.jpg";
                           }}
                         />
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900">
+                          <h4 className="text-xl font-bold text-text-primary mb-2">
                             {voice.person?.name}
                           </h4>
-                          <p className="text-sm text-gray-600">
-                            Language: {voice.language}
+                          <p className="text-text-secondary mb-3 flex items-center">
+                            <span className="w-2 h-2 bg-accent-cyan rounded-full mr-2"></span>
+                            Language: <span className="text-accent-cyan ml-1 font-medium">{voice.language}</span>
                           </p>
                           {voice.person?.url && (
-                            <a
+                            <motion.a
                               href={voice.person.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                              className="inline-flex items-center text-sm text-accent-purple hover:text-accent-pink transition-colors duration-200 font-medium"
+                              whileHover={{ x: 2 }}
                             >
-                              View Profile
-                            </a>
+                              View Profile →
+                            </motion.a>
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-2">🎤</div>
-                    <p>No voice actor information available</p>
+                  <div className="text-center py-12 text-text-secondary">
+                    <div className="text-6xl mb-4">🎤</div>
+                    <p className="text-xl">No voice actor information available</p>
                   </div>
                 )}
-              </div>
+              </motion.div>
             )}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Back to Characters */}
-        <div className="mt-8 text-center">
+        {/* Premium Back to Characters */}
+        <motion.div 
+          className="mt-12 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReduced ? 0 : 0.5, delay: 0.6 }}
+        >
           <Link
             to="/characters"
-            className="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200"
+            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple/80 hover:to-accent-pink/80 text-white rounded-xl transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
           >
-            <span className="mr-2">←</span>
+            <span className="mr-3 text-lg">←</span>
             Back to Characters
           </Link>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
