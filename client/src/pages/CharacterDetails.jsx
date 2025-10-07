@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCharacterDetails } from "../services/anime";
-import AnimeCard from "../components/AnimeCard";
+import EnhancedAnimeCard from "../components/EnhancedAnimeCard";
 // MangaCard removed - manga functionality disabled
 import AnimatedGrid from "../components/AnimatedGrid";
 import FavoriteButton from "../components/FavoriteButton";
@@ -587,9 +587,12 @@ const CharacterDetails = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                       >
-                        <AnimeCard anime={animeItem.anime} />
+                        <EnhancedAnimeCard
+                          anime={animeItem.anime}
+                          index={index}
+                        />
                         {animeItem.role && (
-                          <div className="absolute top-2 left-2 bg-gradient-to-r from-accent-purple/90 to-accent-pink/90 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-medium border border-accent-purple/50">
+                          <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-bold border border-white/20 shadow-lg">
                             {animeItem.role}
                           </div>
                         )}

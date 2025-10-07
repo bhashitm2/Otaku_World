@@ -330,7 +330,7 @@ const Characters = () => {
               delay: prefersReduced ? 0 : 0.8,
             }}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-stretch">
               {characters.map((character, index) => (
                 <motion.div
                   key={`${character.mal_id}-${character.name}`}

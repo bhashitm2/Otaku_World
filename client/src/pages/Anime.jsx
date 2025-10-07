@@ -109,7 +109,17 @@ const Anime = () => {
     >
       {/* Premium Header Section */}
       <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial from-accent-cyan/20 via-transparent to-transparent" />
+        {/* Video Background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/Anime Background.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-radial from-accent-cyan/20 via-black/50 to-bg-primary/80" />
         <div className="relative max-w-7xl mx-auto px-4 py-16">
           <motion.div
             className="text-center mb-12"

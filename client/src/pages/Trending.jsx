@@ -69,7 +69,17 @@ const Trending = () => {
     >
       {/* Premium Header Section */}
       <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial from-accent-magenta/20 via-transparent to-transparent" />
+        {/* Video Background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/Trending Background.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-radial from-accent-magenta/20 via-black/50 to-bg-primary/80" />
         <div className="relative max-w-7xl mx-auto px-4 py-16">
           <motion.div
             className="text-center mb-12"
@@ -77,10 +87,10 @@ const Trending = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: prefersReduced ? 0 : 0.8, delay: 0.2 }}
           >
-            <h1 className="font-display text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-accent-magenta via-accent-cyan to-accent-magenta bg-clip-text text-transparent">
+            <h1 className="font-display text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-accent-magenta via-accent-cyan to-accent-magenta bg-clip-text text-transparent drop-shadow-lg">
               Trending Now
             </h1>
-            <p className="text-xl text-text-secondary mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-white font-semibold mb-8 max-w-2xl mx-auto drop-shadow-lg shadow-black">
               The hottest anime everyone's talking about right now
             </p>
 
@@ -90,19 +100,25 @@ const Trending = () => {
                 <div className="text-3xl font-bold text-accent-magenta mb-1">
                   🔥
                 </div>
-                <div className="text-sm text-text-secondary">Hot Releases</div>
+                <div className="text-sm text-white font-medium drop-shadow-md">
+                  Hot Releases
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-accent-cyan mb-1">
                   📈
                 </div>
-                <div className="text-sm text-text-secondary">Rising Fast</div>
+                <div className="text-sm text-white font-medium drop-shadow-md">
+                  Rising Fast
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-accent-yellow mb-1">
                   ⭐
                 </div>
-                <div className="text-sm text-text-secondary">Most Popular</div>
+                <div className="text-sm text-white font-medium drop-shadow-md">
+                  Most Popular
+                </div>
               </div>
             </div>
           </motion.div>

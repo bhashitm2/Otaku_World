@@ -52,9 +52,9 @@ const CharacterCard = ({ character, compact = false }) => {
   return (
     <Link
       to={`/characters/${formattedCharacter.id}`}
-      className="group block bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105"
+      className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 h-full flex flex-col"
     >
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <img
           src={formattedCharacter.image || "/placeholder-anime.jpg"}
           alt={formattedCharacter.name}
@@ -109,42 +109,50 @@ const CharacterCard = ({ character, compact = false }) => {
         </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-bold text-gray-900 text-sm mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300">
+      <div className="p-4 flex-1 flex flex-col">
+        {/* Character name - fixed height */}
+        <h3 className="font-bold text-gray-900 text-sm mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300 h-10 flex items-center">
           {formattedCharacter.name}
         </h3>
 
-        {/* Kanji name */}
-        {formattedCharacter.nameKanji && (
-          <p className="text-xs text-gray-500 mb-2 line-clamp-1">
-            {formattedCharacter.nameKanji}
-          </p>
-        )}
-
-        {/* Nicknames */}
-        {formattedCharacter.nicknames &&
-          formattedCharacter.nicknames.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
-              {formattedCharacter.nicknames
-                .slice(0, 2)
-                .map((nickname, index) => (
-                  <span
-                    key={index}
-                    className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full"
-                  >
-                    {nickname}
-                  </span>
-                ))}
-              {formattedCharacter.nicknames.length > 2 && (
-                <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
-                  +{formattedCharacter.nicknames.length - 2}
-                </span>
-              )}
-            </div>
+        {/* Kanji name - fixed height */}
+        <div className="h-5 mb-2">
+          {formattedCharacter.nameKanji && (
+            <p className="text-xs text-gray-500 line-clamp-1">
+              {formattedCharacter.nameKanji}
+            </p>
           )}
+        </div>
 
-        {/* Anime/Manga count */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
+        {/* Nicknames - fixed height */}
+        <div className="h-8 mb-2 flex flex-wrap gap-1">
+          {formattedCharacter.nicknames &&
+            formattedCharacter.nicknames.length > 0 && (
+              <>
+                {formattedCharacter.nicknames
+                  .slice(0, 2)
+                  .map((nickname, index) => (
+                    <span
+                      key={index}
+                      className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full"
+                    >
+                      {nickname}
+                    </span>
+                  ))}
+                {formattedCharacter.nicknames.length > 2 && (
+                  <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                    +{formattedCharacter.nicknames.length - 2}
+                  </span>
+                )}
+              </>
+            )}
+        </div>
+
+        {/* Flexible spacer */}
+        <div className="flex-1"></div>
+
+        {/* Anime/Manga count - fixed at bottom */}
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
           {formattedCharacter.animeography &&
             formattedCharacter.animeography.length > 0 && (
               <span className="flex items-center">
@@ -159,9 +167,9 @@ const CharacterCard = ({ character, compact = false }) => {
             )}
         </div>
 
-        {/* Favorites count */}
+        {/* Favorites count - fixed at bottom */}
         {formattedCharacter.favorites && (
-          <div className="mt-2 text-center">
+          <div className="text-center">
             <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium">
               ❤️ {formattedCharacter.favorites.toLocaleString()} favorites
             </span>

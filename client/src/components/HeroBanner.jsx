@@ -79,10 +79,21 @@ const HeroBanner = () => {
       ref={heroRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-hero"
     >
+      {/* Video Background */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/HomePage Background.mp4" type="video/mp4" />
+      </video>
+
       {/* Animated Background */}
       <div className="absolute inset-0">
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-bg-primary/80 via-transparent to-accent-purple/20" />
+        {/* Gradient Overlay - Enhanced for video background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-bg-primary/70 via-black/40 to-accent-purple/30" />
 
         {/* Floating Particles */}
         <div className="absolute inset-0">
@@ -119,18 +130,6 @@ const HeroBanner = () => {
         initial="hidden"
         animate="visible"
       >
-        {/* Badge */}
-        <motion.div
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-morphism mb-8"
-          variants={itemVariants}
-        >
-          <Star className="w-4 h-4 text-accent-gold" />
-          <span className="text-sm font-medium text-text-secondary">
-            Premium Anime Experience
-          </span>
-          <TrendingUp className="w-4 h-4 text-accent-neon" />
-        </motion.div>
-
         {/* Main Title */}
         <motion.h1
           className="text-6xl md:text-8xl font-display font-bold mb-6 leading-tight"
@@ -156,9 +155,8 @@ const HeroBanner = () => {
           variants={itemVariants}
         >
           {[
-            { label: "Anime Series", value: "50,000+" },
-            { label: "Active Users", value: "2M+" },
-            { label: "Reviews", value: "10M+" },
+            { label: "Anime Series", value: "50k+" },
+            { label: "Anime Characters", value: "200k+" },
           ].map((stat, index) => (
             <div key={index} className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-accent-neon font-display">
@@ -200,29 +198,6 @@ const HeroBanner = () => {
               </span>
             </motion.button>
           </Link>
-        </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2, duration: 0.6 }}
-        >
-          <div className="flex flex-col items-center gap-2 text-text-tertiary">
-            <span className="text-xs font-medium">Scroll to explore</span>
-            <motion.div
-              className="w-6 h-10 border-2 border-current rounded-full flex justify-center"
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <motion.div
-                className="w-1 h-3 bg-current rounded-full mt-2"
-                animate={{ scaleY: [1, 0.5, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            </motion.div>
-          </div>
         </motion.div>
       </motion.div>
     </section>
