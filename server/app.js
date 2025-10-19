@@ -24,6 +24,7 @@ import userRoutes from "./routes/userRoutes.js";
 import favoritesRoutes from "./routes/favoritesRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 
 const app = express();
 
@@ -143,6 +144,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/favorites", favoritesRoutes);
 app.use("/api/watchlist", watchlistRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/ai", aiRoutes);
 
 // API documentation endpoint
 app.get("/api", (req, res) => {
@@ -156,6 +158,7 @@ app.get("/api", (req, res) => {
       favorites: "/api/favorites",
       watchlist: "/api/watchlist",
       auth: "/api/auth",
+      ai: "/api/ai",
     },
     endpoints: {
       health: "/health",
