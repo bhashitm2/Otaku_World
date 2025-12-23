@@ -142,12 +142,22 @@ const Characters = () => {
       transition={{ duration: prefersReduced ? 0 : 0.6 }}
     >
       {/* Premium Header Section */}
-      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial from-accent-purple/20 via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,rgba(147,51,234,0.1),transparent_50%)]" />
+      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden -mt-16 pt-16">
+        {/* Video Background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
+        >
+          <source src="/CharacterBackground.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-radial from-accent-purple/20 via-black/30 to-bg-primary/70" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,rgba(147,51,234,0.15),transparent_50%)]" />
 
         <motion.div
-          className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
+          className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
           initial={{ y: prefersReduced ? 0 : 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{
@@ -157,17 +167,6 @@ const Characters = () => {
         >
           {/* Premium Header */}
           <div className="text-center mb-12">
-            <motion.div
-              className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-accent-purple to-accent-pink rounded-2xl mb-6 shadow-lg"
-              whileHover={{
-                scale: prefersReduced ? 1 : 1.05,
-                rotate: prefersReduced ? 0 : 5,
-              }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className="text-3xl">🎭</span>
-            </motion.div>
-
             <h1 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple via-accent-pink to-accent-cyan mb-6">
               Anime Characters
             </h1>
@@ -244,74 +243,6 @@ const Characters = () => {
                   <p className="text-red-400 font-medium">{error}</p>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Premium Navigation Links */}
-        <motion.div
-          className="flex flex-wrap justify-center gap-4 mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: prefersReduced ? 0 : 0.5,
-            delay: prefersReduced ? 0 : 0.6,
-          }}
-        >
-          <Link
-            to="/anime"
-            className="group relative px-8 py-4 bg-gradient-to-r from-accent-purple/20 to-accent-pink/20 hover:from-accent-purple/30 hover:to-accent-pink/30 text-text-primary rounded-xl transition-all duration-300 font-semibold border border-accent-purple/30 hover:border-accent-purple/50 backdrop-blur-sm"
-          >
-            <span className="relative z-10 flex items-center">
-              <span className="mr-2">🎌</span>
-              Browse Anime
-            </span>
-          </Link>
-
-          <Link
-            to="/trending"
-            className="group relative px-8 py-4 bg-gradient-to-r from-accent-cyan/20 to-accent-purple/20 hover:from-accent-cyan/30 hover:to-accent-purple/30 text-text-primary rounded-xl transition-all duration-300 font-semibold border border-accent-cyan/30 hover:border-accent-cyan/50 backdrop-blur-sm"
-          >
-            <span className="relative z-10 flex items-center">
-              <span className="mr-2">🔥</span>
-              Trending Now
-            </span>
-          </Link>
-        </motion.div>
-
-        {/* Results Info */}
-        {characters.length > 0 && !loading && (
-          <motion.div
-            className="mb-8 text-center"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className="inline-flex items-center px-6 py-3 bg-surface-dark/30 backdrop-blur-sm rounded-xl border border-border/30">
-              {isSearchMode ? (
-                <p className="text-text-secondary">
-                  Found{" "}
-                  <span className="text-accent-cyan font-semibold">
-                    {characters.length}
-                  </span>{" "}
-                  character
-                  {characters.length !== 1 ? "s" : ""} matching{" "}
-                  <span className="text-accent-purple">"{searchTerm}"</span>
-                </p>
-              ) : (
-                <p className="text-text-secondary">
-                  Showing{" "}
-                  <span className="text-accent-cyan font-semibold">
-                    {characters.length}
-                  </span>{" "}
-                  top characters
-                </p>
-              )}
-              {totalPages > 1 && (
-                <span className="ml-3 px-3 py-1 bg-accent-purple/20 text-accent-purple text-sm rounded-lg">
-                  Page {currentPage} of {totalPages}
-                </span>
-              )}
             </div>
           </motion.div>
         )}

@@ -108,7 +108,7 @@ const Anime = () => {
       transition={{ duration: prefersReduced ? 0 : 0.6 }}
     >
       {/* Premium Header Section */}
-      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
+      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden -mt-16 pt-16">
         {/* Video Background */}
         <video
           autoPlay

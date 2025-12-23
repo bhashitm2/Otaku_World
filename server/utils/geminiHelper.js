@@ -7,7 +7,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function askGemini(prompt, context = {}) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Try the current working model name
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash"
+    });
     
     // Enhanced prompt with context
     const enhancedPrompt = `
@@ -58,12 +61,36 @@ Focus on anime that match the user's query and preferences. Be conversational an
     }
   } catch (error) {
     console.error("Gemini API Error:", error);
-    throw new Error(`AI Assistant temporarily unavailable: ${error.message}`);
+    
+    // Check if it's an API key issue or model issue
+    if (error.message.includes('API_KEY_INVALID')) {
+      throw new Error('Invalid API key. Please check your Gemini API key.');
+    } else if (error.message.includes('models/') && error.message.includes('not found')) {
+      // Try fallback with basic text response
+      try {
+        console.log("Trying fallback model...");
+        const fallbackModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const result = await fallbackModel.generateContent(`Give me 3 anime recommendations for: ${prompt}`);
+        const response = await result.response;
+        return {
+          recommendations: [],
+          chatResponse: response.text(),
+          fallback: true
+        };
+      } catch (fallbackError) {
+        console.error("Fallback also failed:", fallbackError);
+        throw new Error(`AI Assistant temporarily unavailable: ${error.message}`);
+      }
+    } else {
+      throw new Error(`AI Assistant temporarily unavailable: ${error.message}`);
+    }
   }
 }
 
 export async function generateAnimeQuery(userMessage, preferences = {}) {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash"
+  });
   
   const prompt = `
 Based on this user message: "${userMessage}"

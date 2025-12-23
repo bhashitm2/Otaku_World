@@ -46,7 +46,7 @@ function App() {
             <BackendStatus>
               <div className="min-h-screen bg-bg-primary text-text-primary flex flex-col font-body">
                 <Navbar />
-                <main className="flex-1">
+                <main className="flex-1 pt-16">
                   <Suspense fallback={<Loader />}>
                     <Routes>
                       <Route path="/" element={<Home />} />
