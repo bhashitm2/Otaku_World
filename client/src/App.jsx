@@ -9,6 +9,7 @@ import BackendStatus from "./components/BackendStatus";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { WatchlistProvider } from "./context/WatchlistContext";
 import { ToastProvider } from "./components/ui/Toast";
+import AIAssistant from "./components/AIAssistant";
 
 // Lazy load pages for code splitting
 const Home = React.lazy(() => import("./pages/Home"));
@@ -45,7 +46,7 @@ function App() {
             <BackendStatus>
               <div className="min-h-screen bg-bg-primary text-text-primary flex flex-col font-body">
                 <Navbar />
-                <main className="flex-1">
+                <main className="flex-1 pt-16">
                   <Suspense fallback={<Loader />}>
                     <Routes>
                       <Route path="/" element={<Home />} />
@@ -78,6 +79,7 @@ function App() {
                   </Suspense>
                 </main>
                 <Footer />
+                <AIAssistant />
               </div>
             </BackendStatus>
           </WatchlistProvider>

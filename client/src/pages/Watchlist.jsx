@@ -116,12 +116,22 @@ const Watchlist = () => {
       transition={{ duration: prefersReduced ? 0 : 0.6 }}
     >
       {/* Premium Header Section */}
-      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial from-accent-purple/20 via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,rgba(59,130,246,0.1),transparent_50%)]" />
+      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden -mt-16 pt-16">
+        {/* Video Background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
+        >
+          <source src="/WatchListBackground.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-radial from-accent-purple/20 via-black/30 to-bg-primary/70" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,rgba(59,130,246,0.15),transparent_50%)]" />
 
         <motion.div
-          className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
+          className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-40"
           initial={{ y: prefersReduced ? 0 : 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{
@@ -131,17 +141,6 @@ const Watchlist = () => {
         >
           {/* Premium Header */}
           <div className="text-center mb-12">
-            <motion.div
-              className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-accent-purple to-accent-cyan rounded-2xl mb-6 shadow-lg"
-              whileHover={{
-                scale: prefersReduced ? 1 : 1.05,
-                rotate: prefersReduced ? 0 : 5,
-              }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className="text-3xl">📺</span>
-            </motion.div>
-
             <h1 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple via-accent-cyan to-accent-purple mb-6">
               My Watchlist
             </h1>

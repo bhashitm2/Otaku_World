@@ -113,6 +113,28 @@ body {
   background: var(--color-primary-hover);
 }
 
+/* Thin scrollbar utility */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(75, 85, 99, 0.3);
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, 0.6);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.8);
+}
+
+.scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
+  background: rgb(75, 85, 99);
+}
+
 /* Focus styles for accessibility */
 :focus-visible {
   outline: 2px solid var(--color-accent-neon);

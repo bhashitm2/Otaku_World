@@ -106,7 +106,7 @@ const CharacterDetails = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-bg-primary text-text-primary"
+      className="min-h-screen bg-gray-800 text-text-primary"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: prefersReduced ? 0 : 0.6 }}
@@ -176,7 +176,7 @@ const CharacterDetails = () => {
             <div className="md:w-2/3 lg:w-3/4 p-8">
               <div className="flex items-start justify-between mb-6">
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple via-accent-pink to-accent-cyan mb-3">
+                  <h1 className="text-4xl md:text-5xl font-black text-gray-400 mb-3">
                     {character.name}
                   </h1>
                   {character.name_kanji && (
@@ -388,7 +388,7 @@ const CharacterDetails = () => {
                           <span className="text-white text-2xl">📖</span>
                         </motion.div>
                         <div>
-                          <h3 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple via-accent-pink to-accent-cyan mb-2">
+                          <h3 className="text-3xl font-black text-gray-400 mb-2">
                             Character Biography
                           </h3>
                           <p className="text-lg text-text-secondary">
@@ -479,8 +479,8 @@ const CharacterDetails = () => {
 
                                 {/* Premium Character Description */}
                                 {description && (
-                                  <div className="text-text-primary leading-relaxed text-justify space-y-6">
-                                    <h4 className="text-xl font-bold text-text-primary mb-6 flex items-center border-b border-border/30 pb-3">
+                                  <div className="text-gray-400 leading-relaxed text-justify space-y-6">
+                                    <h4 className="text-xl font-bold text-gray-400 mb-6 flex items-center border-b border-border/30 pb-3">
                                       <span className="w-1.5 h-6 bg-gradient-to-b from-accent-purple to-accent-pink rounded-full mr-3"></span>
                                       <span className="mr-2">📖</span>
                                       Biography
@@ -490,7 +490,7 @@ const CharacterDetails = () => {
                                         (paragraph, index) => (
                                           <motion.p
                                             key={index}
-                                            className={`text-text-primary leading-loose ${
+                                            className={`text-gray-400 leading-loose ${
                                               index === 0
                                                 ? "text-lg font-medium"
                                                 : ""
@@ -512,7 +512,7 @@ const CharacterDetails = () => {
 
                                 {/* Premium Fallback if no attributes found */}
                                 {attributes.length === 0 && (
-                                  <div className="text-text-primary leading-relaxed text-justify space-y-6">
+                                  <div className="text-gray-400 leading-relaxed text-justify space-y-6">
                                     <div className="space-y-6">
                                       {formatTextToParagraphs(
                                         character.about

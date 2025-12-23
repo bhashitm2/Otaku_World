@@ -77,7 +77,7 @@ const HeroBanner = () => {
   return (
     <section
       ref={heroRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-hero"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-hero -mt-16 pt-16"
     >
       {/* Video Background */}
       <video
