@@ -56,8 +56,6 @@
 
 🌐 **Website:** [Live Link](https://otaku-world-nu.vercel.app/)
 
-📱 **Mobile Optimized:** Fully responsive across all devices ```bash
-
 npm run install:all
 
 ## 🛠️ Tech Stack ```
