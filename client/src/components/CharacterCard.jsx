@@ -11,7 +11,7 @@ const CharacterCard = ({ character, compact = false }) => {
     return (
       <Link
         to={`/characters/${formattedCharacter.id}`}
-        className="block bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+        className="block bg-gray-900 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
       >
         <div className="flex">
           <img
@@ -24,10 +24,10 @@ const CharacterCard = ({ character, compact = false }) => {
             }}
           />
           <div className="p-3 flex-1">
-            <h4 className="font-semibold text-sm text-gray-900 line-clamp-2 mb-1">
+            <h4 className="font-semibold text-sm text-white line-clamp-2 mb-1">
               {formattedCharacter.name}
             </h4>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
+            <div className="flex items-center gap-2 text-xs text-gray-300">
               {formattedCharacter.favorites && (
                 <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
                   ❤️ {formattedCharacter.favorites.toLocaleString()}
@@ -52,7 +52,7 @@ const CharacterCard = ({ character, compact = false }) => {
   return (
     <Link
       to={`/characters/${formattedCharacter.id}`}
-      className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 h-full flex flex-col"
+      className="group bg-gray-900 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 h-full flex flex-col"
     >
       <div className="relative flex-shrink-0">
         <img
@@ -78,14 +78,20 @@ const CharacterCard = ({ character, compact = false }) => {
         </div>
 
         {/* Action buttons */}
-        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div 
+          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
           <FavoriteButton
             item={{
               ...formattedCharacter,
               mal_id: formattedCharacter.id,
               type: "character",
             }}
-            size="sm"
+            size="lg"
           />
         </div>
 
@@ -111,42 +117,9 @@ const CharacterCard = ({ character, compact = false }) => {
 
       <div className="p-4 flex-1 flex flex-col">
         {/* Character name - fixed height */}
-        <h3 className="font-bold text-gray-900 text-sm mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300 h-10 flex items-center">
+        <h3 className="font-bold text-white text-sm mb-0 line-clamp-2 group-hover:text-indigo-400 transition-colors duration-300 h-5 flex items-center">
           {formattedCharacter.name}
         </h3>
-
-        {/* Kanji name - fixed height */}
-        <div className="h-5 mb-2">
-          {formattedCharacter.nameKanji && (
-            <p className="text-xs text-gray-500 line-clamp-1">
-              {formattedCharacter.nameKanji}
-            </p>
-          )}
-        </div>
-
-        {/* Nicknames - fixed height */}
-        <div className="h-8 mb-2 flex flex-wrap gap-1">
-          {formattedCharacter.nicknames &&
-            formattedCharacter.nicknames.length > 0 && (
-              <>
-                {formattedCharacter.nicknames
-                  .slice(0, 2)
-                  .map((nickname, index) => (
-                    <span
-                      key={index}
-                      className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full"
-                    >
-                      {nickname}
-                    </span>
-                  ))}
-                {formattedCharacter.nicknames.length > 2 && (
-                  <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
-                    +{formattedCharacter.nicknames.length - 2}
-                  </span>
-                )}
-              </>
-            )}
-        </div>
 
         {/* Flexible spacer */}
         <div className="flex-1"></div>
@@ -166,15 +139,6 @@ const CharacterCard = ({ character, compact = false }) => {
               </span>
             )}
         </div>
-
-        {/* Favorites count - fixed at bottom */}
-        {formattedCharacter.favorites && (
-          <div className="text-center">
-            <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium">
-              ❤️ {formattedCharacter.favorites.toLocaleString()} favorites
-            </span>
-          </div>
-        )}
       </div>
     </Link>
   );

@@ -74,7 +74,7 @@ const Trending = () => {
       transition={{ duration: prefersReduced ? 0 : 0.6 }}
     >
       {/* Premium Header Section */}
-      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden">
+      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden -mt-16 pt-16">
         {/* Video Background */}
         <video
           autoPlay
@@ -86,7 +86,7 @@ const Trending = () => {
           <source src="/Trending Background.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-radial from-accent-magenta/20 via-black/50 to-bg-primary/80" />
-        <div className="relative max-w-7xl mx-auto px-4 py-16">
+        <div className="relative max-w-7xl mx-auto px-4 py-40">
           <motion.div
             className="text-center mb-12"
             initial={{ y: 20, opacity: 0 }}
@@ -99,47 +99,6 @@ const Trending = () => {
             <p className="text-xl text-white font-semibold mb-8 max-w-2xl mx-auto drop-shadow-lg shadow-black">
               The hottest anime everyone's talking about right now
             </p>
-
-            {/* Trending Stats */}
-            <div className="flex justify-center items-center space-x-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-accent-magenta mb-1">
-                  🔥
-                </div>
-                <div className="text-sm text-white font-medium drop-shadow-md">
-                  Hot Releases
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-accent-cyan mb-1">
-                  📈
-                </div>
-                <div className="text-sm text-white font-medium drop-shadow-md">
-                  Rising Fast
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-accent-yellow mb-1">
-                  ⭐
-                </div>
-                <div className="text-sm text-white font-medium drop-shadow-md">
-                  Most Popular
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Live Indicator */}
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: prefersReduced ? 0 : 0.6, delay: 0.4 }}
-          >
-            <div className="inline-flex items-center px-4 py-2 bg-surface-secondary/80 backdrop-blur-sm rounded-full border border-accent-magenta/20">
-              <div className="w-2 h-2 bg-accent-magenta rounded-full animate-pulse mr-2"></div>
-              <span className="text-text-secondary">Live trending data</span>
-            </div>
           </motion.div>
         </div>
       </div>
