@@ -11,7 +11,6 @@ import { usePrefersReducedMotion } from "../hooks/useAnimation";
 const Anime = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [allAnime, setAllAnime] = useState([]); // Store accumulated anime
   const prefersReduced = usePrefersReducedMotion();
 
   // Fixed sorting: always by score, descending (High to Low)
@@ -51,33 +50,9 @@ const Anime = () => {
   const isLoading = searchQuery ? searchLoading : topAnimeLoading;
   const error = searchQuery ? searchError : topAnimeError;
   const hasMore = currentData?.pagination?.has_next_page || false;
-
-  // Effect to accumulate anime data when new data arrives
-  useEffect(() => {
-    if (currentData?.data) {
-      if (currentPage === 1) {
-        // First page or new search - replace all data
-        setAllAnime(currentData.data);
-      } else {
-        // Subsequent pages - append to existing data
-        setAllAnime((prev) => {
-          const newAnime = currentData.data.filter(
-            (newItem) =>
-              !prev.some(
-                (existingItem) => existingItem.mal_id === newItem.mal_id
-              )
-          );
-          return [...prev, ...newAnime];
-        });
-      }
-    }
-  }, [currentData, currentPage]);
-
-  // Reset accumulated data when search changes
-  useEffect(() => {
-    setAllAnime([]);
-    setCurrentPage(1);
-  }, [searchQuery]);
+  
+  // Get anime array directly from data
+  const animeList = currentData?.data || [];
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -207,8 +182,8 @@ const Anime = () => {
 
         {/* Premium Animated Grid */}
         <AnimatedGrid
-          items={allAnime}
-          loading={isLoading && currentPage === 1}
+          items={animeList}
+          loading={isLoading}
           className="mb-8"
         />
 
@@ -228,7 +203,7 @@ const Anime = () => {
         )}
 
         {/* Load More Section */}
-        {allAnime.length > 0 && hasMore && (
+        {animeList.length > 0 && hasMore && (
           <motion.div
             className="text-center py-8"
             initial={{ opacity: 0, y: 20 }}
@@ -272,7 +247,7 @@ const Anime = () => {
         )}
 
         {/* Results Count */}
-        {allAnime.length > 0 && (
+        {animeList.length > 0 && (
           <motion.div
             className="text-center mt-8"
             initial={{ opacity: 0 }}
@@ -282,7 +257,7 @@ const Anime = () => {
             <p className="text-text-secondary">
               Showing{" "}
               <span className="text-accent-cyan font-semibold">
-                {allAnime.length}
+                {animeList.length}
               </span>{" "}
               anime
               {hasMore && (

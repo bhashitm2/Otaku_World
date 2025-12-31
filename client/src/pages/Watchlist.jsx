@@ -316,18 +316,12 @@ const Watchlist = () => {
               const imageUrl =
                 item.image && item.image.trim() !== ""
                   ? item.image
-                  : "/placeholder-anime.jpg";
+                  : null;
 
               const componentItem = {
                 mal_id: item.itemId,
                 title: item.title,
-                images: {
-                  jpg: {
-                    image_url: imageUrl,
-                    large_image_url: imageUrl,
-                    small_image_url: imageUrl,
-                  },
-                },
+                image: imageUrl,
                 score: item.score,
                 status: item.status,
                 genres: item.genres,
@@ -336,14 +330,6 @@ const Watchlist = () => {
                 volumes: item.volumes,
                 type: item.type,
               };
-
-              // Debug: Log problematic images
-              if (!item.image || item.image.trim() === "") {
-                console.log(
-                  `Using placeholder for ${item.title} - original image:`,
-                  item.image
-                );
-              }
 
               // Create custom card with watchlist info
               const CardComponent = AnimeCard;

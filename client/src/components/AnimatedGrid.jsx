@@ -1,31 +1,10 @@
-// src/components/AnimatedGrid.jsx - Premium animated grid component
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  useStaggerAnimation,
-  usePrefersReducedMotion,
-} from "../hooks/useAnimation";
+// src/components/AnimatedGrid.jsx - Grid component matching character cards style
+import React from "react";
 import EnhancedAnimeCard from "./EnhancedAnimeCard";
 
 const AnimatedGrid = ({ items = [], loading = false, className = "" }) => {
-  const [hoveredId, setHoveredId] = useState(null);
-  const { getStaggerDelay } = useStaggerAnimation(items?.length || 0);
-  const prefersReduced = usePrefersReducedMotion();
-
   // Handle undefined or empty items
   const safeItems = items || [];
-
-  // Container animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: prefersReduced ? 0 : 0.6,
-        staggerChildren: prefersReduced ? 0 : 0.05,
-      },
-    },
-  };
 
   // Loading skeleton grid
   const LoadingSkeleton = () => (
@@ -33,34 +12,25 @@ const AnimatedGrid = ({ items = [], loading = false, className = "" }) => {
       className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ${className}`}
     >
       {[...Array(12)].map((_, index) => (
-        <motion.div
+        <div
           key={index}
-          className="bg-surface-secondary rounded-xl overflow-hidden"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            delay: prefersReduced ? 0 : index * 0.05,
-            duration: prefersReduced ? 0 : 0.3,
-          }}
+          className="bg-gray-900 rounded-lg overflow-hidden animate-pulse"
         >
-          <div className="shimmer w-full h-64" />
+          <div className="bg-gray-800 w-full h-64" />
           <div className="p-4 space-y-3">
-            <div className="shimmer h-6 w-3/4 rounded" />
-            <div className="shimmer h-4 w-1/2 rounded" />
-            <div className="shimmer h-4 w-2/3 rounded" />
+            <div className="bg-gray-800 h-6 w-3/4 rounded" />
+            <div className="bg-gray-800 h-4 w-1/2 rounded" />
+            <div className="bg-gray-800 h-4 w-2/3 rounded" />
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );
 
   // Empty state
   const EmptyState = () => (
-    <motion.div
+    <div
       className="flex flex-col items-center justify-center py-20 text-center"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
     >
       <div className="text-6xl mb-4">🔍</div>
       <h3 className="text-xl font-semibold text-text-primary mb-2">
@@ -69,7 +39,7 @@ const AnimatedGrid = ({ items = [], loading = false, className = "" }) => {
       <p className="text-text-secondary max-w-md">
         Try adjusting your search or filters to discover more anime series.
       </p>
-    </motion.div>
+    </div>
   );
 
   // Show loading state
@@ -82,27 +52,29 @@ const AnimatedGrid = ({ items = [], loading = false, className = "" }) => {
     return <EmptyState />;
   }
 
-  // Standard responsive grid with premium animations
+  // Deduplicate items based on mal_id
+  const uniqueItems = safeItems.reduce((acc, item) => {
+    const id = item.mal_id || item.id;
+    if (id && !acc.seen.has(id)) {
+      acc.seen.add(id);
+      acc.items.push(item);
+    }
+    return acc;
+  }, { seen: new Set(), items: [] }).items;
+
+  // Standard responsive grid matching character cards
   return (
-    <motion.div
+    <div
       className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 ${className}`}
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
     >
-      <AnimatePresence mode="popLayout">
-        {safeItems.map((item, index) => (
-          <EnhancedAnimeCard
-            key={item.mal_id || index}
-            anime={item}
-            index={index}
-            delay={getStaggerDelay(index)}
-            onHover={setHoveredId}
-            isHovered={hoveredId === item.mal_id}
-          />
-        ))}
-      </AnimatePresence>
-    </motion.div>
+      {uniqueItems.map((item, index) => (
+        <EnhancedAnimeCard
+          key={`anime-${item.mal_id || item.id}-${index}`}
+          anime={item}
+          index={index}
+        />
+      ))}
+    </div>
   );
 };
 

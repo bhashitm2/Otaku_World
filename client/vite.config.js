@@ -4,6 +4,34 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  
+  // Dependency optimization for faster dev server startup
+  optimizeDeps: {
+    // Pre-bundle these heavy dependencies
+    include: [
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "@tanstack/react-query",
+      "firebase/app",
+      "firebase/auth",
+      "firebase/firestore",
+      "framer-motion",
+      "lucide-react",
+      "axios",
+      "animejs",
+    ],
+    // Force pre-bundling even if not detected
+    force: false,
+    // Increase timeout for slow networks
+    esbuildOptions: {
+      target: "esnext",
+    },
+  },
+
+  // Enable caching for faster subsequent loads
+  cacheDir: "node_modules/.vite",
+
   build: {
     rollupOptions: {
       output: {
@@ -37,9 +65,23 @@ export default defineConfig({
       },
     },
   },
+
   // Development server configuration
   server: {
     port: 5173,
+    // Faster HMR
+    hmr: {
+      overlay: true,
+    },
+    // Warm up frequently used files
+    warmup: {
+      clientFiles: [
+        "./src/main.jsx",
+        "./src/App.jsx",
+        "./src/pages/Home.jsx",
+        "./src/components/Navbar.jsx",
+      ],
+    },
     proxy: {
       "/api": {
         target: "http://localhost:5000",

@@ -1,62 +1,85 @@
 // src/components/AnimeCard.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { formatAnimeData } from "../services/anime";
 import FavoriteButton from "./FavoriteButton";
 import WatchlistButton from "./WatchlistButton";
 
 const AnimeCard = React.memo(({ anime }) => {
-  const formattedAnime = formatAnimeData(anime);
+  // Handle both raw API data, formatted data, and watchlist/favorites data
+  if (!anime) return null;
+
+  const id = anime.mal_id || anime.itemId || anime.id;
+  const title = anime.title || anime.title_english || "Unknown Title";
+  const image = anime.images?.jpg?.large_image_url || 
+                anime.images?.jpg?.image_url || 
+                anime.image || 
+                "/placeholder-anime.jpg";
+  const score = anime.score;
+  const type = anime.type;
+  const year = anime.year || anime.aired?.prop?.from?.year;
+  const episodes = anime.episodes;
+  const status = anime.status;
+  const genres = anime.genres || [];
+  const rank = anime.rank;
+  const popularity = anime.popularity;
 
   // Don't render if anime data is invalid
-  if (!formattedAnime.id) {
+  if (!id) {
     return null;
   }
 
   return (
     <Link
-      to={`/anime/${formattedAnime.id}`}
-      className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105"
+      to={`/anime/${id}`}
+      className="group bg-gray-900 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 h-full flex flex-col"
     >
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <img
-          src={formattedAnime.image || "/placeholder-anime.jpg"}
-          alt={formattedAnime.title}
+          src={image}
+          alt={title}
           className="w-full h-64 object-cover group-hover:brightness-75 transition-all duration-300"
           loading="lazy"
           onError={(e) => {
-            e.target.src = "/placeholder-anime.jpg"; // Fallback image
+            e.target.src = "/placeholder-anime.jpg";
           }}
         />
 
         {/* Score badge */}
-        {formattedAnime.score && (
+        {score && (
           <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded-md text-sm font-bold">
-            ⭐ {formattedAnime.score}
+            ⭐ {score}
           </div>
         )}
 
         {/* Type badge */}
-        {formattedAnime.type && (
-          <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded-md text-xs font-semibold uppercase">
-            {formattedAnime.type}
+        {type && (
+          <div className="absolute top-2 left-2 bg-indigo-600 text-white px-2 py-1 rounded-md text-xs font-semibold uppercase">
+            {type}
           </div>
         )}
 
         {/* Action buttons */}
-        <div className="absolute bottom-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div 
+          className="absolute bottom-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
           <FavoriteButton
             item={{
-              ...formattedAnime,
-              mal_id: formattedAnime.id,
+              mal_id: id,
+              title: title,
+              image: image,
               type: "anime",
             }}
             size="sm"
           />
           <WatchlistButton
             item={{
-              ...formattedAnime,
-              mal_id: formattedAnime.id,
+              mal_id: id,
+              title: title,
+              image: image,
               type: "anime",
             }}
             size="sm"
@@ -67,66 +90,69 @@ const AnimeCard = React.memo(({ anime }) => {
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white text-center">
             <p className="font-semibold mb-2">View Details</p>
-            {formattedAnime.episodes && (
-              <p className="text-sm">{formattedAnime.episodes} episodes</p>
+            {episodes && (
+              <p className="text-sm">{episodes} episodes</p>
             )}
           </div>
         </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-bold text-gray-900 text-sm mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
-          {formattedAnime.title}
+      <div className="p-4 flex-1 flex flex-col">
+        <h3 className="font-bold text-white text-sm mb-2 line-clamp-2 group-hover:text-indigo-400 transition-colors duration-300">
+          {title}
         </h3>
 
-        <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
-          {formattedAnime.year && (
-            <span className="bg-gray-100 px-2 py-1 rounded">
-              {formattedAnime.year}
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+          {year && (
+            <span className="bg-gray-800 px-2 py-1 rounded">
+              {year}
             </span>
           )}
-          {formattedAnime.status && (
+          {status && (
             <span
               className={`px-2 py-1 rounded font-medium ${
-                formattedAnime.status === "Finished Airing"
-                  ? "bg-green-100 text-green-800"
-                  : formattedAnime.status === "Currently Airing"
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-yellow-100 text-yellow-800"
+                status === "Finished Airing"
+                  ? "bg-green-900/50 text-green-400"
+                  : status === "Currently Airing"
+                  ? "bg-blue-900/50 text-blue-400"
+                  : "bg-yellow-900/50 text-yellow-400"
               }`}
             >
-              {formattedAnime.status}
+              {status}
             </span>
           )}
         </div>
 
         {/* Genres */}
-        {formattedAnime.genres && formattedAnime.genres.length > 0 && (
+        {genres && genres.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-2">
-            {formattedAnime.genres.slice(0, 2).map((genre) => (
+            {genres.slice(0, 2).map((genre, index) => (
               <span
-                key={genre.mal_id}
-                className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full"
+                key={genre.mal_id || index}
+                className="bg-purple-900/50 text-purple-400 text-xs px-2 py-1 rounded-full"
               >
                 {genre.name}
               </span>
             ))}
-            {formattedAnime.genres.length > 2 && (
-              <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
-                +{formattedAnime.genres.length - 2}
+            {genres.length > 2 && (
+              <span className="bg-gray-800 text-gray-400 text-xs px-2 py-1 rounded-full">
+                +{genres.length - 2}
               </span>
             )}
           </div>
         )}
 
+        {/* Flexible spacer */}
+        <div className="flex-1"></div>
+
         {/* Rating and Popularity */}
         <div className="flex items-center justify-between text-xs text-gray-500">
-          {formattedAnime.rank && (
-            <span className="flex items-center">🏆 #{formattedAnime.rank}</span>
+          {rank && (
+            <span className="flex items-center">🏆 #{rank}</span>
           )}
-          {formattedAnime.popularity && (
+          {popularity && (
             <span className="flex items-center">
-              👥 #{formattedAnime.popularity}
+              👥 #{popularity}
             </span>
           )}
         </div>

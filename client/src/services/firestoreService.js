@@ -26,13 +26,17 @@ const createDocId = (userId, itemId, type) => `${userId}_${type}_${itemId}`;
 export const addToFavorites = async (userId, item) => {
   try {
     const docId = createDocId(userId, item.mal_id, item.type);
+    // Handle both nested images object and flat image property
+    const imageUrl = item.images?.jpg?.large_image_url || 
+                     item.images?.jpg?.image_url || 
+                     item.image || 
+                     "";
     const favoriteData = {
       userId,
       itemId: item.mal_id,
       type: item.type, // 'anime', 'manga', 'character'
       title: item.title || item.name,
-      image:
-        item.images?.jpg?.image_url || item.images?.jpg?.large_image_url || "",
+      image: imageUrl,
       genres: item.genres || [],
       score: item.score || null,
       status: item.status || "",
@@ -118,13 +122,17 @@ export const addToWatchlist = async (
 ) => {
   try {
     const docId = createDocId(userId, item.mal_id, item.type);
+    // Handle both nested images object and flat image property
+    const imageUrl = item.images?.jpg?.large_image_url || 
+                     item.images?.jpg?.image_url || 
+                     item.image || 
+                     "";
     const watchlistData = {
       userId,
       itemId: item.mal_id,
       type: item.type, // 'anime', 'manga'
       title: item.title,
-      image:
-        item.images?.jpg?.image_url || item.images?.jpg?.large_image_url || "",
+      image: imageUrl,
       genres: item.genres || [],
       score: item.score || null,
       status: item.status || "",

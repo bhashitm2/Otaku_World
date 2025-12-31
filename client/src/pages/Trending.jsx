@@ -29,6 +29,7 @@ const Trending = () => {
   useEffect(() => {
     if (initialData?.data) {
       setAllAnime(initialData.data);
+      setCurrentPage(1);
       setHasMore(initialData.pagination?.has_next_page || false);
     }
   }, [initialData]);
@@ -42,7 +43,12 @@ const Trending = () => {
       const response = await getTrendingAnime(nextPage, 25);
 
       if (response?.data) {
-        setAllAnime((prev) => [...prev, ...response.data]);
+        // Deduplicate by mal_id when adding new items
+        setAllAnime((prev) => {
+          const existingIds = new Set(prev.map(item => item.mal_id));
+          const newItems = response.data.filter(item => !existingIds.has(item.mal_id));
+          return [...prev, ...newItems];
+        });
         setCurrentPage(nextPage);
         setHasMore(response.pagination?.has_next_page || false);
       }
