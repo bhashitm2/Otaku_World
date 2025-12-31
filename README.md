@@ -54,7 +54,7 @@
 
 2. **Install dependencies**
 
-🌐 **Website:** [Your Deployed URL Here]
+🌐 **Website:** [https://otaku-world-nu.vercel.app/]
 
 📱 **Mobile Optimized:** Fully responsive across all devices ```bash
 
