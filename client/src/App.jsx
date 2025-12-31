@@ -9,7 +9,6 @@ import BackendStatus from "./components/BackendStatus";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { WatchlistProvider } from "./context/WatchlistContext";
 import { ToastProvider } from "./components/ui/Toast";
-import AIAssistant from "./components/AIAssistant";
 
 // Lazy load pages for code splitting
 const Home = React.lazy(() => import("./pages/Home"));
@@ -79,7 +78,6 @@ function App() {
                   </Suspense>
                 </main>
                 <Footer />
-                <AIAssistant />
               </div>
             </BackendStatus>
           </WatchlistProvider>
