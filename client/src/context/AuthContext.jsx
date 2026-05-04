@@ -4,7 +4,6 @@ import { auth, googleProvider } from "../services/firebaseClient";
 import {
   onAuthStateChanged,
   signInWithPopup,
-  signInWithRedirect,
   signOut as firebaseSignOut,
 } from "firebase/auth";
 
@@ -43,10 +42,6 @@ export function AuthProvider({ children }) {
       const result = await signInWithPopup(auth, googleProvider);
       return result;
     } catch (error) {
-      if (error.code === "auth/popup-blocked") {
-        const result = await signInWithRedirect(auth, googleProvider);
-        return result;
-      }
       console.error("Google sign-in error:", error);
       throw error;
     }
