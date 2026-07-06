@@ -123,32 +123,60 @@ export const getTopAnime = async (page = 1, limit = 25) => {
   }
 };
 
+// Filter params supported by the backend search passthrough
+const SEARCH_FILTER_KEYS = [
+  "genres",
+  "status",
+  "type",
+  "rating",
+  "min_score",
+  "max_score",
+  "start_date",
+  "end_date",
+  "sfw",
+  "order_by",
+  "sort",
+];
+
+const buildSearchParams = (query, page, limit, options) => {
+  const params = { page, limit };
+
+  if (query && query.trim().length > 0) {
+    params.q = query.trim();
+  }
+
+  for (const key of SEARCH_FILTER_KEYS) {
+    if (
+      options[key] !== undefined &&
+      options[key] !== null &&
+      options[key] !== ""
+    ) {
+      params[key] = options[key];
+    }
+  }
+
+  return params;
+};
+
 export const searchAnime = async (
   query,
   page = 1,
   limit = 25,
   options = {}
 ) => {
-  if (!query || query.trim().length === 0) {
-    throw new Error("Search query cannot be empty");
+  const hasFilters = SEARCH_FILTER_KEYS.some(
+    (key) =>
+      options[key] !== undefined && options[key] !== null && options[key] !== ""
+  );
+
+  if ((!query || query.trim().length === 0) && !hasFilters) {
+    throw new Error("Search query or at least one filter is required");
   }
 
   try {
-    const searchParams = {
-      q: query.trim(),
-      page,
-      limit,
-    };
-
-    // Add sorting parameters if provided
-    if (options.order_by) {
-      searchParams.order_by = options.order_by;
-    }
-    if (options.sort) {
-      searchParams.sort = options.sort;
-    }
-
-    const response = await apiService.anime.search(searchParams);
+    const response = await apiService.anime.search(
+      buildSearchParams(query, page, limit, options)
+    );
     return response.data;
   } catch (error) {
     console.error("Error searching anime:", error);
@@ -243,6 +271,32 @@ export const getRandomAnime = async () => {
   }
 };
 
+// Weekly airing schedule; day = monday..sunday (or omit for all days)
+export const getSchedules = async (day, page = 1, limit = 25) => {
+  try {
+    const params = { page, limit };
+    if (day) params.day = day;
+
+    const response = await apiService.anime.getSchedules(params);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching airing schedule:", error);
+    throw error;
+  }
+};
+
+export const getAnimeCharacters = async (id) => {
+  if (!id) throw new Error("Anime ID is required");
+
+  try {
+    const response = await apiService.anime.getCharacters(id);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching anime characters:", error);
+    throw error;
+  }
+};
+
 // ================== Character APIs ==================
 export const searchCharacters = async (
   query,
@@ -299,8 +353,88 @@ export const getTopCharacters = async (page = 1, limit = 25) => {
   }
 };
 
-// ================== Manga APIs Removed ==================
-// Manga functionality has been temporarily removed
+// ================== Manga APIs ==================
+export const getTopManga = async (page = 1, limit = 25) => {
+  try {
+    const response = await apiService.manga.getTop({ page, limit });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top manga:", error);
+    throw error;
+  }
+};
+
+export const searchManga = async (
+  query,
+  page = 1,
+  limit = 25,
+  options = {}
+) => {
+  const hasFilters = SEARCH_FILTER_KEYS.some(
+    (key) =>
+      options[key] !== undefined && options[key] !== null && options[key] !== ""
+  );
+
+  if ((!query || query.trim().length === 0) && !hasFilters) {
+    throw new Error("Search query or at least one filter is required");
+  }
+
+  try {
+    const response = await apiService.manga.search(
+      buildSearchParams(query, page, limit, options)
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error searching manga:", error);
+    throw error;
+  }
+};
+
+export const getMangaDetails = async (id) => {
+  if (!id) throw new Error("Manga ID is required");
+
+  try {
+    const response = await apiService.manga.getDetails(id);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching manga details:", error);
+    throw error;
+  }
+};
+
+export const getMangaCharacters = async (id) => {
+  if (!id) throw new Error("Manga ID is required");
+
+  try {
+    const response = await apiService.manga.getCharacters(id);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching manga characters:", error);
+    throw error;
+  }
+};
+
+export const getMangaRecommendations = async (id) => {
+  if (!id) throw new Error("Manga ID is required");
+
+  try {
+    const response = await apiService.manga.getRecommendations(id);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching manga recommendations:", error);
+    throw error;
+  }
+};
+
+export const getMangaGenres = async () => {
+  try {
+    const response = await apiService.manga.getGenres();
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching manga genres:", error);
+    throw error;
+  }
+};
 
 // ================== Data Format Helpers ==================
 export const formatCharacterData = (character) => ({
@@ -353,7 +487,7 @@ export const formatAnimeData = (anime) => {
 
   return {
     id: anime.mal_id,
-    title: anime.title || anime.title_english || "Unknown Title",
+    title: anime.title_english || anime.title || "Unknown Title",
     titleEnglish: anime.title_english,
     titleJapanese: anime.title_japanese,
     image:
@@ -379,4 +513,56 @@ export const formatAnimeData = (anime) => {
   };
 };
 
-// formatMangaData function removed - manga functionality disabled
+export const formatMangaData = (manga) => {
+  if (!manga) {
+    console.warn("formatMangaData received undefined manga data");
+    return {
+      id: null,
+      title: "Unknown Title",
+      titleEnglish: null,
+      titleJapanese: null,
+      image: "/placeholder-anime.jpg",
+      imageSmall: "/placeholder-anime.jpg",
+      score: null,
+      rank: null,
+      popularity: null,
+      chapters: null,
+      volumes: null,
+      status: null,
+      type: null,
+      genres: [],
+      synopsis: null,
+      published: null,
+      year: null,
+      authors: [],
+      serializations: [],
+      url: null,
+    };
+  }
+
+  return {
+    id: manga.mal_id,
+    title: manga.title_english || manga.title || "Unknown Title",
+    titleEnglish: manga.title_english,
+    titleJapanese: manga.title_japanese,
+    image:
+      manga.images?.jpg?.large_image_url ||
+      manga.images?.jpg?.image_url ||
+      "/placeholder-anime.jpg",
+    imageSmall: manga.images?.jpg?.small_image_url || "/placeholder-anime.jpg",
+    score: manga.score,
+    rank: manga.rank,
+    popularity: manga.popularity,
+    chapters: manga.chapters,
+    volumes: manga.volumes,
+    status: manga.status,
+    type: manga.type,
+    genres: manga.genres || [],
+    synopsis: manga.synopsis,
+    published: manga.published,
+    year: manga.published?.prop?.from?.year,
+    authors: manga.authors || [],
+    serializations: manga.serializations || [],
+    url: manga.url,
+  };
+};

@@ -117,30 +117,32 @@ export const fetchJikanData = async (endpoint, options = {}) => {
 
 // Specialized fetch functions for different data types
 export const fetchAnimeData = async (query = "", page = 1, options = {}) => {
-  let endpoint = `/anime?page=${page}&limit=25`;
+  const limit = options.limit || 25;
+  let endpoint = `/anime?page=${page}&limit=${limit}`;
 
   if (query) {
     endpoint += `&q=${encodeURIComponent(query)}`;
   }
 
-  if (options.genres) {
-    endpoint += `&genres=${options.genres}`;
-  }
+  // Filter params forwarded verbatim to Jikan search
+  const filterParams = [
+    "genres",
+    "status",
+    "type",
+    "rating",
+    "min_score",
+    "max_score",
+    "start_date",
+    "end_date",
+    "sfw",
+    "order_by",
+    "sort",
+  ];
 
-  if (options.status) {
-    endpoint += `&status=${options.status}`;
-  }
-
-  if (options.rating) {
-    endpoint += `&rating=${options.rating}`;
-  }
-
-  if (options.order_by) {
-    endpoint += `&order_by=${options.order_by}`;
-  }
-
-  if (options.sort) {
-    endpoint += `&sort=${options.sort}`;
+  for (const param of filterParams) {
+    if (options[param] !== undefined && options[param] !== "") {
+      endpoint += `&${param}=${encodeURIComponent(options[param])}`;
+    }
   }
 
   return fetchJikanData(endpoint, { cacheDuration: 3600 }); // 1 hour cache for search results
@@ -151,26 +153,30 @@ export const fetchAnimeDetails = async (id) => {
 };
 
 export const fetchMangaData = async (query = "", page = 1, options = {}) => {
-  let endpoint = `/manga?page=${page}&limit=25`;
+  const limit = options.limit || 25;
+  let endpoint = `/manga?page=${page}&limit=${limit}`;
 
   if (query) {
     endpoint += `&q=${encodeURIComponent(query)}`;
   }
 
-  if (options.genres) {
-    endpoint += `&genres=${options.genres}`;
-  }
+  const filterParams = [
+    "genres",
+    "status",
+    "type",
+    "min_score",
+    "max_score",
+    "start_date",
+    "end_date",
+    "sfw",
+    "order_by",
+    "sort",
+  ];
 
-  if (options.status) {
-    endpoint += `&status=${options.status}`;
-  }
-
-  if (options.order_by) {
-    endpoint += `&order_by=${options.order_by}`;
-  }
-
-  if (options.sort) {
-    endpoint += `&sort=${options.sort}`;
+  for (const param of filterParams) {
+    if (options[param] !== undefined && options[param] !== "") {
+      endpoint += `&${param}=${encodeURIComponent(options[param])}`;
+    }
   }
 
   return fetchJikanData(endpoint, { cacheDuration: 3600 });
@@ -178,6 +184,22 @@ export const fetchMangaData = async (query = "", page = 1, options = {}) => {
 
 export const fetchMangaDetails = async (id) => {
   return fetchJikanData(`/manga/${id}/full`, { cacheDuration: 7200 });
+};
+
+export const fetchMangaCharacters = async (id) => {
+  return fetchJikanData(`/manga/${id}/characters`, { cacheDuration: 7200 });
+};
+
+export const fetchMangaReviews = async (id, page = 1) => {
+  return fetchJikanData(`/manga/${id}/reviews?page=${page}`, {
+    cacheDuration: 3600,
+  });
+};
+
+export const fetchMangaRecommendations = async (id) => {
+  return fetchJikanData(`/manga/${id}/recommendations`, {
+    cacheDuration: 7200,
+  });
 };
 
 export const fetchCharacterData = async (
@@ -230,6 +252,47 @@ export const fetchSeasons = async (year, season) => {
   return fetchJikanData(`/seasons/${year}/${season}`, { cacheDuration: 3600 });
 };
 
+export const fetchSeasonNow = async (page = 1) => {
+  return fetchJikanData(`/seasons/now?page=${page}`, { cacheDuration: 3600 });
+};
+
+export const fetchSeasonUpcoming = async (page = 1) => {
+  return fetchJikanData(`/seasons/upcoming?page=${page}`, {
+    cacheDuration: 3600,
+  });
+};
+
+// Weekly airing schedule; day = monday..sunday, other, unknown
+export const fetchSchedules = async (day, page = 1, limit = 25) => {
+  let endpoint = `/schedules?page=${page}&limit=${limit}`;
+  if (day) {
+    endpoint += `&filter=${encodeURIComponent(day)}`;
+  }
+  return fetchJikanData(endpoint, { cacheDuration: 1800 });
+};
+
+export const fetchAnimeCharacters = async (id) => {
+  return fetchJikanData(`/anime/${id}/characters`, { cacheDuration: 7200 });
+};
+
+export const fetchAnimeEpisodes = async (id, page = 1) => {
+  return fetchJikanData(`/anime/${id}/episodes?page=${page}`, {
+    cacheDuration: 3600,
+  });
+};
+
+export const fetchAnimeReviews = async (id, page = 1) => {
+  return fetchJikanData(`/anime/${id}/reviews?page=${page}`, {
+    cacheDuration: 3600,
+  });
+};
+
+export const fetchAnimeRecommendations = async (id) => {
+  return fetchJikanData(`/anime/${id}/recommendations`, {
+    cacheDuration: 7200,
+  });
+};
+
 // Utility function to clear Jikan cache
 export const clearJikanCache = (pattern = "jikan:") => {
   const keys = cache.keys();
@@ -244,10 +307,20 @@ export default {
   fetchAnimeDetails,
   fetchMangaData,
   fetchMangaDetails,
+  fetchMangaCharacters,
+  fetchMangaReviews,
+  fetchMangaRecommendations,
   fetchCharacterData,
   fetchCharacterDetails,
   fetchTopAnime,
   fetchGenres,
   fetchSeasons,
+  fetchSeasonNow,
+  fetchSeasonUpcoming,
+  fetchSchedules,
+  fetchAnimeCharacters,
+  fetchAnimeEpisodes,
+  fetchAnimeReviews,
+  fetchAnimeRecommendations,
   clearJikanCache,
 };

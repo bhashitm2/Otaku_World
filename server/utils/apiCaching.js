@@ -52,9 +52,16 @@ export const cacheMiddleware = (duration = stdTTL) => {
     // Store original json method
     const originalJson = res.json;
 
-    // Override json method to cache response
+    // Override json method to cache response (successful responses only —
+    // caching an upstream error would serve it as a 200 until the TTL expires)
     res.json = function (data) {
-      cache.set(key, data, duration);
+      if (
+        res.statusCode >= 200 &&
+        res.statusCode < 300 &&
+        data?.success !== false
+      ) {
+        cache.set(key, data, duration);
+      }
       originalJson.call(this, data);
     };
 

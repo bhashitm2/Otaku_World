@@ -2,6 +2,10 @@
 import {
   fetchMangaData,
   fetchMangaDetails,
+  fetchMangaCharacters,
+  fetchMangaReviews,
+  fetchMangaRecommendations,
+  fetchTopAnime,
   fetchGenres,
 } from "../utils/jikanHelper.js";
 
@@ -14,6 +18,12 @@ export const getManga = async (req, res) => {
       limit = 25,
       genres,
       status,
+      type,
+      min_score,
+      max_score,
+      start_date,
+      end_date,
+      sfw,
       order_by = "popularity",
       sort = "asc",
     } = req.query;
@@ -21,8 +31,15 @@ export const getManga = async (req, res) => {
     const options = {
       genres,
       status,
+      type,
+      min_score,
+      max_score,
+      start_date,
+      end_date,
+      sfw,
       order_by,
       sort,
+      limit,
     };
 
     const data = await fetchMangaData(q, parseInt(page), options);
@@ -133,12 +150,9 @@ export const getTrendingManga = async (req, res) => {
 // Get top manga
 export const getTopManga = async (req, res) => {
   try {
-    const { page = 1, limit = 25 } = req.query;
+    const { page = 1, filter = "bypopularity" } = req.query;
 
-    const data = await fetchMangaData("", parseInt(page), {
-      order_by: "score",
-      sort: "desc",
-    });
+    const data = await fetchTopAnime("manga", filter, parseInt(page));
 
     res.json({
       success: true,
@@ -245,13 +259,19 @@ export const getMangaCharacters = async (req, res) => {
       });
     }
 
+    const data = await fetchMangaCharacters(parseInt(id));
+
     res.json({
       success: true,
-      message: "Characters endpoint not yet implemented",
-      data: [],
+      data: data.data,
+      cached: false,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error(`Error fetching characters for manga ${id}:`, error.message);
+    console.error(
+      `Error fetching characters for manga ${req.params.id}:`,
+      error.message
+    );
     res.status(500).json({
       success: false,
       message: "Failed to fetch manga characters",
@@ -272,13 +292,21 @@ export const getMangaReviews = async (req, res) => {
       });
     }
 
+    const { page = 1 } = req.query;
+    const data = await fetchMangaReviews(parseInt(id), parseInt(page));
+
     res.json({
       success: true,
-      message: "Reviews endpoint not yet implemented",
-      data: [],
+      data: data.data,
+      pagination: data.pagination,
+      cached: false,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error(`Error fetching reviews for manga ${id}:`, error.message);
+    console.error(
+      `Error fetching reviews for manga ${req.params.id}:`,
+      error.message
+    );
     res.status(500).json({
       success: false,
       message: "Failed to fetch manga reviews",
@@ -299,14 +327,17 @@ export const getMangaRecommendations = async (req, res) => {
       });
     }
 
+    const data = await fetchMangaRecommendations(parseInt(id));
+
     res.json({
       success: true,
-      message: "Recommendations endpoint not yet implemented",
-      data: [],
+      data: data.data,
+      cached: false,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error(
-      `Error fetching recommendations for manga ${id}:`,
+      `Error fetching recommendations for manga ${req.params.id}:`,
       error.message
     );
     res.status(500).json({

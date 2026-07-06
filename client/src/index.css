@@ -1,14 +1,103 @@
 /* Import premium about section styles */
 @import "./styles/premiumAbout.css";
 
-/* Preload critical fonts */
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============ "Ink & Impact" design system ============ */
+@layer components {
+  /* 3px ink border + paper surface */
+  .ink-card {
+    @apply border-[3px] border-ink bg-ink-paper;
+  }
+
+  /* Hard offset shadow + press-down hover. Shadow color via --ink-sh. */
+  .ink-press {
+    --ink-sh: #f2efe6;
+    box-shadow: 6px 6px 0 var(--ink-sh);
+    transition: all 0.15s;
+  }
+  .ink-press:hover {
+    transform: translate(3px, 3px);
+    box-shadow: 3px 3px 0 var(--ink-sh);
+  }
+  .ink-press-sm {
+    --ink-sh: #f2efe6;
+    box-shadow: 4px 4px 0 var(--ink-sh);
+    transition: all 0.15s;
+  }
+  .ink-press-sm:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--ink-sh);
+  }
+  .ink-sh-red {
+    --ink-sh: #e63946;
+  }
+
+  /* ink shadow at rest, red shadow on press (feature/character cards) */
+  .ink-press-redhov {
+    box-shadow: 6px 6px 0 #f2efe6;
+    transition: all 0.15s;
+  }
+  .ink-press-redhov:hover {
+    transform: translate(3px, 3px);
+    box-shadow: 3px 3px 0 #e63946;
+  }
+
+  /* Static hard shadows (no hover) */
+  .ink-shadow {
+    box-shadow: 6px 6px 0 #f2efe6;
+  }
+  .ink-shadow-sm {
+    box-shadow: 4px 4px 0 #f2efe6;
+  }
+  .ink-shadow-lg {
+    box-shadow: 8px 8px 0 #f2efe6;
+  }
+  .ink-shadow-red {
+    box-shadow: 8px 8px 0 #e63946;
+  }
+
+  /* Buttons: Archivo 900 uppercase */
+  .ink-btn {
+    @apply inline-flex cursor-pointer items-center justify-center border-[3px] border-ink font-body font-black uppercase tracking-[1px];
+  }
+
+  /* Anton display text */
+  .ink-display {
+    @apply font-display uppercase tracking-[1px];
+  }
+
+  /* Halftone dot backgrounds */
+  .ink-halftone {
+    background-image: radial-gradient(
+      circle,
+      rgba(242, 239, 230, 0.13) 1.6px,
+      transparent 1.6px
+    );
+    background-size: 14px 14px;
+  }
+  .ink-halftone-soft {
+    background-image: radial-gradient(
+      circle,
+      rgba(242, 239, 230, 0.07) 1.4px,
+      transparent 1.4px
+    );
+    background-size: 16px 16px;
+  }
+
+  /* Placeholder cover stripes (behind Jikan images while loading) */
+  .ink-stripes {
+    background: repeating-linear-gradient(
+      45deg,
+      #26241f 0,
+      #26241f 14px,
+      #2c2a24 14px,
+      #2c2a24 28px
+    );
+  }
+}
 
 /* CSS Custom Properties from theme.js */
 :root {

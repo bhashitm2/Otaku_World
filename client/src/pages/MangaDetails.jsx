@@ -1,12 +1,12 @@
-// AnimeDetails — "Ink & Impact": poster column + stat blocks + story panel + cast
+// MangaDetails — "Ink & Impact": poster + stat blocks + story panel + cast
 import React from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
-  useAnimeDetails,
-  useAnimeCharacters,
-  useAnimeRecommendations,
+  useMangaDetails,
+  useMangaCharacters,
+  useMangaRecommendations,
 } from "../hooks/useAnimeQueries";
-import { formatAnimeData } from "../services/anime";
+import { formatMangaData } from "../services/anime";
 import { useAuth } from "../hooks/useAuth";
 import { useFavorites } from "../hooks/useFavorites";
 import { useWatchlist } from "../hooks/useWatchlist";
@@ -23,23 +23,16 @@ const StatBlock = ({ value, label }) => (
   </div>
 );
 
-const compact = (n) => {
-  if (!n) return "—";
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-  if (n >= 1000) return `${Math.round(n / 1000)}K`;
-  return `${n}`;
-};
-
-const AnimeDetails = () => {
+const MangaDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
 
-  const { data, isLoading, error } = useAnimeDetails(id);
-  const { data: charactersData } = useAnimeCharacters(id, !!data);
-  const { data: recsData } = useAnimeRecommendations(id, !!data);
+  const { data, isLoading, error } = useMangaDetails(id);
+  const { data: charactersData } = useMangaCharacters(id, !!data);
+  const { data: recsData } = useMangaRecommendations(id, !!data);
 
   if (isLoading) {
     return (
@@ -61,34 +54,34 @@ const AnimeDetails = () => {
       <div className="px-6 pb-16 pt-9 md:px-[72px]">
         <InkEmptyState
           shout="NANI?! NOT FOUND..."
-          sub={error?.message || "This title could not be loaded."}
+          sub={error?.message || "This manga could not be loaded."}
           ctaLabel="Back to archive →"
-          ctaTo="/anime"
+          ctaTo="/manga"
         />
       </div>
     );
   }
 
-  const anime = formatAnimeData(data.data);
-  const raw = data.data;
+  const manga = formatMangaData(data.data);
   const cast = (charactersData?.data || []).slice(0, 8);
   const recommendations = (recsData?.data || []).slice(0, 4);
 
   const saveItem = {
-    mal_id: anime.id,
-    type: "anime",
-    title: anime.title,
-    image: anime.image,
-    genres: anime.genres,
-    score: anime.score,
-    status: anime.status,
-    episodes: anime.episodes,
+    mal_id: manga.id,
+    type: "manga",
+    title: manga.title,
+    image: manga.image,
+    genres: manga.genres,
+    score: manga.score,
+    status: manga.status,
+    chapters: manga.chapters,
+    volumes: manga.volumes,
   };
-  const faved = user && isFavorite(anime.id, "anime");
-  const queued = user && isInWatchlist(anime.id, "anime");
+  const faved = user && isFavorite(manga.id, "manga");
+  const queued = user && isInWatchlist(manga.id, "manga");
 
-  const isAiring = anime.status === "Currently Airing";
-  const studio = anime.studios?.[0]?.name;
+  const isPublishing = manga.status === "Publishing";
+  const author = manga.authors?.[0]?.name;
 
   return (
     <div className="animate-popIn px-6 pb-16 pt-9 md:px-[72px]">
@@ -102,15 +95,15 @@ const AnimeDetails = () => {
       <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[340px_1fr]">
         {/* Poster column */}
         <div className="relative mx-auto w-full max-w-[340px] lg:mx-0">
-          {anime.rank && (
+          {manga.rank && (
             <div className="ink-display absolute -top-4 -left-3 z-[2] border-[3px] border-ink bg-ink-red px-3 py-0.5 text-xl text-ink-paper">
-              RANK #{anime.rank}
+              RANK #{manga.rank}
             </div>
           )}
           <div className="relative h-[460px] border-[3px] border-ink ink-shadow-lg">
             <InkCover
-              src={anime.image}
-              alt={anime.title}
+              src={manga.image}
+              alt={manga.title}
               className="h-full w-full"
             />
           </div>
@@ -130,7 +123,7 @@ const AnimeDetails = () => {
                   queued ? "bg-ink text-ink-paper" : "bg-ink-paper text-ink"
                 }`}
               >
-                + {queued ? "QUEUED" : "WATCHLIST"}
+                + {queued ? "QUEUED" : "READLIST"}
               </button>
             </div>
           )}
@@ -139,28 +132,28 @@ const AnimeDetails = () => {
         {/* Details column */}
         <div>
           <div className="ink-display mb-4 inline-block -rotate-1 bg-ink px-3 py-1.5 text-xs tracking-[3px] text-ink-paper">
-            {[anime.type, anime.year, studio].filter(Boolean).join(" · ")}
+            {[manga.type, manga.year, author].filter(Boolean).join(" · ")}
           </div>
           <h1 className="ink-display m-0 text-4xl leading-[.98] md:text-[62px]">
-            {anime.title}
+            {manga.title}
           </h1>
-          {anime.titleJapanese && (
+          {manga.titleJapanese && (
             <div className="mt-2.5 font-jp text-base font-bold tracking-[4px] text-ink-mut4">
-              {anime.titleJapanese}
+              {manga.titleJapanese}
             </div>
           )}
 
           {/* Stat blocks */}
           <div className="my-6 flex flex-wrap gap-3.5">
-            <StatBlock value={`★ ${anime.score || "—"}`} label="SCORE" />
-            <StatBlock value={`#${anime.rank || "—"}`} label="RANKED" />
-            <StatBlock value={compact(raw.members)} label="MEMBERS" />
-            <StatBlock value={anime.episodes || "—"} label="EPISODES" />
+            <StatBlock value={`★ ${manga.score || "—"}`} label="SCORE" />
+            <StatBlock value={`#${manga.rank || "—"}`} label="RANKED" />
+            <StatBlock value={manga.chapters || "—"} label="CHAPTERS" />
+            <StatBlock value={manga.volumes || "—"} label="VOLUMES" />
           </div>
 
           {/* Genres + status */}
           <div className="mb-6 flex flex-wrap gap-2">
-            {anime.genres.map((genre) => (
+            {manga.genres.map((genre) => (
               <span
                 key={genre.mal_id}
                 className="border-[3px] border-ink bg-ink-bg px-3 py-1.5 text-[11px] font-black uppercase tracking-[1px]"
@@ -168,25 +161,27 @@ const AnimeDetails = () => {
                 {genre.name}
               </span>
             ))}
-            {anime.status && (
+            {manga.status && (
               <span
                 className={`border-[3px] border-ink px-3 py-1.5 text-[11px] font-black uppercase tracking-[1px] ${
-                  isAiring ? "bg-ink-red text-ink-paper" : "bg-ink-bg text-ink"
+                  isPublishing
+                    ? "bg-ink-red text-ink-paper"
+                    : "bg-ink-bg text-ink"
                 }`}
               >
-                {anime.status}
+                {manga.status}
               </span>
             )}
           </div>
 
           {/* Story panel */}
-          {anime.synopsis && (
+          {manga.synopsis && (
             <div className="ink-card ink-shadow relative px-6 py-6">
               <div className="ink-display absolute -top-3.5 left-4 border-[3px] border-ink bg-ink-red px-3 py-0.5 text-[13px] tracking-[2px] text-ink-paper">
                 THE STORY SO FAR
               </div>
               <p className="m-0 mt-1.5 text-[15px] font-medium leading-[1.8] text-ink-body">
-                {anime.synopsis}
+                {manga.synopsis}
               </p>
             </div>
           )}
@@ -215,9 +210,11 @@ const AnimeDetails = () => {
                       <div className="ink-display text-[13.5px] line-clamp-1">
                         {character.name}
                       </div>
-                      <div className="mt-1 text-[10.5px] font-black uppercase tracking-[1px] text-ink-red">
-                        {role}
-                      </div>
+                      {role && (
+                        <div className="mt-1 text-[10.5px] font-black uppercase tracking-[1px] text-ink-red">
+                          {role}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -235,7 +232,7 @@ const AnimeDetails = () => {
                 {recommendations.map((rec) => (
                   <Link
                     key={rec.entry.mal_id}
-                    to={`/anime/${rec.entry.mal_id}`}
+                    to={`/manga/${rec.entry.mal_id}`}
                     className="ink-card ink-press-sm block"
                   >
                     <div className="h-40 border-b-[3px] border-ink">
@@ -261,4 +258,4 @@ const AnimeDetails = () => {
   );
 };
 
-export default AnimeDetails;
+export default MangaDetails;

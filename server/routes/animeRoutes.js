@@ -13,6 +13,7 @@ import {
   getAnimeReviews,
   getAnimeRecommendations,
   getSeasonalAnime,
+  getSchedules,
 } from "../controllers/animeController.js";
 import { protectAndSync } from "../middleware/auth.js";
 import { cacheMiddleware } from "../utils/apiCaching.js";
@@ -26,7 +27,8 @@ router.get("/search", cacheMiddleware(300), searchAnime); // 5 min cache
 router.get("/genres", cacheMiddleware(3600), getAnimeGenres); // 1 hour cache
 router.get("/genre/:genreId", cacheMiddleware(600), getAnimeByGenre); // 10 min cache
 router.get("/random", cacheMiddleware(60), getRandomAnime); // 1 min cache
-router.get("/seasonal", cacheMiddleware(3600), getSeasonalAnime); // 1 hour cache
+router.get("/seasonal", cacheMiddleware(1800), getSeasonalAnime); // 30 min cache
+router.get("/schedules", cacheMiddleware(1800), getSchedules); // 30 min cache (must stay above /:id)
 
 // Detailed routes with caching
 router.get("/:id", cacheMiddleware(1800), getAnimeDetails); // 30 min cache

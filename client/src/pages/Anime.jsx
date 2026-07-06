@@ -1,23 +1,91 @@
-// src/pages/Anime.jsx - Premium Anime Browse Page
+// Anime Archive — "Ink & Impact" browse page with search, sort, genre chips
+// and advanced filters, all synced to the URL.
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion"; // Force HMR refresh
+import { useSearchParams } from "react-router-dom";
 import { getTopAnime, searchAnime } from "../services/anime";
-import AnimatedGrid from "../components/AnimatedGrid";
-import SearchBar from "../components/SearchBar";
-import SortingControls from "../components/SortingControls";
-import { usePrefersReducedMotion } from "../hooks/useAnimation";
+import { useAnimeGenres } from "../hooks/useAnimeQueries";
+import InkAnimeCard from "../components/ink/InkAnimeCard";
+import InkEmptyState from "../components/ink/InkEmptyState";
+import { InkGridSkeleton } from "../components/ink/InkSkeleton";
+import FilterPanel from "../components/FilterPanel";
+import { dedupeById } from "../utils/dedupe";
+import { rankByRelevance } from "../utils/relevance";
+
+// Filters kept in the URL so filtered views are shareable/back-button-safe
+const FILTER_KEYS = [
+  "q",
+  "genres",
+  "status",
+  "type",
+  "min_score",
+  "year",
+  "order_by",
+];
+
+// The chip row shows the most popular genres; more live in the filter panel
+const CHIP_GENRE_COUNT = 11;
 
 const Anime = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [animeList, setAnimeList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const prefersReduced = usePrefersReducedMotion();
+  const [searchInput, setSearchInput] = useState(searchParams.get("q") || "");
 
-  // Fixed sorting: always by score, descending (High to Low)
-  const sortBy = "score";
-  const sortOrder = "desc";
+  const filters = {};
+  for (const key of FILTER_KEYS) {
+    const value = searchParams.get(key);
+    if (value) filters[key] = value;
+  }
+  const searchQuery = filters.q || "";
+  const hasFilters = ["genres", "status", "type", "min_score", "year"].some(
+    (key) => filters[key]
+  );
+  const isSearchMode = !!searchQuery || hasFilters;
 
-  // Query for top anime (when not searching)
+  // Sort mode: "match" = relevance (default for text searches, no order_by so
+  // Jikan best-match wins + we re-rank client-side), "score", or "members".
+  // Filter-only browsing has no relevance to rank by, so it defaults to score.
+  const sortMode =
+    filters.order_by === "score"
+      ? "score"
+      : filters.order_by === "members"
+      ? "members"
+      : searchQuery
+      ? "match"
+      : "score";
+
+  const { data: genresData } = useAnimeGenres();
+  const chipGenres = React.useMemo(() => {
+    const seen = new Set();
+    return (genresData?.data || [])
+      .filter((g) => {
+        if (seen.has(g.mal_id)) return false;
+        seen.add(g.mal_id);
+        return true;
+      })
+      .slice(0, CHIP_GENRE_COUNT);
+  }, [genresData]);
+
+  // single-select chip == the only genre filter value
+  const activeChipId =
+    filters.genres && !filters.genres.includes(",")
+      ? Number(filters.genres)
+      : null;
+
+  const searchOptions = {
+    // omit order_by for "best match" so Jikan returns relevance-ranked results
+    ...(sortMode === "match"
+      ? {}
+      : { order_by: sortMode, sort: "desc" }),
+    genres: filters.genres,
+    status: filters.status,
+    type: filters.type,
+    min_score: filters.min_score,
+    start_date: filters.year ? `${filters.year}-01-01` : undefined,
+    end_date: filters.year ? `${filters.year}-12-31` : undefined,
+  };
+
   const {
     data: topAnimeData,
     isLoading: topAnimeLoading,
@@ -26,248 +94,208 @@ const Anime = () => {
     queryKey: ["top-anime", currentPage],
     queryFn: () => getTopAnime(currentPage, 25),
     staleTime: 5 * 60 * 1000,
-    enabled: !searchQuery,
+    enabled: !isSearchMode,
   });
 
-  // Query for search results
   const {
     data: searchData,
     isLoading: searchLoading,
     error: searchError,
   } = useQuery({
-    queryKey: ["search-anime", searchQuery, currentPage, sortBy, sortOrder],
-    queryFn: () =>
-      searchAnime(searchQuery, currentPage, 25, {
-        order_by: sortBy,
-        sort: sortOrder,
-      }),
+    queryKey: ["search-anime", filters, currentPage],
+    queryFn: () => searchAnime(searchQuery, currentPage, 25, searchOptions),
     staleTime: 2 * 60 * 1000,
-    enabled: !!searchQuery && searchQuery.trim().length > 0,
+    enabled: isSearchMode,
   });
 
-  // Determine current data and loading state
-  const currentData = searchQuery ? searchData : topAnimeData;
-  const isLoading = searchQuery ? searchLoading : topAnimeLoading;
-  const error = searchQuery ? searchError : topAnimeError;
+  const currentData = isSearchMode ? searchData : topAnimeData;
+  const isLoading = isSearchMode ? searchLoading : topAnimeLoading;
+  const error = isSearchMode ? searchError : topAnimeError;
   const hasMore = currentData?.pagination?.has_next_page || false;
-  
-  // Get anime array directly from data
-  const animeList = currentData?.data || [];
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery("");
-    setCurrentPage(1);
-  };
-
-  const loadMoreAnime = () => {
-    if (hasMore && !isLoading) {
-      setCurrentPage((prev) => prev + 1);
+  useEffect(() => {
+    if (!currentData?.data) return;
+    if (currentPage === 1) {
+      setAnimeList(dedupeById(currentData.data));
+    } else {
+      setAnimeList((prev) => dedupeById([...prev, ...currentData.data]));
     }
+  }, [currentData, currentPage]);
+
+  const updateParams = (patch) => {
+    const next = {};
+    for (const key of FILTER_KEYS) {
+      const value = patch[key] !== undefined ? patch[key] : filters[key];
+      if (value) next[key] = value;
+    }
+    setSearchParams(next);
+    setCurrentPage(1);
+    setAnimeList([]);
   };
 
-  const retryLoad = () => {
-    setCurrentPage(1);
-    // Query will automatically refetch
+  const submitSearch = (e) => {
+    e.preventDefault();
+    updateParams({ q: searchInput.trim() });
   };
+
+  const toggleChip = (genreId) => {
+    updateParams({
+      genres: activeChipId === genreId ? "" : String(genreId),
+    });
+  };
+
+  const loadMore = () => {
+    if (hasMore && !isLoading) setCurrentPage((prev) => prev + 1);
+  };
+
+  // In "best match" mode, re-rank the fetched results so the closest title
+  // match rises to the top instead of the highest-scored partial match.
+  const displayList = React.useMemo(
+    () =>
+      sortMode === "match" && searchQuery
+        ? rankByRelevance(animeList, searchQuery)
+        : animeList,
+    [animeList, sortMode, searchQuery]
+  );
+
+  const sortOptions = [
+    ...(searchQuery ? [["match", "BEST MATCH"]] : []),
+    ["score", "SCORE"],
+    ["members", "POPULARITY"],
+  ];
+
+  const showEmpty =
+    !isLoading && !error && animeList.length === 0 && isSearchMode;
 
   return (
-    <motion.div
-      className="min-h-screen bg-bg-primary text-text-primary"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: prefersReduced ? 0 : 0.6 }}
-    >
-      {/* Premium Header Section */}
-      <div className="relative bg-gradient-to-br from-bg-secondary via-surface-dark to-bg-primary overflow-hidden -mt-16 pt-16">
-        {/* Video Background */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="/Anime Background.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-radial from-accent-cyan/20 via-black/50 to-bg-primary/80" />
-        <div className="relative max-w-7xl mx-auto px-4 py-16">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: prefersReduced ? 0 : 0.8, delay: 0.2 }}
-          >
-            <h1 className="font-display text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-accent-cyan via-accent-magenta to-accent-cyan bg-clip-text text-transparent">
-              Browse Anime
-            </h1>
-            <p className="text-xl text-text-secondary mb-8 max-w-2xl mx-auto">
-              Discover your next favorite anime from our vast collection
-            </p>
-
-            {/* Premium Search Bar */}
-            <div className="max-w-2xl mx-auto">
-              <SearchBar
-                onSearch={handleSearch}
-                onClear={handleClearSearch}
-                placeholder="Search anime titles, genres, or characters..."
-                className="w-full"
-              />
-            </div>
-          </motion.div>
-
-          {/* Current View Indicator */}
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: prefersReduced ? 0 : 0.6, delay: 0.4 }}
-          >
-            <div className="inline-flex items-center px-4 py-2 bg-surface-secondary/80 backdrop-blur-sm rounded-full border border-accent-cyan/20">
-              <span className="text-text-secondary">
-                {searchQuery ? (
-                  <>
-                    Results for:{" "}
-                    <span className="text-accent-cyan font-semibold">
-                      "{searchQuery}"
-                    </span>
-                  </>
-                ) : (
-                  "Top-rated anime collection"
-                )}
-              </span>
-            </div>
-          </motion.div>
+    <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
+      {/* Title + sort */}
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="ink-display m-0 text-4xl md:text-[44px]">
+          Anime <span className="text-ink-red">Archive</span>
+        </h1>
+        <div className="flex items-center gap-2.5">
+          <span className="text-xs font-black tracking-[1px] text-ink-mut3">
+            SORT
+          </span>
+          {sortOptions.map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() =>
+                updateParams({ order_by: value === "match" ? "" : value })
+              }
+              className={`ink-btn px-4 py-2 text-xs transition-all duration-150 ${
+                sortMode === value
+                  ? "bg-ink text-ink-paper"
+                  : "bg-ink-paper text-ink hover:bg-ink-red hover:text-ink-paper"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
+      <p className="mb-5 text-[13.5px] font-medium text-ink-mut3">
+        {isSearchMode
+          ? "Filtered results from the archive"
+          : "Top-rated series — covers live from the Jikan API"}
+      </p>
 
-      {/* Sorting Controls - Only show for search results */}
-      {searchQuery && (
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <SortingControls type="anime" className="max-w-4xl mx-auto" />
-        </div>
+      {/* Search */}
+      <form
+        onSubmit={submitSearch}
+        className="mb-4 flex items-center gap-3.5"
+      >
+        <input
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="SEARCH THE ARCHIVE..."
+          className="ink-shadow-sm min-w-0 flex-1 border-[3px] border-ink bg-ink-paper px-4 py-3.5 font-body text-sm font-bold tracking-[1px] text-ink outline-none placeholder:text-ink-mut4"
+        />
+        <button
+          type="submit"
+          className="ink-display ink-shadow-sm rotate-2 cursor-pointer border-[3px] border-ink bg-ink-red px-4 py-3 text-sm text-ink-paper"
+        >
+          検索!
+        </button>
+      </form>
+
+      {/* Genre chips */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        <button
+          onClick={() => updateParams({ genres: "" })}
+          className={`ink-btn px-3.5 py-[7px] text-[11.5px] transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
+            !filters.genres ? "bg-ink text-ink-paper" : "bg-ink-paper text-ink"
+          }`}
+        >
+          ALL
+        </button>
+        {chipGenres.map((genre) => (
+          <button
+            key={genre.mal_id}
+            onClick={() => toggleChip(genre.mal_id)}
+            className={`ink-btn px-3.5 py-[7px] text-[11.5px] transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
+              activeChipId === genre.mal_id
+                ? "bg-ink text-ink-paper"
+                : "bg-ink-paper text-ink"
+            }`}
+          >
+            {genre.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Advanced filters */}
+      <FilterPanel
+        mediaType="anime"
+        filters={filters}
+        onChange={(next) => updateParams(next)}
+        className="mb-8"
+      />
+
+      {/* Error */}
+      {error && (
+        <InkEmptyState
+          shout="SIGNAL LOST!!"
+          sub={error?.message || "The archive is unreachable. Try again."}
+          ctaLabel="Retry"
+          ctaTo="/anime"
+        />
       )}
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Error State */}
-        {error && (
-          <motion.div
-            className="bg-surface-secondary border border-red-500/20 rounded-xl p-8 mb-12 text-center"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="text-red-400 mb-6">
-              <div className="text-6xl mb-4">⚠️</div>
-              <h3 className="text-xl font-semibold mb-2">
-                Something went wrong
-              </h3>
-              <p className="text-text-secondary">
-                {error?.message || "Failed to load anime. Please try again."}
-              </p>
-            </div>
-            <button
-              onClick={retryLoad}
-              className="bg-accent-cyan hover:bg-accent-cyan/80 text-bg-primary px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105"
-            >
-              Try Again
-            </button>
-          </motion.div>
-        )}
+      {/* Grid */}
+      {isLoading && animeList.length === 0 ? (
+        <InkGridSkeleton count={8} />
+      ) : (
+        !showEmpty && (
+          <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {displayList.map((anime) => (
+              <InkAnimeCard key={anime.mal_id} anime={anime} />
+            ))}
+          </div>
+        )
+      )}
 
-        {/* Premium Animated Grid */}
-        <AnimatedGrid
-          items={animeList}
-          loading={isLoading}
-          className="mb-8"
+      {showEmpty && (
+        <InkEmptyState
+          shout="NANI?! NOTHING FOUND..."
+          sub="Try a different search or clear the genre filter."
         />
+      )}
 
-        {/* Loading Indicator for Additional Pages */}
-        {isLoading && currentPage > 1 && (
-          <motion.div
-            className="flex justify-center items-center py-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+      {/* Load more */}
+      {animeList.length > 0 && hasMore && !showEmpty && (
+        <div className="mt-12 text-center">
+          <button
+            onClick={loadMore}
+            disabled={isLoading}
+            className="ink-btn ink-press ink-sh-red bg-ink px-10 py-4 text-sm text-ink-paper disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <div className="flex items-center space-x-3 px-6 py-3 bg-surface-secondary/50 backdrop-blur-sm rounded-xl border border-accent-cyan/20">
-              <div className="w-5 h-5 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-text-secondary">Loading more anime...</span>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Load More Section */}
-        {animeList.length > 0 && hasMore && (
-          <motion.div
-            className="text-center py-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            {/* Visual separator if we have loaded multiple pages */}
-            {currentPage > 1 && (
-              <div className="flex items-center justify-center mb-8">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent-cyan/30 to-transparent"></div>
-                <span className="px-4 text-sm text-text-secondary bg-bg-primary">
-                  Page {currentPage}
-                </span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent-cyan/30 to-transparent"></div>
-              </div>
-            )}
-            <button
-              onClick={loadMoreAnime}
-              disabled={isLoading}
-              className="group relative bg-gradient-to-r from-accent-cyan to-accent-magenta text-bg-primary px-12 py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-accent-cyan/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-            >
-              {isLoading && currentPage > 1 ? (
-                <span className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-bg-primary border-t-transparent rounded-full animate-spin mr-3"></div>
-                  Loading more anime...
-                </span>
-              ) : (
-                <>
-                  <span className="relative z-10 flex items-center justify-center">
-                    <span className="mr-2">📺</span>
-                    Load More Anime
-                    <span className="ml-2 transition-transform duration-200 group-hover:translate-x-1">
-                      →
-                    </span>
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-accent-magenta to-accent-cyan rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </>
-              )}
-            </button>
-          </motion.div>
-        )}
-
-        {/* Results Count */}
-        {animeList.length > 0 && (
-          <motion.div
-            className="text-center mt-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <p className="text-text-secondary">
-              Showing{" "}
-              <span className="text-accent-cyan font-semibold">
-                {animeList.length}
-              </span>{" "}
-              anime
-              {hasMore && (
-                <span className="text-gray-500 ml-2">(More available)</span>
-              )}
-            </p>
-          </motion.div>
-        )}
-      </div>
-    </motion.div>
+            {isLoading ? "LOADING..." : "LOAD MORE →"}
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 

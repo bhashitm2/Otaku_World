@@ -27,6 +27,12 @@ export default {
         "accent-purple": theme.colors.accent.purple,
         "accent-gold": theme.colors.accent.gold,
 
+        // Aliases already used throughout pages (were silently undefined)
+        "accent-cyan": theme.colors.accent.neon,
+        "accent-yellow": theme.colors.accent.gold,
+        "accent-orange": "#fb923c",
+        "surface-dark": theme.colors.background.tertiary,
+
         // Semantic colors
         success: theme.colors.success,
         warning: theme.colors.warning,
@@ -49,13 +55,29 @@ export default {
         cyanGlow: "#00FFE4",
         darkBg: "#0D0D0D",
         lightText: "#F8F8F2",
+
+        // "Ink & Impact" design system (design_handoff_ink_redesign)
+        "ink-bg": "#14130f", // page background
+        "ink-paper": "#1c1b17", // card / raised surface
+        ink: "#f2efe6", // text, borders, hard shadows
+        "ink-red": "#e63946", // accent (never changes)
+        "ink-body": "#cdc9bd",
+        "ink-mut1": "#c0bcb0",
+        "ink-mut2": "#b6b2a6",
+        "ink-mut3": "#a09c90",
+        "ink-mut4": "#8f8b7f",
+        "ink-mut5": "#6e6a60",
+        "ink-link": "#3a3831", // links on light footer
+        "ink-stripe1": "#26241f",
+        "ink-stripe2": "#2c2a24",
       },
 
       fontFamily: {
-        display: theme.fonts.display,
-        body: theme.fonts.body,
-        mono: theme.fonts.mono,
-        sans: ["Poppins", "sans-serif"], // Keep existing for compatibility
+        display: ["Anton", "sans-serif"],
+        body: ["Archivo", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+        jp: ["Zen Kaku Gothic New", "sans-serif"],
+        sans: ["Archivo", "sans-serif"],
       },
 
       fontSize: theme.fontSizes,
@@ -84,9 +106,29 @@ export default {
         glow: "glow 3s ease-in-out infinite",
         "pulse-slow": "pulse 4s ease-in-out infinite",
         float: "float 6s ease-in-out infinite",
+        marq: "marq 18s linear infinite",
+        bob: "bob 5s ease-in-out infinite",
+        bob2: "bob2 4s ease-in-out infinite",
+        popIn: "popIn .3s ease-out",
       },
 
       keyframes: {
+        marq: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        bob: {
+          "0%, 100%": { transform: "rotate(-6deg) translateY(0)" },
+          "50%": { transform: "rotate(-4deg) translateY(-7px)" },
+        },
+        bob2: {
+          "0%, 100%": { transform: "rotate(5deg) translateY(0)" },
+          "50%": { transform: "rotate(7deg) translateY(-5px)" },
+        },
+        popIn: {
+          "0%": { opacity: "0", transform: "translateY(14px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
         shimmer: {
           "0%": { backgroundPosition: "-200px 0" },
           "100%": { backgroundPosition: "calc(200px + 100%) 0" },

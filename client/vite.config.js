@@ -43,15 +43,9 @@ export default defineConfig({
           firebase: ["firebase/app", "firebase/auth", "firebase/firestore"],
           ui: ["framer-motion", "lucide-react"],
           animations: ["animejs"],
-
-          // Custom chunks for large components
-          pages: [
-            "./src/pages/Home.jsx",
-            "./src/pages/Anime.jsx",
-            "./src/pages/AnimeDetails.jsx",
-            "./src/pages/Characters.jsx",
-            "./src/pages/CharacterDetails.jsx",
-          ],
+          three: ["three"],
+          // Note: pages are lazy-loaded in App.jsx, so each splits into its
+          // own chunk automatically — no manual "pages" chunk needed.
         },
       },
     },

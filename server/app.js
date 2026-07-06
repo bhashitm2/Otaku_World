@@ -18,7 +18,7 @@ import {
 
 // Import routes
 import animeRoutes from "./routes/animeRoutes.js";
-// mangaRoutes removed - manga functionality disabled
+import mangaRoutes from "./routes/mangaRoutes.js";
 import characterRoutes from "./routes/characterRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import favoritesRoutes from "./routes/favoritesRoutes.js";
@@ -72,6 +72,7 @@ app.get("/", (req, res) => {
       health: "/health",
       documentation: "/api",
       anime: "/api/anime",
+      manga: "/api/manga",
       characters: "/api/characters",
       auth: "/api/auth",
       favorites: "/api/favorites",
@@ -137,7 +138,7 @@ app.get("/health", async (req, res) => {
 
 // API routes
 app.use("/api/anime", animeRoutes);
-// app.use("/api/manga", mangaRoutes); // manga functionality disabled
+app.use("/api/manga", mangaRoutes);
 app.use("/api/characters", characterRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/favorites", favoritesRoutes);

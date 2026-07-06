@@ -115,9 +115,23 @@ export const apiService = {
       api.get(`/anime/genre/${genreId}`, { params }),
     getRandom: () => api.get("/anime/random"),
     getSeasonal: (params) => api.get("/anime/seasonal", { params }),
+    getSchedules: (params) => api.get("/anime/schedules", { params }),
   },
 
-  // Manga API removed - functionality temporarily disabled
+  // Manga
+  manga: {
+    search: (params) => api.get("/manga/search", { params }),
+    getTop: (params) => api.get("/manga/top", { params }),
+    getTrending: (params) => api.get("/manga/trending", { params }),
+    getDetails: (id) => api.get(`/manga/${id}`),
+    getCharacters: (id) => api.get(`/manga/${id}/characters`),
+    getReviews: (id, params) => api.get(`/manga/${id}/reviews`, { params }),
+    getRecommendations: (id) => api.get(`/manga/${id}/recommendations`),
+    getGenres: () => api.get("/manga/genres"),
+    getByGenre: (genreId, params) =>
+      api.get(`/manga/genre/${genreId}`, { params }),
+    getRandom: () => api.get("/manga/random"),
+  },
 
   // Characters
   characters: {

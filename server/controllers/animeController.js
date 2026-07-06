@@ -5,6 +5,13 @@ import {
   fetchTopAnime,
   fetchGenres,
   fetchSeasons,
+  fetchSeasonNow,
+  fetchSeasonUpcoming,
+  fetchSchedules,
+  fetchAnimeCharacters,
+  fetchAnimeEpisodes,
+  fetchAnimeReviews,
+  fetchAnimeRecommendations,
 } from "../utils/jikanHelper.js";
 import { getCacheStats } from "../utils/apiCaching.js";
 
@@ -17,7 +24,13 @@ export const getAnime = async (req, res) => {
       limit = 25,
       genres,
       status,
+      type,
       rating,
+      min_score,
+      max_score,
+      start_date,
+      end_date,
+      sfw,
       order_by = "popularity",
       sort = "asc",
     } = req.query;
@@ -25,9 +38,16 @@ export const getAnime = async (req, res) => {
     const options = {
       genres,
       status,
+      type,
       rating,
+      min_score,
+      max_score,
+      start_date,
+      end_date,
+      sfw,
       order_by,
       sort,
+      limit,
     };
 
     const data = await fetchAnimeData(q, parseInt(page), options);
@@ -134,18 +154,20 @@ export const getAnimeGenres = async (req, res) => {
 };
 
 // Get seasonal anime
+// Query params: filter=upcoming for next season, or year+season for a
+// specific one; defaults to the currently airing season
 export const getSeasonalAnime = async (req, res) => {
   try {
-    const { year, season } = req.params;
+    const { year, season, filter, page = 1 } = req.query;
 
-    if (!year || !season) {
-      return res.status(400).json({
-        success: false,
-        message: "Year and season are required",
-      });
+    let data;
+    if (filter === "upcoming") {
+      data = await fetchSeasonUpcoming(parseInt(page));
+    } else if (year && season) {
+      data = await fetchSeasons(parseInt(year), season.toLowerCase());
+    } else {
+      data = await fetchSeasonNow(parseInt(page));
     }
-
-    const data = await fetchSeasons(parseInt(year), season.toLowerCase());
 
     res.json({
       success: true,
@@ -155,13 +177,54 @@ export const getSeasonalAnime = async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error(
-      `Error fetching seasonal anime ${req.params.year}/${req.params.season}:`,
-      error.message
-    );
+    console.error("Error fetching seasonal anime:", error.message);
     res.status(500).json({
       success: false,
       message: "Failed to fetch seasonal anime",
+      error: error.message,
+    });
+  }
+};
+
+// Get weekly airing schedule
+const VALID_SCHEDULE_DAYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+  "other",
+  "unknown",
+];
+
+export const getSchedules = async (req, res) => {
+  try {
+    const { day, filter, page = 1, limit = 25 } = req.query;
+
+    // Accept either ?day= or ?filter= for the weekday
+    const rawDay = (day || filter || "").toLowerCase();
+    const scheduleDay = VALID_SCHEDULE_DAYS.includes(rawDay) ? rawDay : null;
+
+    const data = await fetchSchedules(
+      scheduleDay,
+      parseInt(page),
+      parseInt(limit)
+    );
+
+    res.json({
+      success: true,
+      data: data.data,
+      pagination: data.pagination,
+      cached: false,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error fetching schedules:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch airing schedule",
       error: error.message,
     });
   }
@@ -375,14 +438,19 @@ export const getAnimeCharacters = async (req, res) => {
       });
     }
 
-    // This would need to be implemented in jikanHelper.js
+    const data = await fetchAnimeCharacters(parseInt(id));
+
     res.json({
       success: true,
-      message: "Characters endpoint not yet implemented",
-      data: [],
+      data: data.data,
+      cached: false,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error(`Error fetching characters for anime ${id}:`, error.message);
+    console.error(
+      `Error fetching characters for anime ${req.params.id}:`,
+      error.message
+    );
     res.status(500).json({
       success: false,
       message: "Failed to fetch anime characters",
@@ -403,14 +471,21 @@ export const getAnimeEpisodes = async (req, res) => {
       });
     }
 
-    // This would need to be implemented in jikanHelper.js
+    const { page = 1 } = req.query;
+    const data = await fetchAnimeEpisodes(parseInt(id), parseInt(page));
+
     res.json({
       success: true,
-      message: "Episodes endpoint not yet implemented",
-      data: [],
+      data: data.data,
+      pagination: data.pagination,
+      cached: false,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error(`Error fetching episodes for anime ${id}:`, error.message);
+    console.error(
+      `Error fetching episodes for anime ${req.params.id}:`,
+      error.message
+    );
     res.status(500).json({
       success: false,
       message: "Failed to fetch anime episodes",
@@ -431,14 +506,21 @@ export const getAnimeReviews = async (req, res) => {
       });
     }
 
-    // This would need to be implemented in jikanHelper.js
+    const { page = 1 } = req.query;
+    const data = await fetchAnimeReviews(parseInt(id), parseInt(page));
+
     res.json({
       success: true,
-      message: "Reviews endpoint not yet implemented",
-      data: [],
+      data: data.data,
+      pagination: data.pagination,
+      cached: false,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error(`Error fetching reviews for anime ${id}:`, error.message);
+    console.error(
+      `Error fetching reviews for anime ${req.params.id}:`,
+      error.message
+    );
     res.status(500).json({
       success: false,
       message: "Failed to fetch anime reviews",
@@ -459,15 +541,17 @@ export const getAnimeRecommendations = async (req, res) => {
       });
     }
 
-    // This would need to be implemented in jikanHelper.js
+    const data = await fetchAnimeRecommendations(parseInt(id));
+
     res.json({
       success: true,
-      message: "Recommendations endpoint not yet implemented",
-      data: [],
+      data: data.data,
+      cached: false,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error(
-      `Error fetching recommendations for anime ${id}:`,
+      `Error fetching recommendations for anime ${req.params.id}:`,
       error.message
     );
     res.status(500).json({
