@@ -1,6 +1,17 @@
 // server/utils/jikanHelper.js
 import axios from "axios";
 import { cache } from "./apiCaching.js";
+import {
+  alSearchAnime,
+  alSearchManga,
+  alTopAnime,
+  alTopManga,
+  alAnimeDetails,
+  alMangaDetails,
+  alSeasonNow,
+  alSeasonUpcoming,
+  alSchedules,
+} from "./anilistHelper.js";
 
 // Request queue for rate limiting
 class RequestQueue {
@@ -44,7 +55,41 @@ class RequestQueue {
 
 const requestQueue = new RequestQueue(1500); // 1.5s between requests
 
-// Enhanced Jikan API helper with caching and rate limiting
+// Jikan intermittently returns 5xx (esp. 504) when its own upstream to
+// MyAnimeList is flaky. These are transient, so retry a few times before
+// giving up. Rate limits (429) and not-found (404) are NOT retried.
+const MAX_JIKAN_RETRIES = 3;
+
+const isRetriableJikanError = (error) => {
+  const status = error.response?.status;
+  if (status) {
+    return status === 500 || status === 502 || status === 503 || status === 504;
+  }
+  // no response = network error / timeout
+  return (
+    error.code === "ECONNABORTED" ||
+    error.code === "ECONNRESET" ||
+    error.code === "ETIMEDOUT" ||
+    error.code === "ENOTFOUND"
+  );
+};
+
+const requestJikan = (url, options) =>
+  requestQueue.add(async () => {
+    const response = await axios.get(url, {
+      timeout: 10000,
+      headers: {
+        "User-Agent": "Otaku_World/1.0.0 (https://otaku-world.app)",
+        Accept: "application/json",
+      },
+      ...options.axiosConfig,
+    });
+    return response.data;
+  });
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Enhanced Jikan API helper with caching, rate limiting and retry
 export const fetchJikanData = async (endpoint, options = {}) => {
   const baseUrl = process.env.JIKAN_BASE_URL || "https://api.jikan.moe/v4";
   const url = `${baseUrl}${endpoint}`;
@@ -58,37 +103,64 @@ export const fetchJikanData = async (endpoint, options = {}) => {
 
   console.log(`🌐 Fetching from Jikan API: ${endpoint}`);
 
-  try {
-    // Add request to queue for rate limiting
-    const data = await requestQueue.add(async () => {
-      const response = await axios.get(url, {
-        timeout: 10000,
-        headers: {
-          "User-Agent": "Otaku_World/1.0.0 (https://otaku-world.app)",
-          Accept: "application/json",
-        },
-        ...options.axiosConfig,
-      });
+  let lastError;
+  for (let attempt = 0; attempt <= MAX_JIKAN_RETRIES; attempt++) {
+    try {
+      const data = await requestJikan(url, options);
 
-      return response.data;
-    });
+      // Cache the successful response
+      const cacheDuration = options.cacheDuration || 1800; // 30 minutes default
+      cache.set(cacheKey, data, cacheDuration);
 
-    // Cache the successful response
-    const cacheDuration = options.cacheDuration || 1800; // 30 minutes default
-    cache.set(cacheKey, data, cacheDuration);
+      console.log(`✅ Successfully fetched and cached: ${endpoint}`);
+      return data;
+    } catch (error) {
+      lastError = error;
 
-    console.log(`✅ Successfully fetched and cached: ${endpoint}`);
-    return data;
-  } catch (error) {
-    console.error(`❌ Jikan API Error for ${endpoint}:`, error.message);
-
-    // Return cached data if available during error
-    if (cache.has(cacheKey)) {
-      console.log(`🔄 Returning stale cache data for: ${endpoint}`);
-      return cache.get(cacheKey);
+      if (attempt < MAX_JIKAN_RETRIES && isRetriableJikanError(error)) {
+        const delay = 800 * Math.pow(2, attempt); // 800ms, 1.6s, 3.2s
+        console.warn(
+          `⚠️ Jikan ${
+            error.response?.status || error.code
+          } for ${endpoint}; retry ${attempt + 1}/${MAX_JIKAN_RETRIES} in ${delay}ms`
+        );
+        await sleep(delay);
+        continue;
+      }
+      break;
     }
+  }
 
-    // Enhanced error handling
+  // All attempts failed — degrade gracefully
+  const error = lastError;
+  console.error(`❌ Jikan API Error for ${endpoint}:`, error.message);
+
+  // Return cached data if available during error
+  if (cache.has(cacheKey)) {
+    console.log(`🔄 Returning stale cache data for: ${endpoint}`);
+    return cache.get(cacheKey);
+  }
+
+  // Fall back to an alternate source (AniList) when provided
+  if (typeof options.fallback === "function") {
+    try {
+      console.warn(`🛟 Falling back to AniList for: ${endpoint}`);
+      const fallbackData = await options.fallback();
+      const cacheDuration = options.cacheDuration || 1800;
+      cache.set(cacheKey, fallbackData, cacheDuration);
+      console.log(`✅ AniList fallback succeeded for: ${endpoint}`);
+      return fallbackData;
+    } catch (fallbackError) {
+      console.error(
+        `❌ AniList fallback also failed for ${endpoint}:`,
+        fallbackError.message
+      );
+      // fall through to the original Jikan error below
+    }
+  }
+
+  // Enhanced error handling
+  {
     if (error.response) {
       const status = error.response.status;
       const message = error.response.data?.message || error.message;
@@ -145,11 +217,17 @@ export const fetchAnimeData = async (query = "", page = 1, options = {}) => {
     }
   }
 
-  return fetchJikanData(endpoint, { cacheDuration: 3600 }); // 1 hour cache for search results
+  return fetchJikanData(endpoint, {
+    cacheDuration: 3600, // 1 hour cache for search results
+    fallback: () => alSearchAnime(query, page, options),
+  });
 };
 
 export const fetchAnimeDetails = async (id) => {
-  return fetchJikanData(`/anime/${id}/full`, { cacheDuration: 7200 }); // 2 hours cache for details
+  return fetchJikanData(`/anime/${id}/full`, {
+    cacheDuration: 7200, // 2 hours cache for details
+    fallback: () => alAnimeDetails(id, "ANIME"),
+  });
 };
 
 export const fetchMangaData = async (query = "", page = 1, options = {}) => {
@@ -179,11 +257,17 @@ export const fetchMangaData = async (query = "", page = 1, options = {}) => {
     }
   }
 
-  return fetchJikanData(endpoint, { cacheDuration: 3600 });
+  return fetchJikanData(endpoint, {
+    cacheDuration: 3600,
+    fallback: () => alSearchManga(query, page, options),
+  });
 };
 
 export const fetchMangaDetails = async (id) => {
-  return fetchJikanData(`/manga/${id}/full`, { cacheDuration: 7200 });
+  return fetchJikanData(`/manga/${id}/full`, {
+    cacheDuration: 7200,
+    fallback: () => alMangaDetails(id),
+  });
 };
 
 export const fetchMangaCharacters = async (id) => {
@@ -241,6 +325,10 @@ export const fetchTopAnime = async (
 ) => {
   return fetchJikanData(`/top/${type}?filter=${filter}&page=${page}`, {
     cacheDuration: 7200,
+    fallback: () =>
+      type === "manga"
+        ? alTopManga(filter, page)
+        : alTopAnime(type, filter, page),
   });
 };
 
@@ -249,16 +337,25 @@ export const fetchGenres = async (type = "anime") => {
 };
 
 export const fetchSeasons = async (year, season) => {
-  return fetchJikanData(`/seasons/${year}/${season}`, { cacheDuration: 3600 });
+  return fetchJikanData(`/seasons/${year}/${season}`, {
+    cacheDuration: 3600,
+    // Jikan trending aggregates the current season through fetchSeasons; the
+    // AniList "now" season is the closest resilient stand-in.
+    fallback: () => alSeasonNow(1),
+  });
 };
 
 export const fetchSeasonNow = async (page = 1) => {
-  return fetchJikanData(`/seasons/now?page=${page}`, { cacheDuration: 3600 });
+  return fetchJikanData(`/seasons/now?page=${page}`, {
+    cacheDuration: 3600,
+    fallback: () => alSeasonNow(page),
+  });
 };
 
 export const fetchSeasonUpcoming = async (page = 1) => {
   return fetchJikanData(`/seasons/upcoming?page=${page}`, {
     cacheDuration: 3600,
+    fallback: () => alSeasonUpcoming(page),
   });
 };
 
@@ -268,7 +365,10 @@ export const fetchSchedules = async (day, page = 1, limit = 25) => {
   if (day) {
     endpoint += `&filter=${encodeURIComponent(day)}`;
   }
-  return fetchJikanData(endpoint, { cacheDuration: 1800 });
+  return fetchJikanData(endpoint, {
+    cacheDuration: 1800,
+    fallback: () => alSchedules(day, page),
+  });
 };
 
 export const fetchAnimeCharacters = async (id) => {

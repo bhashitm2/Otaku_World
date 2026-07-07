@@ -10,7 +10,7 @@ import InkEmptyState from "../components/ink/InkEmptyState";
 import { InkGridSkeleton } from "../components/ink/InkSkeleton";
 import FilterPanel from "../components/FilterPanel";
 import { dedupeById } from "../utils/dedupe";
-import { rankByRelevance } from "../utils/relevance";
+import { rankByRelevance, filterByRelevance } from "../utils/relevance";
 
 // Filters kept in the URL so filtered views are shareable/back-button-safe
 const FILTER_KEYS = [
@@ -148,15 +148,15 @@ const Anime = () => {
     if (hasMore && !isLoading) setCurrentPage((prev) => prev + 1);
   };
 
-  // In "best match" mode, re-rank the fetched results so the closest title
-  // match rises to the top instead of the highest-scored partial match.
-  const displayList = React.useMemo(
-    () =>
-      sortMode === "match" && searchQuery
-        ? rankByRelevance(animeList, searchQuery)
-        : animeList,
-    [animeList, sortMode, searchQuery]
-  );
+  // When searching, drop results that don't genuinely match the query so
+  // "one punch man" never shows One Piece / Mob Psycho. In "best match" mode
+  // also re-rank so the closest title leads; Score/Popularity keep their order.
+  const displayList = React.useMemo(() => {
+    if (!searchQuery) return animeList;
+    return sortMode === "match"
+      ? rankByRelevance(animeList, searchQuery)
+      : filterByRelevance(animeList, searchQuery);
+  }, [animeList, sortMode, searchQuery]);
 
   const sortOptions = [
     ...(searchQuery ? [["match", "BEST MATCH"]] : []),
@@ -165,7 +165,7 @@ const Anime = () => {
   ];
 
   const showEmpty =
-    !isLoading && !error && animeList.length === 0 && isSearchMode;
+    !isLoading && !error && displayList.length === 0 && isSearchMode;
 
   return (
     <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">

@@ -123,14 +123,14 @@ const Manga = () => {
     if (hasMore && !isLoading) setCurrentPage((prev) => prev + 1);
   };
 
-  // Re-rank text-search results so the closest title match leads
+  // Filter to genuine matches + re-rank so the closest title match leads
   const displayList = React.useMemo(
     () => (searchQuery ? rankByRelevance(mangaList, searchQuery) : mangaList),
     [mangaList, searchQuery]
   );
 
   const showEmpty =
-    !isLoading && !error && mangaList.length === 0 && isSearchMode;
+    !isLoading && !error && displayList.length === 0 && isSearchMode;
 
   return (
     <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
