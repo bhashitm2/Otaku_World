@@ -19,7 +19,6 @@ export default defineConfig({
       "framer-motion",
       "lucide-react",
       "axios",
-      "animejs",
     ],
     // Force pre-bundling even if not detected
     force: false,
@@ -42,8 +41,6 @@ export default defineConfig({
           query: ["@tanstack/react-query"],
           firebase: ["firebase/app", "firebase/auth", "firebase/firestore"],
           ui: ["framer-motion", "lucide-react"],
-          animations: ["animejs"],
-          three: ["three"],
           // Note: pages are lazy-loaded in App.jsx, so each splits into its
           // own chunk automatically — no manual "pages" chunk needed.
         },

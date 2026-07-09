@@ -1,17 +1,17 @@
-// Profile — "Ink & Impact": stat blocks + watchlist breakdown + recent faves
+// Profile — Nova: quiet header strip, mono-gold stat tiles, watchlist
+// breakdown bars, and recent favorites.
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../hooks/useAuth";
 import { useFavorites } from "../hooks/useFavorites";
 import { getUserStats, WATCH_STATUS_OPTIONS } from "../services/firestoreService";
-import InkAnimeCard from "../components/ink/InkAnimeCard";
-import InkCharacterCard from "../components/ink/InkCharacterCard";
+import { MediaCard, CharacterCard, Button } from "../components/nova";
 
-const StatBlock = ({ value, label }) => (
-  <div className="ink-card ink-shadow-sm p-5 text-center">
-    <div className="font-display text-[34px] text-ink-red">{value ?? 0}</div>
-    <div className="mt-1 text-[10.5px] font-black uppercase tracking-[1px] text-ink-mut3">
+const StatTile = ({ value, label }) => (
+  <div className="rounded-lg border border-line bg-surface p-5 text-center">
+    <div className="font-mono text-[26px] font-bold text-gold">{value ?? 0}</div>
+    <div className="mt-1 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-faint">
       {label}
     </div>
   </div>
@@ -54,58 +54,50 @@ const Profile = () => {
   };
 
   return (
-    <div className="animate-popIn">
-      {/* User header — halftone strip */}
-      <div className="ink-halftone border-b-4 border-ink bg-ink-paper px-6 py-12 md:px-[72px]">
+    <div>
+      {/* User header */}
+      <div className="border-b border-line bg-surface px-gutter py-12 lg:px-gutter-lg">
         <div className="flex flex-col items-center gap-6 sm:flex-row">
           {user?.photoURL ? (
             <img
               src={user.photoURL}
               alt={user.name || "Profile"}
-              className="h-24 w-24 border-[3px] border-ink object-cover ink-shadow"
+              className="h-24 w-24 rounded-full border-2 border-line-strong object-cover"
             />
           ) : (
-            <div className="ink-shadow flex h-24 w-24 items-center justify-center border-[3px] border-ink bg-ink-red font-display text-5xl text-ink-paper">
+            <div className="grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-gold to-gold-strong font-display text-4xl font-bold text-bg">
               {(user?.name || user?.email || "?").charAt(0).toUpperCase()}
             </div>
           )}
           <div className="text-center sm:text-left">
-            <h1 className="ink-display m-0 text-4xl md:text-5xl">
+            <h1 className="m-0 font-display text-[30px] font-extrabold tracking-tight text-text md:text-[38px]">
               {user?.name || "Otaku"}
             </h1>
-            <p className="mt-1 text-sm font-bold text-ink-mut3">
-              {user?.email}
-            </p>
+            <p className="mt-1 text-sm text-muted">{user?.email}</p>
           </div>
         </div>
       </div>
 
-      <div className="space-y-12 px-6 pb-16 pt-12 md:px-[72px]">
+      <div className="space-y-12 px-gutter pb-20 pt-12 lg:px-gutter-lg">
         {/* Stats */}
         <section>
-          <h2 className="ink-display mb-6 text-[28px]">
-            Your <span className="text-ink-red">stats</span>
+          <h2 className="mb-6 font-display text-xl font-bold tracking-tight text-text">
+            Your stats
           </h2>
           {isLoading ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
               {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="ink-card ink-shadow-sm h-28 animate-pulse"
-                />
+                <div key={i} className="ow-shimmer h-[100px] rounded-lg" />
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-              <StatBlock value={stats?.totalFavorites} label="Favorites" />
-              <StatBlock value={stats?.totalWatchlist} label="Watchlist" />
-              <StatBlock value={stats?.favoriteAnime} label="Fave Anime" />
-              <StatBlock value={stats?.favoriteManga} label="Fave Manga" />
-              <StatBlock
-                value={stats?.favoriteCharacters}
-                label="Characters"
-              />
-              <StatBlock value={stats?.completed} label="Completed" />
+              <StatTile value={stats?.totalFavorites} label="Favorites" />
+              <StatTile value={stats?.totalWatchlist} label="Watchlist" />
+              <StatTile value={stats?.favoriteAnime} label="Fave anime" />
+              <StatTile value={stats?.favoriteManga} label="Fave manga" />
+              <StatTile value={stats?.favoriteCharacters} label="Characters" />
+              <StatTile value={stats?.completed} label="Completed" />
             </div>
           )}
         </section>
@@ -113,10 +105,10 @@ const Profile = () => {
         {/* Watchlist breakdown */}
         {watchTotal > 0 && (
           <section>
-            <h2 className="ink-display mb-6 text-[28px]">
-              Watchlist <span className="text-ink-red">breakdown</span>
+            <h2 className="mb-6 font-display text-xl font-bold tracking-tight text-text">
+              Watchlist breakdown
             </h2>
-            <div className="ink-card ink-shadow space-y-4 p-6">
+            <div className="space-y-4 rounded-lg border border-line bg-surface p-6">
               {WATCH_STATUS_OPTIONS.map((status) => {
                 const count = statusCounts[status.value] || 0;
                 const percent = watchTotal
@@ -124,15 +116,17 @@ const Profile = () => {
                   : 0;
                 return (
                   <div key={status.value}>
-                    <div className="mb-1 flex justify-between text-xs font-black uppercase tracking-[1px]">
-                      <span>{status.label}</span>
-                      <span className="text-ink-mut3">
+                    <div className="mb-1.5 flex justify-between text-xs">
+                      <span className="font-medium text-text">
+                        {status.label}
+                      </span>
+                      <span className="font-mono text-faint">
                         {count} ({percent}%)
                       </span>
                     </div>
-                    <div className="h-3.5 border-[3px] border-ink bg-ink-bg">
+                    <div className="h-2 rounded-pill bg-surface-3">
                       <div
-                        className="h-full bg-ink-red transition-all duration-700"
+                        className="h-full rounded-pill bg-gradient-to-r from-gold to-gold-strong transition-all duration-700"
                         style={{ width: `${percent}%` }}
                       />
                     </div>
@@ -145,42 +139,37 @@ const Profile = () => {
 
         {/* Recent favorites */}
         <section>
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="ink-display text-[28px]">
-              Recent <span className="text-ink-red">favorites</span>
+          <div className="mb-6 flex items-baseline justify-between">
+            <h2 className="m-0 font-display text-xl font-bold tracking-tight text-text">
+              Recent favorites
             </h2>
             {favorites.length > 0 && (
               <Link
                 to="/favorites"
-                className="border-b-[3px] border-ink-red text-xs font-black uppercase tracking-[1px] text-ink"
+                className="text-[13px] text-faint no-underline transition-colors duration-fast hover:text-text"
               >
-                View all →
+                See all →
               </Link>
             )}
           </div>
           {recentFavorites.length === 0 ? (
-            <div className="ink-card ink-shadow p-10 text-center">
-              <p className="mb-6 text-sm font-bold text-ink-mut3">
+            <div className="rounded-lg border border-line bg-surface p-10 text-center">
+              <p className="mb-6 text-sm text-muted">
                 You haven't favorited anything yet.
               </p>
-              <Link
-                to="/anime"
-                className="ink-btn ink-press ink-sh-red inline-block bg-ink px-8 py-3.5 text-sm text-ink-paper"
-              >
-                Discover Anime →
-              </Link>
+              <Button as={Link} to="/anime">
+                Browse anime
+              </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-[26px] sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
               {recentFavorites.map((fav) => {
                 const cardItem = toCardItem(fav);
                 if (fav.type === "character") {
-                  return (
-                    <InkCharacterCard key={fav.id} character={cardItem} />
-                  );
+                  return <CharacterCard key={fav.id} character={cardItem} />;
                 }
                 return (
-                  <InkAnimeCard
+                  <MediaCard
                     key={fav.id}
                     anime={cardItem}
                     mediaType={fav.type === "manga" ? "manga" : "anime"}
@@ -191,20 +180,17 @@ const Profile = () => {
           )}
         </section>
 
-        {/* For You CTA */}
-        <section className="ink-card ink-shadow-red p-10 text-center">
-          <h2 className="ink-display text-[28px]">
-            Picks made <span className="text-ink-red">for you</span>
+        {/* For you CTA */}
+        <section className="rounded-xl border border-line bg-surface p-10 text-center">
+          <h2 className="m-0 font-display text-xl font-bold tracking-tight text-text">
+            Picks made for you
           </h2>
-          <p className="mx-auto mb-6 mt-3 max-w-xl text-sm font-bold text-ink-mut3">
+          <p className="mx-auto mb-6 mt-3 max-w-xl text-sm text-muted">
             Recommendations built from everything you love.
           </p>
-          <Link
-            to="/for-you"
-            className="ink-btn ink-press ink-sh-red inline-block bg-ink px-10 py-3.5 text-sm text-ink-paper"
-          >
-            See what's for you →
-          </Link>
+          <Button as={Link} to="/for-you" glow>
+            See what's for you
+          </Button>
         </section>
       </div>
     </div>

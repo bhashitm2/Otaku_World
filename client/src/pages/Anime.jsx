@@ -1,13 +1,11 @@
-// Anime Archive — "Ink & Impact" browse page with search, sort, genre chips
+// Browse anime — Nova browse page with search, sort, genre chips
 // and advanced filters, all synced to the URL.
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { getTopAnime, searchAnime } from "../services/anime";
 import { useAnimeGenres } from "../hooks/useAnimeQueries";
-import InkAnimeCard from "../components/ink/InkAnimeCard";
-import InkEmptyState from "../components/ink/InkEmptyState";
-import { InkGridSkeleton } from "../components/ink/InkSkeleton";
+import { MediaCard, EmptyState, GridSkeleton, Button } from "../components/nova";
 import FilterPanel from "../components/FilterPanel";
 import { dedupeById } from "../utils/dedupe";
 import { rankByRelevance, filterByRelevance } from "../utils/relevance";
@@ -159,35 +157,32 @@ const Anime = () => {
   }, [animeList, sortMode, searchQuery]);
 
   const sortOptions = [
-    ...(searchQuery ? [["match", "BEST MATCH"]] : []),
-    ["score", "SCORE"],
-    ["members", "POPULARITY"],
+    ...(searchQuery ? [["match", "Best match"]] : []),
+    ["score", "Top rated"],
+    ["members", "Most popular"],
   ];
 
   const showEmpty =
     !isLoading && !error && displayList.length === 0 && isSearchMode;
 
   return (
-    <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
+    <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
       {/* Title + sort */}
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="ink-display m-0 text-4xl md:text-[44px]">
-          Anime <span className="text-ink-red">Archive</span>
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-4">
+        <h1 className="m-0 font-display text-[28px] font-extrabold tracking-tight text-text md:text-[34px]">
+          Browse anime
         </h1>
-        <div className="flex items-center gap-2.5">
-          <span className="text-xs font-black tracking-[1px] text-ink-mut3">
-            SORT
-          </span>
+        <div className="flex items-center gap-4">
           {sortOptions.map(([value, label]) => (
             <button
               key={value}
               onClick={() =>
                 updateParams({ order_by: value === "match" ? "" : value })
               }
-              className={`ink-btn px-4 py-2 text-xs transition-all duration-150 ${
+              className={`font-body text-sm transition-colors duration-fast ${
                 sortMode === value
-                  ? "bg-ink text-ink-paper"
-                  : "bg-ink-paper text-ink hover:bg-ink-red hover:text-ink-paper"
+                  ? "font-semibold text-gold"
+                  : "text-faint hover:text-text"
               }`}
             >
               {label}
@@ -195,49 +190,50 @@ const Anime = () => {
           ))}
         </div>
       </div>
-      <p className="mb-5 text-[13.5px] font-medium text-ink-mut3">
+      <p className="mb-6 text-[14.5px] text-muted">
         {isSearchMode
-          ? "Filtered results from the archive"
-          : "Top-rated series — covers live from the Jikan API"}
+          ? "Filtered results from the library"
+          : "Top-rated series, updated live"}
       </p>
 
       {/* Search */}
-      <form
-        onSubmit={submitSearch}
-        className="mb-4 flex items-center gap-3.5"
-      >
-        <input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="SEARCH THE ARCHIVE..."
-          className="ink-shadow-sm min-w-0 flex-1 border-[3px] border-ink bg-ink-paper px-4 py-3.5 font-body text-sm font-bold tracking-[1px] text-ink outline-none placeholder:text-ink-mut4"
-        />
-        <button
-          type="submit"
-          className="ink-display ink-shadow-sm rotate-2 cursor-pointer border-[3px] border-ink bg-ink-red px-4 py-3 text-sm text-ink-paper"
-        >
-          検索!
-        </button>
+      <form onSubmit={submitSearch} className="mb-4 flex items-center gap-3">
+        <div className="relative min-w-0 flex-1">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-faint">
+            ⌕
+          </span>
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search anime…"
+            className="w-full rounded-sm border border-line bg-surface-2 py-3 pl-10 pr-4 font-body text-sm text-text outline-none transition-colors duration-fast placeholder:text-faint focus:border-line-strong"
+          />
+        </div>
+        <Button type="submit" size="sm">
+          Search
+        </Button>
       </form>
 
       {/* Genre chips */}
       <div className="mb-4 flex flex-wrap gap-2">
         <button
           onClick={() => updateParams({ genres: "" })}
-          className={`ink-btn px-3.5 py-[7px] text-[11.5px] transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
-            !filters.genres ? "bg-ink text-ink-paper" : "bg-ink-paper text-ink"
+          className={`rounded-pill border px-3.5 py-1.5 font-body text-xs font-medium transition-colors duration-fast ${
+            !filters.genres
+              ? "border-gold bg-gold text-bg"
+              : "border-line bg-surface-2 text-muted hover:border-line-strong hover:text-text"
           }`}
         >
-          ALL
+          All
         </button>
         {chipGenres.map((genre) => (
           <button
             key={genre.mal_id}
             onClick={() => toggleChip(genre.mal_id)}
-            className={`ink-btn px-3.5 py-[7px] text-[11.5px] transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
+            className={`rounded-pill border px-3.5 py-1.5 font-body text-xs font-medium transition-colors duration-fast ${
               activeChipId === genre.mal_id
-                ? "bg-ink text-ink-paper"
-                : "bg-ink-paper text-ink"
+                ? "border-gold bg-gold text-bg"
+                : "border-line bg-surface-2 text-muted hover:border-line-strong hover:text-text"
             }`}
           >
             {genre.name}
@@ -255,9 +251,10 @@ const Anime = () => {
 
       {/* Error */}
       {error && (
-        <InkEmptyState
-          shout="SIGNAL LOST!!"
-          sub={error?.message || "The archive is unreachable. Try again."}
+        <EmptyState
+          glyph="⚠"
+          title="Couldn't reach the library"
+          sub={error?.message || "The library is unreachable. Try again."}
           ctaLabel="Retry"
           ctaTo="/anime"
         />
@@ -265,34 +262,35 @@ const Anime = () => {
 
       {/* Grid */}
       {isLoading && animeList.length === 0 ? (
-        <InkGridSkeleton count={8} />
+        <GridSkeleton count={10} />
       ) : (
         !showEmpty && (
-          <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-[26px] sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
             {displayList.map((anime) => (
-              <InkAnimeCard key={anime.mal_id} anime={anime} />
+              <MediaCard key={anime.mal_id} anime={anime} />
             ))}
           </div>
         )
       )}
 
       {showEmpty && (
-        <InkEmptyState
-          shout="NANI?! NOTHING FOUND..."
-          sub="Try a different search or clear the genre filter."
+        <EmptyState
+          title="Nothing matches that search"
+          sub="Try a different title or clear a filter."
         />
       )}
 
       {/* Load more */}
       {animeList.length > 0 && hasMore && !showEmpty && (
         <div className="mt-12 text-center">
-          <button
+          <Button
+            variant="subtle"
+            size="lg"
             onClick={loadMore}
             disabled={isLoading}
-            className="ink-btn ink-press ink-sh-red bg-ink px-10 py-4 text-sm text-ink-paper disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isLoading ? "LOADING..." : "LOAD MORE →"}
-          </button>
+            {isLoading ? "Loading…" : "Load more"}
+          </Button>
         </div>
       )}
     </div>

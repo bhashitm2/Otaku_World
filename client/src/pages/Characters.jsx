@@ -1,9 +1,15 @@
-// Characters — "Ink & Impact": dossier card grid with search
+// Characters — Nova: circular avatar grid with search
 import React, { useState, useEffect, useCallback } from "react";
 import { searchCharacters, getTopCharacters } from "../services/anime";
-import InkCharacterCard from "../components/ink/InkCharacterCard";
-import InkEmptyState from "../components/ink/InkEmptyState";
-import { InkGridSkeleton } from "../components/ink/InkSkeleton";
+import {
+  CharacterCard,
+  EmptyState,
+  GridSkeleton,
+  Button,
+} from "../components/nova";
+
+const AVATAR_GRID =
+  "grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-[26px] gap-y-[34px]";
 
 const Characters = () => {
   const [characters, setCharacters] = useState([]);
@@ -100,34 +106,36 @@ const Characters = () => {
   const showEmpty = !loading && !error && characters.length === 0;
 
   return (
-    <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
-      <h1 className="ink-display m-0 mb-2 text-4xl md:text-[44px]">
-        Character <span className="text-ink-red">Files</span>
+    <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
+      <h1 className="m-0 mb-2 font-display text-[28px] font-extrabold tracking-tight text-text md:text-[34px]">
+        Characters
       </h1>
-      <p className="mb-6 text-[13.5px] font-medium text-ink-mut3">
-        Dossiers on every hero, rival and menace — portraits load from the
-        Jikan API
+      <p className="mb-6 text-[14.5px] text-muted">
+        The community's most beloved cast, ranked by fans
       </p>
 
       {/* Search */}
-      <form onSubmit={submitSearch} className="mb-8 flex items-center gap-3.5">
-        <input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="SEARCH THE FILES..."
-          className="ink-shadow-sm min-w-0 flex-1 border-[3px] border-ink bg-ink-paper px-4 py-3.5 font-body text-sm font-bold tracking-[1px] text-ink outline-none placeholder:text-ink-mut4"
-        />
-        <button
-          type="submit"
-          className="ink-display ink-shadow-sm rotate-2 cursor-pointer border-[3px] border-ink bg-ink-red px-4 py-3 text-sm text-ink-paper"
-        >
-          検索!
-        </button>
+      <form onSubmit={submitSearch} className="mb-10 flex items-center gap-3">
+        <div className="relative min-w-0 flex-1">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-faint">
+            ⌕
+          </span>
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search characters…"
+            className="w-full rounded-sm border border-line bg-surface-2 py-3 pl-10 pr-4 font-body text-sm text-text outline-none transition-colors duration-fast placeholder:text-faint focus:border-line-strong"
+          />
+        </div>
+        <Button type="submit" size="sm">
+          Search
+        </Button>
       </form>
 
       {error && (
-        <InkEmptyState
-          shout="SIGNAL LOST!!"
+        <EmptyState
+          glyph="⚠"
+          title="Couldn't load characters"
           sub={error}
           ctaLabel="Retry"
           ctaTo="/characters"
@@ -135,10 +143,10 @@ const Characters = () => {
       )}
 
       {loading && characters.length === 0 ? (
-        <InkGridSkeleton count={8} />
+        <GridSkeleton count={10} />
       ) : showEmpty ? (
-        <InkEmptyState
-          shout="NANI?! NO ONE HERE..."
+        <EmptyState
+          title="No one's here"
           sub={
             isSearchMode
               ? `No characters match "${searchTerm}".`
@@ -146,9 +154,9 @@ const Characters = () => {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className={AVATAR_GRID}>
           {characters.map((character, index) => (
-            <InkCharacterCard
+            <CharacterCard
               key={`${character.mal_id}-${character.name}`}
               character={character}
               rank={isSearchMode ? undefined : index + 1}
@@ -159,13 +167,14 @@ const Characters = () => {
 
       {characters.length > 0 && hasNextPage && (
         <div className="mt-12 text-center">
-          <button
+          <Button
+            variant="subtle"
+            size="lg"
             onClick={loadMore}
             disabled={loading}
-            className="ink-btn ink-press ink-sh-red bg-ink px-10 py-4 text-sm text-ink-paper disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? "LOADING..." : "LOAD MORE →"}
-          </button>
+            {loading ? "Loading…" : "Load more"}
+          </Button>
         </div>
       )}
     </div>

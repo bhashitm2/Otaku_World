@@ -1,6 +1,7 @@
-// AnimeDetails — "Ink & Impact": poster column + stat blocks + story panel + cast
+// AnimeDetails — Nova: cinematic backdrop, poster pulled up over it,
+// quiet stat strip, synopsis, cast, and "More like this".
 import React from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   useAnimeDetails,
   useAnimeCharacters,
@@ -10,14 +11,12 @@ import { formatAnimeData } from "../services/anime";
 import { useAuth } from "../hooks/useAuth";
 import { useFavorites } from "../hooks/useFavorites";
 import { useWatchlist } from "../hooks/useWatchlist";
-import InkCover from "../components/ink/InkCover";
-import InkEmptyState from "../components/ink/InkEmptyState";
-import { getDisplayTitle } from "../utils/title";
+import { Cover, Button, MediaCard, EmptyState } from "../components/nova";
 
-const StatBlock = ({ value, label }) => (
-  <div className="ink-card ink-shadow-sm px-4 py-3 text-center sm:px-5">
-    <div className="font-display text-2xl sm:text-[26px]">{value}</div>
-    <div className="mt-0.5 text-[10px] font-black tracking-[1px] text-ink-mut3">
+const Stat = ({ value, label }) => (
+  <div className="rounded-lg border border-line bg-surface px-4 py-3 text-center sm:px-5">
+    <div className="font-mono text-lg font-bold text-gold">{value}</div>
+    <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-faint">
       {label}
     </div>
   </div>
@@ -43,13 +42,16 @@ const AnimeDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse px-6 pb-16 pt-9 md:px-[72px]">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[340px_1fr]">
-          <div className="ink-stripes h-[460px] border-[3px] border-ink" />
-          <div className="space-y-5">
-            <div className="h-14 w-3/4 bg-ink-stripe2" />
-            <div className="h-6 w-1/2 bg-ink-stripe2" />
-            <div className="h-32 w-full bg-ink-stripe2" />
+      <div className="pb-20">
+        <div className="ow-shimmer -mt-nav h-[460px]" />
+        <div className="relative z-docked -mt-[150px] px-gutter lg:px-gutter-lg">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr]">
+            <div className="ow-shimmer mx-auto aspect-[2/3] w-full max-w-[260px] rounded-lg lg:mx-0" />
+            <div className="space-y-5 pt-10">
+              <div className="ow-shimmer h-10 w-3/4 rounded" />
+              <div className="ow-shimmer h-5 w-1/2 rounded" />
+              <div className="ow-shimmer h-28 w-full rounded" />
+            </div>
           </div>
         </div>
       </div>
@@ -58,11 +60,12 @@ const AnimeDetails = () => {
 
   if (error || !data?.data) {
     return (
-      <div className="px-6 pb-16 pt-9 md:px-[72px]">
-        <InkEmptyState
-          shout="NANI?! NOT FOUND..."
+      <div className="px-gutter pb-16 pt-9 lg:px-gutter-lg">
+        <EmptyState
+          glyph="⚠"
+          title="Title not found"
           sub={error?.message || "This title could not be loaded."}
-          ctaLabel="Back to archive →"
+          ctaLabel="Back to browse"
           ctaTo="/anime"
         />
       </div>
@@ -72,7 +75,12 @@ const AnimeDetails = () => {
   const anime = formatAnimeData(data.data);
   const raw = data.data;
   const cast = (charactersData?.data || []).slice(0, 8);
-  const recommendations = (recsData?.data || []).slice(0, 4);
+  const recommendations = (recsData?.data || []).slice(0, 6);
+
+  const backdrop =
+    raw.trailer?.images?.maximum_image_url ||
+    raw.trailer?.images?.large_image_url ||
+    anime.image;
 
   const saveItem = {
     mal_id: anime.id,
@@ -91,170 +99,162 @@ const AnimeDetails = () => {
   const studio = anime.studios?.[0]?.name;
 
   return (
-    <div className="animate-popIn px-6 pb-16 pt-9 md:px-[72px]">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-6 inline-block cursor-pointer border-b-[3px] border-ink-red text-[12.5px] font-black uppercase tracking-[1px] text-ink"
-      >
-        ← Back
-      </button>
+    <div className="pb-20">
+      {/* Backdrop */}
+      <div className="relative -mt-nav h-[460px] overflow-hidden">
+        <Cover src={backdrop} alt="" imgClassName="object-top" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg via-bg/45 to-bg/10" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="absolute left-gutter top-[84px] lg:left-gutter-lg"
+        >
+          ← Back
+        </Button>
+      </div>
 
-      <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[340px_1fr]">
-        {/* Poster column */}
-        <div className="relative mx-auto w-full max-w-[340px] lg:mx-0">
-          {anime.rank && (
-            <div className="ink-display absolute -top-4 -left-3 z-[2] border-[3px] border-ink bg-ink-red px-3 py-0.5 text-xl text-ink-paper">
-              RANK #{anime.rank}
+      {/* Content pulled up over the backdrop */}
+      <div className="relative z-docked -mt-[150px] px-gutter lg:px-gutter-lg">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[260px_1fr]">
+          {/* Poster column */}
+          <div className="mx-auto w-full max-w-[260px] lg:mx-0">
+            <div className="aspect-[2/3] overflow-hidden rounded-lg shadow-lg">
+              <Cover src={anime.image} alt={anime.title} />
             </div>
-          )}
-          <div className="relative h-[460px] border-[3px] border-ink ink-shadow-lg">
-            <InkCover
-              src={anime.image}
-              alt={anime.title}
-              className="h-full w-full"
-            />
-          </div>
-          {user && (
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => toggleFavorite(saveItem)}
-                className={`ink-btn ink-press-sm flex-1 px-2.5 py-3.5 text-[12.5px] ${
-                  faved ? "bg-ink-red text-ink-paper" : "bg-ink-paper text-ink"
-                }`}
-              >
-                ♥ {faved ? "FAVED" : "FAVE"}
-              </button>
-              <button
-                onClick={() => toggleWatchlist(saveItem)}
-                className={`ink-btn ink-press-sm flex-1 px-2.5 py-3.5 text-[12.5px] ${
-                  queued ? "bg-ink text-ink-paper" : "bg-ink-paper text-ink"
-                }`}
-              >
-                + {queued ? "QUEUED" : "WATCHLIST"}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Details column */}
-        <div>
-          <div className="ink-display mb-4 inline-block -rotate-1 bg-ink px-3 py-1.5 text-xs tracking-[3px] text-ink-paper">
-            {[anime.type, anime.year, studio].filter(Boolean).join(" · ")}
-          </div>
-          <h1 className="ink-display m-0 text-4xl leading-[.98] md:text-[62px]">
-            {anime.title}
-          </h1>
-          {anime.titleJapanese && (
-            <div className="mt-2.5 font-jp text-base font-bold tracking-[4px] text-ink-mut4">
-              {anime.titleJapanese}
-            </div>
-          )}
-
-          {/* Stat blocks */}
-          <div className="my-6 flex flex-wrap gap-3.5">
-            <StatBlock value={`★ ${anime.score || "—"}`} label="SCORE" />
-            <StatBlock value={`#${anime.rank || "—"}`} label="RANKED" />
-            <StatBlock value={compact(raw.members)} label="MEMBERS" />
-            <StatBlock value={anime.episodes || "—"} label="EPISODES" />
-          </div>
-
-          {/* Genres + status */}
-          <div className="mb-6 flex flex-wrap gap-2">
-            {anime.genres.map((genre) => (
-              <span
-                key={genre.mal_id}
-                className="border-[3px] border-ink bg-ink-bg px-3 py-1.5 text-[11px] font-black uppercase tracking-[1px]"
-              >
-                {genre.name}
-              </span>
-            ))}
-            {anime.status && (
-              <span
-                className={`border-[3px] border-ink px-3 py-1.5 text-[11px] font-black uppercase tracking-[1px] ${
-                  isAiring ? "bg-ink-red text-ink-paper" : "bg-ink-bg text-ink"
-                }`}
-              >
-                {anime.status}
-              </span>
+            {user && (
+              <div className="mt-6 flex gap-3">
+                <Button
+                  size="sm"
+                  variant={faved ? "solid" : "subtle"}
+                  className="flex-1"
+                  onClick={() => toggleFavorite(saveItem)}
+                >
+                  ♥ {faved ? "Favorited" : "Favorite"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="subtle"
+                  className="flex-1"
+                  onClick={() => toggleWatchlist(saveItem)}
+                >
+                  {queued ? "✓ In watchlist" : "＋ Watchlist"}
+                </Button>
+              </div>
             )}
           </div>
 
-          {/* Story panel */}
-          {anime.synopsis && (
-            <div className="ink-card ink-shadow relative px-6 py-6">
-              <div className="ink-display absolute -top-3.5 left-4 border-[3px] border-ink bg-ink-red px-3 py-0.5 text-[13px] tracking-[2px] text-ink-paper">
-                THE STORY SO FAR
-              </div>
-              <p className="m-0 mt-1.5 text-[15px] font-medium leading-[1.8] text-ink-body">
-                {anime.synopsis}
-              </p>
+          {/* Details column */}
+          <div>
+            <div className="mb-2 font-body text-xs font-semibold uppercase tracking-[0.12em] text-gold">
+              {[anime.type, anime.year, studio].filter(Boolean).join(" · ")}
             </div>
-          )}
+            <h1 className="m-0 font-display text-[34px] font-extrabold leading-tight tracking-tight text-text md:text-[42px]">
+              {anime.title}
+            </h1>
+            {anime.titleJapanese && (
+              <div className="mt-2 font-body text-[15px] text-muted">
+                {anime.titleJapanese}
+              </div>
+            )}
 
-          {/* Cast */}
-          {cast.length > 0 && (
-            <>
-              <h3 className="ink-display mb-4 mt-9 text-2xl">
-                Main <span className="text-ink-red">cast</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {cast.map(({ character, role }) => (
-                  <div
-                    key={character.mal_id}
-                    onClick={() => navigate(`/characters/${character.mal_id}`)}
-                    className="ink-card ink-press-sm cursor-pointer"
+            {/* Meta line */}
+            <div className="mt-4 flex flex-wrap items-center gap-2.5 text-[13.5px] text-muted">
+              {anime.score && (
+                <span className="font-mono font-bold text-gold">
+                  ★ {anime.score}
+                </span>
+              )}
+              {anime.year && <span>{anime.year}</span>}
+              {anime.episodes && <span>· {anime.episodes} ep</span>}
+              {anime.status && (
+                <span className={isAiring ? "font-semibold text-gold" : ""}>
+                  · {anime.status}
+                </span>
+              )}
+            </div>
+
+            {/* Genres */}
+            {anime.genres.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {anime.genres.map((genre) => (
+                  <span
+                    key={genre.mal_id}
+                    className="rounded-pill bg-surface-2 px-3.5 py-1.5 text-[12.5px] text-text"
                   >
-                    <div className="h-28 border-b-[3px] border-ink">
-                      <InkCover
-                        src={character.images?.jpg?.image_url}
-                        alt={character.name}
-                        className="h-full w-full"
-                      />
-                    </div>
-                    <div className="p-3">
-                      <div className="ink-display text-[13.5px] line-clamp-1">
-                        {character.name}
-                      </div>
-                      <div className="mt-1 text-[10.5px] font-black uppercase tracking-[1px] text-ink-red">
-                        {role}
-                      </div>
-                    </div>
-                  </div>
+                    {genre.name}
+                  </span>
                 ))}
               </div>
-            </>
-          )}
+            )}
 
-          {/* Recommendations */}
-          {recommendations.length > 0 && (
-            <>
-              <h3 className="ink-display mb-4 mt-9 text-2xl">
-                You might also <span className="text-ink-red">like</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {recommendations.map((rec) => (
-                  <Link
-                    key={rec.entry.mal_id}
-                    to={`/anime/${rec.entry.mal_id}`}
-                    className="ink-card ink-press-sm block"
-                  >
-                    <div className="h-40 border-b-[3px] border-ink">
-                      <InkCover
-                        src={rec.entry.images?.jpg?.image_url}
-                        alt={rec.entry.title}
-                        className="h-full w-full"
-                      />
-                    </div>
-                    <div className="p-3">
-                      <div className="ink-display text-[13px] line-clamp-2">
-                        {getDisplayTitle(rec.entry)}
+            {/* Stat strip */}
+            <div className="my-6 flex flex-wrap gap-3.5">
+              <Stat value={`★ ${anime.score || "—"}`} label="Score" />
+              <Stat value={`#${anime.rank || "—"}`} label="Ranked" />
+              <Stat value={compact(raw.members)} label="Members" />
+              <Stat value={anime.episodes || "—"} label="Episodes" />
+            </div>
+
+            {/* Synopsis */}
+            {anime.synopsis && (
+              <>
+                <h2 className="mb-3 mt-8 font-display text-xl font-bold tracking-tight text-text">
+                  Synopsis
+                </h2>
+                <p className="m-0 max-w-[620px] text-[15px] leading-relaxed text-muted">
+                  {anime.synopsis}
+                </p>
+              </>
+            )}
+
+            {/* Cast */}
+            {cast.length > 0 && (
+              <>
+                <h2 className="mb-4 mt-9 font-display text-xl font-bold tracking-tight text-text">
+                  Main cast
+                </h2>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  {cast.map(({ character, role }) => (
+                    <div
+                      key={character.mal_id}
+                      onClick={() => navigate(`/characters/${character.mal_id}`)}
+                      className="ow-lift cursor-pointer"
+                    >
+                      <div className="aspect-[3/4] overflow-hidden rounded-md bg-surface-2 shadow-sm">
+                        <Cover
+                          src={character.images?.jpg?.image_url}
+                          alt={character.name}
+                        />
+                      </div>
+                      <div className="mt-2">
+                        <div className="font-display text-[13px] font-semibold text-text line-clamp-1">
+                          {character.name}
+                        </div>
+                        <div className="mt-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-gold">
+                          {role}
+                        </div>
                       </div>
                     </div>
-                  </Link>
-                ))}
-              </div>
-            </>
-          )}
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Recommendations */}
+            {recommendations.length > 0 && (
+              <>
+                <h2 className="mb-4 mt-9 font-display text-xl font-bold tracking-tight text-text">
+                  More like this
+                </h2>
+                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
+                  {recommendations.map((rec) => (
+                    <MediaCard key={rec.entry.mal_id} anime={rec.entry} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

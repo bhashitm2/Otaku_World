@@ -1,6 +1,9 @@
-// src/components/FilterPanel.jsx - "Ink & Impact" advanced filters (anime/manga)
+// src/components/FilterPanel.jsx - Nova advanced filters (anime/manga)
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Alias so ESLint sees the JSX usage (it misses <motion.div> member syntax)
+const MotionDiv = motion.div;
 import { useQuery } from "@tanstack/react-query";
 import { getAnimeGenres, getMangaGenres } from "../services/anime";
 import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
@@ -24,8 +27,18 @@ const YEARS = Array.from(
   (_, i) => CURRENT_YEAR + 1 - i
 );
 
+// Short type codes read as acronyms (TV, OVA, ONA); the rest sentence case.
+const typeLabel = (type) => {
+  if (type.length <= 3) return type.toUpperCase();
+  if (type === "lightnovel") return "Light novel";
+  return type.charAt(0).toUpperCase() + type.slice(1);
+};
+
 const selectClass =
-  "w-full border-[3px] border-ink bg-ink-bg px-3 py-2 font-body text-sm font-bold text-ink outline-none";
+  "w-full rounded-sm border border-line bg-surface-2 px-3 py-2.5 font-body text-sm text-text outline-none transition-colors duration-fast focus:border-line-strong";
+
+const sectionLabel =
+  "mb-3 font-body text-[11px] font-semibold uppercase tracking-[0.08em] text-faint";
 
 // filters shape: { genres: "1,2", status, type, min_score, year }
 const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" }) => {
@@ -85,16 +98,16 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
       <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={() => setIsOpen((open) => !open)}
-          className={`ink-btn px-4 py-2.5 text-xs transition-all duration-150 ${
+          className={`inline-flex items-center rounded border px-4 py-2.5 font-body text-[13px] font-semibold transition-colors duration-fast ${
             isOpen || activeCount > 0
-              ? "bg-ink text-ink-paper"
-              : "bg-ink-paper text-ink hover:bg-ink-red hover:text-ink-paper"
+              ? "border-line-strong bg-surface-2 text-text"
+              : "border-line bg-surface text-muted hover:border-line-strong hover:text-text"
           }`}
         >
           <SlidersHorizontal className="mr-2 h-4 w-4" />
-          FILTERS
+          Filters
           {activeCount > 0 && (
-            <span className="ml-2 flex h-5 w-5 items-center justify-center border-2 border-current text-[10px]">
+            <span className="ml-2 flex h-5 min-w-[20px] items-center justify-center rounded-pill bg-gold px-1.5 font-mono text-[10px] font-bold text-bg">
               {activeCount}
             </span>
           )}
@@ -107,7 +120,7 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
         {activeCount > 0 && (
           <button
             onClick={clearAll}
-            className="flex items-center text-xs font-black uppercase tracking-[1px] text-ink-mut3 hover:text-ink-red"
+            className="flex items-center font-body text-[13px] text-faint transition-colors duration-fast hover:text-danger"
           >
             <X className="mr-1 h-4 w-4" />
             Clear all
@@ -118,20 +131,18 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
       {/* Panel */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <MotionDiv
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="ink-card ink-shadow mt-4 space-y-6 p-6 text-left">
+            <div className="mt-4 space-y-6 rounded-lg border border-line bg-surface p-6 text-left shadow-sm">
               {/* Genres */}
               {genres.length > 0 && (
                 <div>
-                  <h4 className="mb-3 text-xs font-black uppercase tracking-[1px] text-ink">
-                    Genres
-                  </h4>
+                  <h4 className={sectionLabel}>Genres</h4>
                   <div className="flex flex-wrap gap-2">
                     {genres.map((genre) => {
                       const selected = selectedGenreIds.has(genre.mal_id);
@@ -139,10 +150,10 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
                         <button
                           key={genre.mal_id}
                           onClick={() => toggleGenre(genre.mal_id)}
-                          className={`border-[3px] border-ink px-3 py-1.5 text-[11px] font-black uppercase tracking-[.5px] transition-all duration-150 ${
+                          className={`rounded-pill border px-3.5 py-1.5 font-body text-xs font-medium transition-colors duration-fast ${
                             selected
-                              ? "bg-ink-red text-ink-paper"
-                              : "bg-ink-bg text-ink hover:bg-ink hover:text-ink-paper"
+                              ? "border-gold bg-gold text-bg"
+                              : "border-line bg-surface-2 text-muted hover:border-line-strong hover:text-text"
                           }`}
                         >
                           {genre.name}
@@ -156,9 +167,7 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Status */}
                 <div>
-                  <h4 className="mb-3 text-xs font-black uppercase tracking-[1px] text-ink">
-                    Status
-                  </h4>
+                  <h4 className={sectionLabel}>Status</h4>
                   <select
                     value={filters.status || ""}
                     onChange={(e) =>
@@ -177,9 +186,7 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
 
                 {/* Type */}
                 <div>
-                  <h4 className="mb-3 text-xs font-black uppercase tracking-[1px] text-ink">
-                    Type
-                  </h4>
+                  <h4 className={sectionLabel}>Type</h4>
                   <select
                     value={filters.type || ""}
                     onChange={(e) =>
@@ -190,7 +197,7 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
                     <option value="">Any</option>
                     {types.map((type) => (
                       <option key={type} value={type}>
-                        {type.toUpperCase()}
+                        {typeLabel(type)}
                       </option>
                     ))}
                   </select>
@@ -198,9 +205,7 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
 
                 {/* Year */}
                 <div>
-                  <h4 className="mb-3 text-xs font-black uppercase tracking-[1px] text-ink">
-                    Year
-                  </h4>
+                  <h4 className={sectionLabel}>Year</h4>
                   <select
                     value={filters.year || ""}
                     onChange={(e) =>
@@ -217,11 +222,11 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
                   </select>
                 </div>
 
-                {/* Min Score */}
+                {/* Min score */}
                 <div>
-                  <h4 className="mb-3 text-xs font-black uppercase tracking-[1px] text-ink">
-                    Min Score:{" "}
-                    <span className="text-ink-red">
+                  <h4 className={sectionLabel}>
+                    Min score:{" "}
+                    <span className="font-mono text-gold">
                       {filters.min_score || "Any"}
                     </span>
                   </h4>
@@ -237,12 +242,12 @@ const FilterPanel = ({ mediaType = "anime", filters, onChange, className = "" })
                           e.target.value === "0" ? undefined : e.target.value,
                       })
                     }
-                    className="mt-2 w-full accent-ink-red"
+                    className="mt-2 w-full accent-gold"
                   />
                 </div>
               </div>
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </div>

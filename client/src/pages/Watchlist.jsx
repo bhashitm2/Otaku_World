@@ -1,48 +1,46 @@
-// Watchlist — "Ink & Impact": horizontal queue rows with status filters
+// Watchlist — Nova: queue rows with status filters
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWatchlist } from "../hooks/useWatchlist";
 import { useAuth } from "../hooks/useAuth";
 import { WATCH_STATUS_OPTIONS } from "../services/firestoreService";
-import InkCover from "../components/ink/InkCover";
-import InkEmptyState from "../components/ink/InkEmptyState";
-import { InkRowSkeleton } from "../components/ink/InkSkeleton";
+import { Cover, EmptyState, RowSkeleton, Badge } from "../components/nova";
 
 const STATUS_LABEL = WATCH_STATUS_OPTIONS.reduce((acc, o) => {
-  acc[o.value] = o.label.toUpperCase();
+  acc[o.value] = o.label;
   return acc;
 }, {});
 
 const WatchRow = ({ item, onOpen, onRemove }) => (
-  <div className="ink-card ink-shadow-sm grid grid-cols-[72px_1fr_auto] items-stretch transition-all duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[3px_3px_0_#f2efe6]">
-    <div className="border-r-[3px] border-ink">
-      <InkCover
-        src={item.image}
-        alt={item.title}
-        className="h-full min-h-[84px] w-full"
-      />
-    </div>
+  <div className="grid grid-cols-[60px_1fr_auto] items-center gap-4 rounded-lg border border-line bg-surface p-3 transition-colors duration-fast hover:bg-surface-2">
     <div
       onClick={onOpen}
-      className="flex cursor-pointer flex-col justify-center gap-1.5 px-4 py-3.5 sm:px-5"
+      className="aspect-[2/3] cursor-pointer overflow-hidden rounded-sm"
     >
-      <div className="ink-display text-base tracking-[.5px] line-clamp-1 sm:text-lg">
+      <Cover src={item.image} alt={item.title} />
+    </div>
+    <div onClick={onOpen} className="min-w-0 cursor-pointer">
+      <div className="font-display text-[15px] font-semibold text-text line-clamp-1">
         {item.title}
       </div>
-      <div className="text-[11.5px] font-bold text-ink-mut3">
-        {item.episodes ? `EP ${item.episodes}` : "EP —"}
-        {item.status ? ` · ${item.status}` : ""}
-        {item.score ? ` · ★ ${item.score}` : ""}
+      <div className="mt-1 flex flex-wrap items-center gap-2 text-[12.5px] text-muted">
+        <span>{item.episodes ? `${item.episodes} ep` : "— ep"}</span>
+        {item.score && (
+          <span className="font-mono text-xs font-bold text-gold">
+            ★ {item.score}
+          </span>
+        )}
+        {item.status && <span className="line-clamp-1">{item.status}</span>}
       </div>
     </div>
-    <div className="flex items-center gap-2.5 px-3 sm:px-4">
-      <span className="hidden border-[3px] border-ink bg-ink-bg px-2.5 py-1.5 text-[10.5px] font-black tracking-[1px] sm:inline-block">
-        {STATUS_LABEL[item.watchStatus] || "PLANNED"}
-      </span>
+    <div className="flex items-center gap-2.5 pr-1">
+      <Badge variant="outline" size="sm" className="hidden sm:inline-flex">
+        {STATUS_LABEL[item.watchStatus] || "Planned"}
+      </Badge>
       <button
         onClick={onRemove}
         aria-label="Remove from watchlist"
-        className="flex h-9 w-9 flex-none cursor-pointer items-center justify-center border-[3px] border-ink bg-ink font-body text-[15px] font-black text-ink-paper transition-colors hover:bg-ink-red"
+        className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full border border-line-strong text-[13px] text-muted transition-colors duration-fast hover:border-danger hover:text-danger"
       >
         ✕
       </button>
@@ -59,11 +57,11 @@ const Watchlist = () => {
 
   if (!user) {
     return (
-      <div className="px-6 pb-16 pt-10 md:px-[72px]">
-        <InkEmptyState
-          shout="SIGN IN FIRST!!"
-          sub="Log in to build your backlog."
-          ctaLabel="Login →"
+      <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
+        <EmptyState
+          title="Sign in to build your watchlist"
+          sub="Your queue syncs across every device once you're signed in."
+          ctaLabel="Sign in"
           ctaTo="/login"
         />
       </div>
@@ -81,12 +79,12 @@ const Watchlist = () => {
       : watchlist.filter((item) => item.watchStatus === activeTab);
 
   return (
-    <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
-      <h1 className="ink-display m-0 mb-2 text-4xl md:text-[44px]">
-        My <span className="text-ink-red">Watchlist</span>
+    <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
+      <h1 className="m-0 mb-2 font-display text-[28px] font-extrabold tracking-tight text-text md:text-[34px]">
+        My watchlist
       </h1>
-      <p className="mb-6 text-[13.5px] font-medium text-ink-mut3">
-        {totalWatchlist} series queued — tap + anywhere to queue more
+      <p className="mb-6 text-[14.5px] text-muted">
+        {totalWatchlist} titles queued — tap ＋ anywhere to add more
       </p>
 
       {/* Status filters */}
@@ -95,10 +93,10 @@ const Watchlist = () => {
           <button
             key={f.id}
             onClick={() => setActiveTab(f.id)}
-            className={`ink-btn px-4 py-2 text-xs transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
+            className={`rounded-pill border px-4 py-2 font-body text-[13px] font-medium transition-colors duration-fast ${
               activeTab === f.id
-                ? "bg-ink text-ink-paper"
-                : "bg-ink-paper text-ink"
+                ? "border-gold bg-gold text-bg"
+                : "border-line bg-surface-2 text-muted hover:border-line-strong hover:text-text"
             }`}
           >
             {f.label}
@@ -107,20 +105,18 @@ const Watchlist = () => {
       </div>
 
       {error ? (
-        <InkEmptyState shout="SIGNAL LOST!!" sub={error} />
+        <EmptyState glyph="⚠" title="Couldn't load your watchlist" sub={error} />
       ) : loading && watchlist.length === 0 ? (
-        <InkRowSkeleton count={4} />
+        <RowSkeleton count={4} />
       ) : displayData.length === 0 ? (
-        <InkEmptyState
-          shout="NOTHING QUEUED YET!!"
-          sub="A true otaku always has a backlog."
-          ctaLabel="Build the backlog →"
+        <EmptyState
+          title="Your watchlist is empty"
+          sub="Every great backlog starts somewhere."
+          ctaLabel="Browse anime"
           ctaTo="/anime"
-          redShadow={false}
-          rotate={2}
         />
       ) : (
-        <div className="flex max-w-4xl flex-col gap-4">
+        <div className="flex max-w-[900px] flex-col gap-3.5">
           {displayData.map((item) => (
             <WatchRow
               key={`${item.type}-${item.itemId}`}

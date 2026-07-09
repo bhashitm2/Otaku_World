@@ -1,217 +1,173 @@
-// Home — "Ink & Impact": Three.js hero, real power rankings, quest cards
-import React, { Suspense } from "react";
+// Home — Nova: full-bleed backdrop hero for the featured title, then
+// horizontal rails. The cover art is the brightest thing on screen.
 import { Link, useNavigate } from "react-router-dom";
-import { useTrendingAnime } from "../hooks/useAnimeQueries";
-import InkCover from "../components/ink/InkCover";
-import { InkCardSkeleton } from "../components/ink/InkSkeleton";
+import {
+  useTrendingAnime,
+  useTopAnime,
+  useSeasonalAnime,
+} from "../hooks/useAnimeQueries";
+import { useAuth } from "../hooks/useAuth";
+import { useWatchlist } from "../hooks/useWatchlist";
+import { Cover, Button, MediaCard, Skeleton } from "../components/nova";
 import { dedupeById } from "../utils/dedupe";
 import { getDisplayTitle } from "../utils/title";
 
-// three.js is heavy — load the hero canvas after the page paints
-const ThreeHero = React.lazy(() => import("../components/ink/ThreeHero"));
+// Jikan covers are 2:3 portraits; prefer the 16:9 trailer still for the
+// backdrop and fall back to the poster (scrims hide the cropping).
+const wideImage = (item) =>
+  item?.trailer?.images?.maximum_image_url ||
+  item?.trailer?.images?.large_image_url ||
+  item?.images?.jpg?.large_image_url;
 
-const QUESTS = [
-  {
-    num: "01",
-    title: "Anime Archive",
-    desc: "Search 50,000+ series with filters sharp enough to find that one show you half-remember.",
-    to: "/anime",
-  },
-  {
-    num: "02",
-    title: "Character Files",
-    desc: "Dossiers on every hero, rival and menace. Know your cast before the plot twist does.",
-    to: "/characters",
-  },
-  {
-    num: "03",
-    title: "Power Rankings",
-    desc: "The community's verdict, updated weekly. Argue with the data, not with strangers.",
-    to: "/trending",
-  },
-  {
-    num: "04",
-    title: "Your Collection",
-    desc: "Favorites, watchlist, and picks tailored to your taste — synced everywhere.",
-    to: "/favorites",
-  },
-];
-
-const compactMembers = (n) => {
-  if (!n) return null;
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-  if (n >= 1000) return `${Math.round(n / 1000)}K`;
-  return `${n}`;
-};
+const Rail = ({ title, to, items, isLoading, mediaType = "anime" }) => (
+  <section className="mt-11">
+    <div className="mb-4 flex items-baseline justify-between px-gutter lg:px-gutter-lg">
+      <h2 className="m-0 font-display text-xl font-bold tracking-tight text-text">
+        {title}
+      </h2>
+      {to && (
+        <Link
+          to={to}
+          className="text-[13px] text-faint no-underline transition-colors duration-fast hover:text-text"
+        >
+          See all →
+        </Link>
+      )}
+    </div>
+    <div className="ow-scroll flex gap-[18px] overflow-x-auto px-gutter pb-2 lg:px-gutter-lg">
+      {isLoading || !items?.length
+        ? [...Array(7)].map((_, i) => (
+            <Skeleton key={i} className="w-[200px] shrink-0" />
+          ))
+        : items.map((item) => (
+            <MediaCard
+              key={item.mal_id}
+              anime={item}
+              mediaType={mediaType}
+              width={200}
+            />
+          ))}
+    </div>
+  </section>
+);
 
 const Home = () => {
   const navigate = useNavigate();
-  const { data: trendingData, isLoading } = useTrendingAnime(1);
-  const topFive = dedupeById(trendingData?.data || []).slice(0, 5);
+  const { user } = useAuth();
+  const { isInWatchlist, toggleWatchlist } = useWatchlist();
+
+  const { data: trendingData, isLoading: trendingLoading } = useTrendingAnime(1);
+  const { data: topData, isLoading: topLoading } = useTopAnime(1);
+  const { data: seasonalData, isLoading: seasonalLoading } = useSeasonalAnime();
+
+  const trending = dedupeById(trendingData?.data || []);
+  const featured = trending.find((item) => wideImage(item)) || trending[0];
+  const trendingRail = trending
+    .filter((item) => item.mal_id !== featured?.mal_id)
+    .slice(0, 14);
+  const seasonalRail = dedupeById(seasonalData?.data || []).slice(0, 14);
+  const topRail = dedupeById(topData?.data || []).slice(0, 14);
+
+  const featuredSave = featured && {
+    mal_id: featured.mal_id,
+    type: "anime",
+    title: getDisplayTitle(featured),
+    image:
+      featured.images?.jpg?.large_image_url ||
+      featured.images?.jpg?.image_url ||
+      "",
+    genres: featured.genres || [],
+    score: featured.score || null,
+    status: featured.status || "",
+    episodes: featured.episodes || null,
+    chapters: null,
+  };
+  const queued = user && featured && isInWatchlist(featured.mal_id, "anime");
+
+  const onWatchlist = () => {
+    if (!user) return navigate("/login");
+    toggleWatchlist(featuredSave);
+  };
 
   return (
-    <div className="bg-ink-bg text-ink">
+    <div className="bg-bg pb-20 text-text">
       {/* ============ HERO ============ */}
-      <section className="ink-halftone relative h-[640px] overflow-hidden bg-ink-paper">
-        <Suspense fallback={null}>
-          <ThreeHero />
-        </Suspense>
+      <section className="relative -mt-nav h-[560px] overflow-hidden md:h-[620px]">
+        {featured ? (
+          <>
+            <Cover
+              src={wideImage(featured)}
+              alt={getDisplayTitle(featured)}
+              imgClassName="object-top"
+            />
+            <div className="ow-scrim-hero pointer-events-none absolute inset-0" />
+            <div className="ow-scrim-bottom pointer-events-none absolute inset-0" />
 
-        {/* floating stickers */}
-        <div className="ink-display absolute top-12 right-6 z-[3] hidden rotate-6 animate-bob2 bg-ink-red px-5 py-3 text-[17px] text-ink-paper shadow-[5px_5px_0_#f2efe6] md:block">
-          #1 ANIME DATABASE
-        </div>
-        <div className="ink-display absolute top-[170px] right-[140px] z-[3] hidden -rotate-6 animate-bob border-[3px] border-ink bg-ink-paper px-4 py-2.5 text-sm text-ink shadow-[5px_5px_0_#e63946] lg:block">
-          50K+ SERIES!!
-        </div>
-        <div className="absolute bottom-[70px] right-20 z-[3] hidden rotate-3 animate-bob2 bg-ink px-4 py-2.5 font-jp text-[13px] font-bold tracking-[2px] text-ink-paper lg:block">
-          トラッキング開始!
-        </div>
-        <div
-          className="absolute top-[90px] left-5 z-[3] hidden font-jp text-sm font-bold tracking-[8px] text-ink/25 md:block"
-          style={{ writingMode: "vertical-rl" }}
-        >
-          オタクワールド
-        </div>
-
-        {/* hero copy */}
-        <div className="pointer-events-none relative z-[4] max-w-[700px] px-6 pt-16 md:px-[72px] md:pt-24">
-          <div className="ink-display mb-6 inline-block -rotate-1 bg-ink px-3.5 py-1.5 text-[13px] tracking-[3px] text-ink-paper">
-            CHAPTER 01 — THE PORTAL
-          </div>
-          <h1 className="ink-display m-0 text-[56px] leading-[.94] md:text-[104px]">
-            Your next
-            <br />
-            <span className="relative z-[1] inline-block">
-              obsession
-              <span className="absolute -left-1.5 -right-1.5 bottom-1.5 -z-[1] h-[34%] -skew-x-6 bg-ink-red" />
-            </span>
-            <br />
-            awaits.
-          </h1>
-          <p className="my-6 max-w-[440px] text-[17px] font-medium leading-[1.7] text-ink-body md:mb-9">
-            Track every episode. Rank every character. Argue about power
-            levels with data on your side.
-          </p>
-          <div className="pointer-events-auto flex flex-wrap gap-4">
-            <button
-              onClick={() => navigate("/anime")}
-              className="ink-btn ink-press ink-sh-red bg-ink px-9 py-4 text-[15px] text-ink-paper"
-            >
-              Dive in →
-            </button>
-            <button
-              onClick={() => navigate("/trending")}
-              className="ink-btn ink-press bg-ink-paper px-9 py-4 text-[15px] text-ink"
-            >
-              Trending
-            </button>
-          </div>
-          <div className="pointer-events-auto mt-11 hidden gap-3.5 sm:flex">
-            {[
-              ["50K+", "SERIES"],
-              ["200K+", "CHARACTERS"],
-              ["1M+", "RATINGS"],
-            ].map(([num, label]) => (
-              <div
-                key={label}
-                className="ink-card ink-shadow-sm px-5 py-2.5"
-              >
-                <span className="font-display text-[22px] text-ink-red">
-                  {num}
-                </span>
-                <span className="ml-2 text-[11px] font-black tracking-[1px] text-ink">
-                  {label}
-                </span>
+            <div className="absolute bottom-16 left-gutter max-w-[560px] pr-gutter lg:left-gutter-lg">
+              <div className="mb-3 font-body text-xs font-semibold uppercase tracking-[0.12em] text-gold">
+                ● Featured today
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============ POWER RANKINGS ============ */}
-      <section className="border-t-4 border-ink bg-ink-bg px-6 pb-14 pt-11 md:px-[72px]">
-        <div className="mb-8 flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="ink-display m-0 text-[28px] md:text-[34px]">
-            This week's <span className="text-ink-red">power rankings</span>
-          </h2>
-          <Link
-            to="/trending"
-            className="border-b-[3px] border-ink-red text-[13px] font-black uppercase tracking-[1px] text-ink no-underline"
-          >
-            Full chart →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
-          {isLoading
-            ? [...Array(5)].map((_, i) => <InkCardSkeleton key={i} />)
-            : topFive.map((anime, i) => (
-                <div
-                  key={anime.mal_id}
-                  onClick={() => navigate(`/anime/${anime.mal_id}`)}
-                  className="ink-card ink-press relative cursor-pointer"
+              <h1 className="m-0 font-display text-[34px] font-extrabold leading-[1.02] tracking-tight md:text-[56px]">
+                {getDisplayTitle(featured)}
+              </h1>
+              <div className="mt-4 flex flex-wrap items-center gap-2.5 text-[13.5px] text-muted">
+                {featured.score && (
+                  <span className="font-mono font-bold text-gold">
+                    ★ {featured.score}
+                  </span>
+                )}
+                {featured.year && <span>{featured.year}</span>}
+                {featured.episodes && <span>· {featured.episodes} ep</span>}
+                {(featured.genres || []).slice(0, 3).map((g) => (
+                  <span key={g.mal_id || g.name || g}>
+                    · {typeof g === "string" ? g : g.name}
+                  </span>
+                ))}
+              </div>
+              {featured.synopsis && (
+                <p className="mt-4 max-w-[520px] text-[14.5px] leading-relaxed text-muted line-clamp-3">
+                  {featured.synopsis}
+                </p>
+              )}
+              <div className="mt-6 flex flex-wrap gap-3.5">
+                <Button
+                  as={Link}
+                  to={`/anime/${featured.mal_id}`}
+                  size="lg"
+                  glow
                 >
-                  <div className="ink-display absolute -top-3.5 -left-2.5 z-[2] border-[3px] border-ink bg-ink-red px-2.5 py-0.5 text-[18px] text-ink-paper">
-                    #{i + 1}
-                  </div>
-                  <div className="relative h-[230px] border-b-[3px] border-ink">
-                    <InkCover
-                      src={
-                        anime.images?.jpg?.large_image_url ||
-                        anime.images?.jpg?.image_url
-                      }
-                      alt={anime.title}
-                      className="h-full w-full"
-                    />
-                  </div>
-                  <div className="p-3 pb-4">
-                    <div className="ink-display text-[15px] leading-tight tracking-[.5px] line-clamp-2">
-                      {getDisplayTitle(anime)}
-                    </div>
-                    <div className="mt-1.5 text-[11.5px] font-bold text-ink-mut3">
-                      {anime.score ? `SCORE ${anime.score}` : "UNRATED"}
-                      {compactMembers(anime.members)
-                        ? ` · ${compactMembers(anime.members)} MEMBERS`
-                        : ""}
-                    </div>
-                  </div>
-                </div>
-              ))}
-        </div>
-      </section>
-
-      {/* ============ QUESTS ============ */}
-      <section className="ink-halftone-soft border-t-4 border-ink bg-ink-paper px-6 pb-16 pt-11 md:px-[72px]">
-        <h2 className="ink-display m-0 mb-8 text-[28px] md:text-[34px]">
-          Choose your{" "}
-          <span className="relative z-[1] inline-block">
-            quest
-            <span className="absolute -left-1 -right-1 bottom-0.5 -z-[1] h-[36%] -skew-x-6 bg-ink-red" />
-          </span>
-        </h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {QUESTS.map((quest) => (
-            <div
-              key={quest.num}
-              onClick={() => navigate(quest.to)}
-              className="ink-card ink-press-redhov flex cursor-pointer flex-col gap-2.5 p-5"
-            >
-              <div className="font-display text-[30px] text-ink-red">
-                {quest.num}
-              </div>
-              <div className="ink-display text-[19px] tracking-[.5px]">
-                {quest.title}
-              </div>
-              <div className="text-[13.5px] font-medium leading-relaxed text-ink-mut1">
-                {quest.desc}
-              </div>
-              <div className="mt-auto text-xs font-black uppercase tracking-[1px]">
-                Go →
+                  ▶ View details
+                </Button>
+                <Button variant="ghost" size="lg" onClick={onWatchlist}>
+                  {queued ? "✓ In watchlist" : "＋ Watchlist"}
+                </Button>
               </div>
             </div>
-          ))}
-        </div>
+          </>
+        ) : (
+          <div className="ow-shimmer h-full w-full" />
+        )}
       </section>
+
+      {/* ============ RAILS ============ */}
+      <Rail
+        title="Trending now"
+        to="/trending"
+        items={trendingRail}
+        isLoading={trendingLoading}
+      />
+      <Rail
+        title="New this season"
+        to="/seasonal"
+        items={seasonalRail}
+        isLoading={seasonalLoading}
+      />
+      <Rail
+        title="Top rated of all time"
+        to="/anime"
+        items={topRail}
+        isLoading={topLoading}
+      />
     </div>
   );
 };

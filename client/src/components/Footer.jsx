@@ -1,67 +1,64 @@
-// Ink & Impact footer: inverted light panel, red top border
+// Nova footer: quiet dark panel above a hairline, tiny uppercase column
+// labels, muted links that brighten on hover.
 import { Link } from "react-router-dom";
 
 const FooterLink = ({ to, children }) => (
   <Link
     to={to}
-    className="text-[13px] font-bold text-ink-link no-underline hover:text-ink-paper"
+    className="text-[13px] text-muted no-underline transition-colors duration-fast hover:text-text"
   >
     {children}
   </Link>
 );
 
+const ColumnLabel = ({ children }) => (
+  <div className="mb-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
+    {children}
+  </div>
+);
+
 const Footer = () => (
-  <footer className="border-t-4 border-ink-red bg-ink text-ink-paper">
-    <div className="grid grid-cols-1 gap-10 px-6 py-10 sm:grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr] md:px-16">
+  <footer className="border-t border-line bg-bg">
+    <div className="grid grid-cols-1 gap-10 px-gutter py-12 sm:grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr] lg:px-gutter-lg">
       <div>
         <div className="mb-3 flex items-center gap-2.5">
-          <img
-            src="/Main_Logo.png"
-            alt="logo"
-            className="h-10 w-10 object-contain"
-          />
-          <span className="font-display text-xl tracking-[1px]">
-            OTAKU WORLD<span className="text-ink-red">!</span>
+          <span className="grid h-[26px] w-[26px] place-items-center rounded-[7px] bg-gold font-display text-[15px] font-extrabold text-bg">
+            O
+          </span>
+          <span className="font-display text-[17px] font-bold tracking-tight text-text">
+            Otaku<span className="text-gold">World</span>
           </span>
         </div>
-        <p className="max-w-xs text-[13px] font-medium leading-relaxed text-ink-mut4">
-          The anime database with main-character energy. Series, characters
-          and lore — all in one place.
+        <p className="max-w-xs text-[13px] leading-relaxed text-muted">
+          Your anime and manga library — browse series, rank characters, and
+          keep your watchlist in sync everywhere.
         </p>
       </div>
       <div>
-        <div className="mb-3.5 font-display text-sm tracking-[2px] text-ink-red">
-          EXPLORE
-        </div>
+        <ColumnLabel>Explore</ColumnLabel>
         <div className="flex flex-col gap-2">
-          <FooterLink to="/anime">Anime Archive</FooterLink>
-          <FooterLink to="/manga">Manga Archive</FooterLink>
-          <FooterLink to="/characters">Character Files</FooterLink>
-          <FooterLink to="/trending">Power Rankings</FooterLink>
+          <FooterLink to="/anime">Browse anime</FooterLink>
+          <FooterLink to="/manga">Browse manga</FooterLink>
+          <FooterLink to="/characters">Characters</FooterLink>
+          <FooterLink to="/trending">Trending</FooterLink>
           <FooterLink to="/seasonal">Seasonal</FooterLink>
-          <FooterLink to="/schedule">Airing Schedule</FooterLink>
+          <FooterLink to="/schedule">Airing schedule</FooterLink>
         </div>
       </div>
       <div>
-        <div className="mb-3.5 font-display text-sm tracking-[2px] text-ink-red">
-          ACCOUNT
-        </div>
+        <ColumnLabel>Account</ColumnLabel>
         <div className="flex flex-col gap-2">
-          <FooterLink to="/for-you">For You</FooterLink>
-          <FooterLink to="/favorites">My Favorites</FooterLink>
-          <FooterLink to="/watchlist">My Watchlist</FooterLink>
+          <FooterLink to="/for-you">For you</FooterLink>
+          <FooterLink to="/favorites">My favorites</FooterLink>
+          <FooterLink to="/watchlist">My watchlist</FooterLink>
           <FooterLink to="/profile">Profile</FooterLink>
-          <FooterLink to="/login">Login</FooterLink>
+          <FooterLink to="/login">Sign in</FooterLink>
         </div>
       </div>
     </div>
-    <div className="flex flex-col items-center justify-between gap-2 border-t border-ink-body px-6 py-4 sm:flex-row md:px-16">
-      <span className="font-display text-[13px] tracking-[2px] text-ink-mut5">
-        OTAKU WORLD © {new Date().getFullYear()} · CREATED BY BHASHIT
-        MAHESHWARI
-      </span>
-      <span className="font-display text-[13px] tracking-[2px] text-ink-red">
-        TO BE CONTINUED...
+    <div className="border-t border-line px-gutter py-4 lg:px-gutter-lg">
+      <span className="text-[12.5px] text-faint">
+        Otaku World © {new Date().getFullYear()} · Created by Bhashit Maheshwari
       </span>
     </div>
   </footer>

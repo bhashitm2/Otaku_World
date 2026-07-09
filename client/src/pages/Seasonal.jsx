@@ -1,25 +1,29 @@
-// Seasonal — "Ink & Impact": This Season / Upcoming tabs
+// Seasonal — Nova: This season / Upcoming tabs over a poster grid
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getCurrentSeason, getUpcomingSeason } from "../services/anime";
-import InkAnimeCard from "../components/ink/InkAnimeCard";
-import InkEmptyState from "../components/ink/InkEmptyState";
-import { InkGridSkeleton } from "../components/ink/InkSkeleton";
+import {
+  MediaCard,
+  EmptyState,
+  GridSkeleton,
+  Button,
+  Badge,
+} from "../components/nova";
 import { dedupeById } from "../utils/dedupe";
 
 const getSeasonLabel = () => {
   const now = new Date();
   const month = now.getMonth() + 1;
   let season;
-  if (month >= 3 && month <= 5) season = "SPRING";
-  else if (month >= 6 && month <= 8) season = "SUMMER";
-  else if (month >= 9 && month <= 11) season = "FALL";
-  else season = "WINTER";
+  if (month >= 3 && month <= 5) season = "Spring";
+  else if (month >= 6 && month <= 8) season = "Summer";
+  else if (month >= 9 && month <= 11) season = "Fall";
+  else season = "Winter";
   return `${season} ${now.getFullYear()}`;
 };
 
 const TABS = [
-  { key: "now", label: "This Season" },
+  { key: "now", label: "This season" },
   { key: "upcoming", label: "Upcoming" },
 ];
 
@@ -83,21 +87,21 @@ const Seasonal = () => {
   };
 
   return (
-    <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
-      <div className="mb-2 flex flex-wrap items-center gap-4">
-        <h1 className="ink-display m-0 text-4xl md:text-[44px]">
-          Seasonal <span className="text-ink-red">Anime</span>
+    <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
+      <div className="mb-2 flex flex-wrap items-center gap-3">
+        <h1 className="m-0 font-display text-[28px] font-extrabold tracking-tight text-text md:text-[34px]">
+          Seasonal anime
         </h1>
         {activeTab === "now" && (
-          <div className="ink-display -rotate-2 bg-ink px-3.5 py-1.5 text-[13px] tracking-[2px] text-ink-paper">
+          <Badge variant="outline" size="sm">
             {getSeasonLabel()}
-          </div>
+          </Badge>
         )}
       </div>
-      <p className="mb-6 text-[13.5px] font-medium text-ink-mut3">
+      <p className="mb-6 text-[14.5px] text-muted">
         {activeTab === "upcoming"
           ? "What's coming next season"
-          : "Airing right now — fresh from the studios"}
+          : "Airing right now, fresh from the studios"}
       </p>
 
       {/* Tabs */}
@@ -106,10 +110,10 @@ const Seasonal = () => {
           <button
             key={tab.key}
             onClick={() => switchTab(tab.key)}
-            className={`ink-btn px-5 py-2.5 text-xs transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
+            className={`rounded-pill border px-4 py-2 font-body text-[13px] font-medium transition-colors duration-fast ${
               activeTab === tab.key
-                ? "bg-ink text-ink-paper"
-                : "bg-ink-paper text-ink"
+                ? "border-gold bg-gold text-bg"
+                : "border-line bg-surface-2 text-muted hover:border-line-strong hover:text-text"
             }`}
           >
             {tab.label}
@@ -118,33 +122,35 @@ const Seasonal = () => {
       </div>
 
       {error ? (
-        <InkEmptyState
-          shout="SIGNAL LOST!!"
-          sub={error?.message || "Could not load the season."}
+        <EmptyState
+          glyph="⚠"
+          title="Couldn't load the season"
+          sub={error?.message || "The season list is unreachable. Try again."}
           ctaLabel="Retry"
           ctaTo="/seasonal"
         />
       ) : isLoading && animeList.length === 0 ? (
-        <InkGridSkeleton count={8} />
+        <GridSkeleton count={10} />
       ) : animeList.length === 0 ? (
-        <InkEmptyState shout="NOTHING HERE YET..." sub="Check back soon." />
+        <EmptyState sub="Check back soon." />
       ) : (
-        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-[26px] sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
           {animeList.map((anime) => (
-            <InkAnimeCard key={anime.mal_id} anime={anime} />
+            <MediaCard key={anime.mal_id} anime={anime} />
           ))}
         </div>
       )}
 
       {animeList.length > 0 && hasMore && (
         <div className="mt-12 text-center">
-          <button
+          <Button
+            variant="subtle"
+            size="lg"
             onClick={loadMore}
             disabled={isLoading}
-            className="ink-btn ink-press ink-sh-red bg-ink px-10 py-4 text-sm text-ink-paper disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isLoading ? "LOADING..." : "LOAD MORE →"}
-          </button>
+            {isLoading ? "Loading…" : "Load more"}
+          </Button>
         </div>
       )}
     </div>

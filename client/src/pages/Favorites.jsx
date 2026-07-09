@@ -1,13 +1,15 @@
-// Favorites — "Ink & Impact": hall-of-fame grid with type tabs
+// Favorites — Nova: poster grid with type tabs
 import React, { useState } from "react";
 import { useFavorites } from "../hooks/useFavorites";
 import { useAuth } from "../hooks/useAuth";
-import InkAnimeCard from "../components/ink/InkAnimeCard";
-import InkCharacterCard from "../components/ink/InkCharacterCard";
-import InkEmptyState from "../components/ink/InkEmptyState";
-import { InkGridSkeleton } from "../components/ink/InkSkeleton";
+import {
+  MediaCard,
+  CharacterCard,
+  EmptyState,
+  GridSkeleton,
+} from "../components/nova";
 
-// Rehydrate a stored favorite into the shape the ink cards expect
+// Rehydrate a stored favorite into the shape the cards expect
 const toCardItem = (item) => ({
   mal_id: item.itemId,
   title: item.title,
@@ -37,11 +39,11 @@ const Favorites = () => {
 
   if (!user) {
     return (
-      <div className="px-6 pb-16 pt-10 md:px-[72px]">
-        <InkEmptyState
-          shout="SIGN IN FIRST!!"
-          sub="Log in to build your hall of fame."
-          ctaLabel="Login →"
+      <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
+        <EmptyState
+          title="Sign in to keep favorites"
+          sub="Your favorites sync across every device once you're signed in."
+          ctaLabel="Sign in"
           ctaTo="/login"
         />
       </div>
@@ -65,12 +67,12 @@ const Favorites = () => {
       : favorites;
 
   return (
-    <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
-      <h1 className="ink-display m-0 mb-2 text-4xl md:text-[44px]">
-        My <span className="text-ink-red">Favorites</span>
+    <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
+      <h1 className="m-0 mb-2 font-display text-[28px] font-extrabold tracking-tight text-text md:text-[34px]">
+        My favorites
       </h1>
-      <p className="mb-6 text-[13.5px] font-medium text-ink-mut3">
-        {totalFavorites} in your hall of fame — tap ♥ anywhere to add more
+      <p className="mb-6 text-[14.5px] text-muted">
+        {totalFavorites} saved — tap ♥ anywhere to add more
       </p>
 
       {/* Tabs */}
@@ -79,45 +81,43 @@ const Favorites = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`ink-btn gap-2 px-4 py-2 text-xs transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
+            className={`inline-flex items-center gap-2 rounded-pill border px-4 py-2 font-body text-[13px] font-medium transition-colors duration-fast ${
               activeTab === tab.id
-                ? "bg-ink text-ink-paper"
-                : "bg-ink-paper text-ink"
+                ? "border-gold bg-gold text-bg"
+                : "border-line bg-surface-2 text-muted hover:border-line-strong hover:text-text"
             }`}
           >
             {tab.label}
-            <span className="border-2 border-current px-1.5 text-[10px]">
-              {tab.count}
-            </span>
+            <span className="font-mono text-[11px] font-bold">{tab.count}</span>
           </button>
         ))}
       </div>
 
       {error ? (
-        <InkEmptyState shout="SIGNAL LOST!!" sub={error} />
+        <EmptyState glyph="⚠" title="Couldn't load favorites" sub={error} />
       ) : loading && favorites.length === 0 ? (
-        <InkGridSkeleton count={8} />
+        <GridSkeleton count={10} />
       ) : displayData.length === 0 ? (
-        <InkEmptyState
-          shout="YOUR HALL OF FAME IS EMPTY!!"
+        <EmptyState
+          title="No favorites yet"
           sub="Go find a series worth obsessing over."
-          ctaLabel="Browse the archive →"
+          ctaLabel="Browse anime"
           ctaTo="/anime"
         />
       ) : (
-        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-[26px] sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
           {displayData.map((item) => {
             const cardItem = toCardItem(item);
             if (item.type === "character") {
               return (
-                <InkCharacterCard
+                <CharacterCard
                   key={`${item.type}-${item.itemId}`}
                   character={cardItem}
                 />
               );
             }
             return (
-              <InkAnimeCard
+              <MediaCard
                 key={`${item.type}-${item.itemId}`}
                 anime={cardItem}
                 mediaType={item.type === "manga" ? "manga" : "anime"}

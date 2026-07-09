@@ -1,17 +1,22 @@
-// Manga — "Ink & Impact": archive browse mirroring the Anime page
+// Browse manga — Nova browse page mirroring the Anime page
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { getTopManga, searchManga, getMangaGenres } from "../services/anime";
-import InkAnimeCard from "../components/ink/InkAnimeCard";
-import InkEmptyState from "../components/ink/InkEmptyState";
-import { InkGridSkeleton } from "../components/ink/InkSkeleton";
+import { MediaCard, EmptyState, GridSkeleton, Button } from "../components/nova";
 import FilterPanel from "../components/FilterPanel";
 import { dedupeById } from "../utils/dedupe";
 import { rankByRelevance } from "../utils/relevance";
 
 const FILTER_KEYS = ["q", "genres", "status", "type", "min_score", "year"];
 const CHIP_GENRE_COUNT = 10;
+
+const chipClass = (active) =>
+  `rounded-pill border px-3.5 py-1.5 font-body text-xs font-medium transition-colors duration-fast ${
+    active
+      ? "border-gold bg-gold text-bg"
+      : "border-line bg-surface-2 text-muted hover:border-line-strong hover:text-text"
+  }`;
 
 const Manga = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -133,51 +138,47 @@ const Manga = () => {
     !isLoading && !error && displayList.length === 0 && isSearchMode;
 
   return (
-    <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
-      <h1 className="ink-display m-0 mb-2 text-4xl md:text-[44px]">
-        Manga <span className="text-ink-red">Archive</span>
+    <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
+      <h1 className="m-0 mb-2 font-display text-[28px] font-extrabold tracking-tight text-text md:text-[34px]">
+        Browse manga
       </h1>
-      <p className="mb-5 text-[13.5px] font-medium text-ink-mut3">
+      <p className="mb-6 text-[14.5px] text-muted">
         {isSearchMode
-          ? "Filtered results from the archive"
-          : "Top-rated manga — covers live from the Jikan API"}
+          ? "Filtered results from the library"
+          : "Top-rated manga, updated live"}
       </p>
 
       {/* Search */}
-      <form onSubmit={submitSearch} className="mb-4 flex items-center gap-3.5">
-        <input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="SEARCH THE ARCHIVE..."
-          className="ink-shadow-sm min-w-0 flex-1 border-[3px] border-ink bg-ink-paper px-4 py-3.5 font-body text-sm font-bold tracking-[1px] text-ink outline-none placeholder:text-ink-mut4"
-        />
-        <button
-          type="submit"
-          className="ink-display ink-shadow-sm rotate-2 cursor-pointer border-[3px] border-ink bg-ink-red px-4 py-3 text-sm text-ink-paper"
-        >
-          検索!
-        </button>
+      <form onSubmit={submitSearch} className="mb-4 flex items-center gap-3">
+        <div className="relative min-w-0 flex-1">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-faint">
+            ⌕
+          </span>
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search manga…"
+            className="w-full rounded-sm border border-line bg-surface-2 py-3 pl-10 pr-4 font-body text-sm text-text outline-none transition-colors duration-fast placeholder:text-faint focus:border-line-strong"
+          />
+        </div>
+        <Button type="submit" size="sm">
+          Search
+        </Button>
       </form>
 
       {/* Genre chips */}
       <div className="mb-4 flex flex-wrap gap-2">
         <button
           onClick={() => updateParams({ genres: "" })}
-          className={`ink-btn px-3.5 py-[7px] text-[11.5px] transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
-            !filters.genres ? "bg-ink text-ink-paper" : "bg-ink-paper text-ink"
-          }`}
+          className={chipClass(!filters.genres)}
         >
-          ALL
+          All
         </button>
         {chipGenres.map((genre) => (
           <button
             key={genre.mal_id}
             onClick={() => toggleChip(genre.mal_id)}
-            className={`ink-btn px-3.5 py-[7px] text-[11.5px] transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
-              activeChipId === genre.mal_id
-                ? "bg-ink text-ink-paper"
-                : "bg-ink-paper text-ink"
-            }`}
+            className={chipClass(activeChipId === genre.mal_id)}
           >
             {genre.name}
           </button>
@@ -193,46 +194,44 @@ const Manga = () => {
       />
 
       {error && (
-        <InkEmptyState
-          shout="SIGNAL LOST!!"
-          sub={error?.message || "The archive is unreachable. Try again."}
+        <EmptyState
+          glyph="⚠"
+          title="Couldn't reach the library"
+          sub={error?.message || "The library is unreachable. Try again."}
           ctaLabel="Retry"
           ctaTo="/manga"
         />
       )}
 
       {isLoading && mangaList.length === 0 ? (
-        <InkGridSkeleton count={8} />
+        <GridSkeleton count={10} />
       ) : (
         !showEmpty && (
-          <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-[26px] sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
             {displayList.map((manga) => (
-              <InkAnimeCard
-                key={manga.mal_id}
-                anime={manga}
-                mediaType="manga"
-              />
+              <MediaCard key={manga.mal_id} anime={manga} mediaType="manga" />
             ))}
           </div>
         )
       )}
 
       {showEmpty && (
-        <InkEmptyState
-          shout="NANI?! NOTHING FOUND..."
-          sub="Try a different search or clear the genre filter."
+        <EmptyState
+          title="Nothing matches that search"
+          sub="Try a different title or clear a filter."
         />
       )}
 
       {mangaList.length > 0 && hasMore && !showEmpty && (
         <div className="mt-12 text-center">
-          <button
+          <Button
+            variant="subtle"
+            size="lg"
             onClick={loadMore}
             disabled={isLoading}
-            className="ink-btn ink-press ink-sh-red bg-ink px-10 py-4 text-sm text-ink-paper disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isLoading ? "LOADING..." : "LOAD MORE →"}
-          </button>
+            {isLoading ? "Loading…" : "Load more"}
+          </Button>
         </div>
       )}
     </div>

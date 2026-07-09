@@ -1,20 +1,18 @@
-// Schedule — "Ink & Impact": weekly airing calendar with day tabs
+// Schedule — Nova: weekly airing calendar with day chips
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSchedules } from "../hooks/useAnimeQueries";
-import InkCover from "../components/ink/InkCover";
-import InkEmptyState from "../components/ink/InkEmptyState";
-import { InkRowSkeleton } from "../components/ink/InkSkeleton";
+import { Cover, EmptyState, RowSkeleton, Badge } from "../components/nova";
 import { getDisplayTitle } from "../utils/title";
 
 const DAYS = [
-  { key: "monday", label: "MON" },
-  { key: "tuesday", label: "TUE" },
-  { key: "wednesday", label: "WED" },
-  { key: "thursday", label: "THU" },
-  { key: "friday", label: "FRI" },
-  { key: "saturday", label: "SAT" },
-  { key: "sunday", label: "SUN" },
+  { key: "monday", label: "Mon" },
+  { key: "tuesday", label: "Tue" },
+  { key: "wednesday", label: "Wed" },
+  { key: "thursday", label: "Thu" },
+  { key: "friday", label: "Fri" },
+  { key: "saturday", label: "Sat" },
+  { key: "sunday", label: "Sun" },
 ];
 
 const getTodayKey = () => {
@@ -48,44 +46,45 @@ const ScheduleRow = ({ anime, onOpen }) => {
   return (
     <div
       onClick={onOpen}
-      className="ink-card ink-press-redhov grid cursor-pointer grid-cols-[80px_1fr] items-stretch"
+      className="grid cursor-pointer grid-cols-[60px_1fr_auto] items-center gap-4 rounded-lg border border-line bg-surface p-3 transition-colors duration-fast hover:bg-surface-2"
     >
-      <div className="border-r-[3px] border-ink">
-        <InkCover
+      <div className="aspect-[2/3] overflow-hidden rounded-sm">
+        <Cover
           src={
             anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url
           }
-          alt={anime.title}
-          className="h-full min-h-[96px] w-full"
+          alt={getDisplayTitle(anime)}
         />
       </div>
-      <div className="flex flex-col justify-between gap-2 p-4">
-        <div>
-          <div className="ink-display text-base tracking-[.5px] line-clamp-1 sm:text-lg">
-            {getDisplayTitle(anime)}
-          </div>
-          <div className="mt-1.5 flex flex-wrap gap-2 text-[11px] font-bold text-ink-mut3">
-            {anime.type && (
-              <span className="border-2 border-ink bg-ink-bg px-2 py-0.5 uppercase">
-                {anime.type}
-              </span>
-            )}
-            {anime.score && (
-              <span className="border-2 border-ink bg-ink-bg px-2 py-0.5">
-                ★ {anime.score}
-              </span>
-            )}
-          </div>
+      <div className="min-w-0">
+        <div className="font-display text-[15px] font-semibold text-text line-clamp-1">
+          {getDisplayTitle(anime)}
         </div>
-        {jstTime && (
-          <div className="text-[12.5px] font-black uppercase tracking-[.5px]">
-            <span className="text-ink-red">{jstTime} JST</span>
-            {localTime && (
-              <span className="ml-2 text-ink-mut3">({localTime} local)</span>
-            )}
-          </div>
-        )}
+        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+          {anime.type && (
+            <Badge variant="outline" size="sm">
+              {anime.type}
+            </Badge>
+          )}
+          {anime.score && (
+            <span className="font-mono text-xs font-bold text-gold">
+              ★ {anime.score}
+            </span>
+          )}
+        </div>
       </div>
+      {jstTime && (
+        <div className="pr-1 text-right">
+          <div className="font-mono text-[13.5px] font-bold text-gold">
+            {jstTime} JST
+          </div>
+          {localTime && (
+            <div className="mt-0.5 text-[11.5px] text-faint">
+              {localTime} local
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -99,19 +98,19 @@ const Schedule = () => {
     : getTodayKey();
   const todayKey = getTodayKey();
 
-  const { data, isLoading, error, refetch } = useSchedules(activeDay);
+  const { data, isLoading, error } = useSchedules(activeDay);
   const entries = data?.data || [];
 
   return (
-    <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
-      <h1 className="ink-display m-0 mb-2 text-4xl md:text-[44px]">
-        Airing <span className="text-ink-red">Schedule</span>
+    <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
+      <h1 className="m-0 mb-2 font-display text-[28px] font-extrabold tracking-tight text-text md:text-[34px]">
+        Airing schedule
       </h1>
-      <p className="mb-6 text-[13.5px] font-medium text-ink-mut3">
-        Never miss an episode — broadcast times in JST and your local time
+      <p className="mb-6 text-[14.5px] text-muted">
+        Weekly broadcast calendar — times in JST and your local zone
       </p>
 
-      {/* Day tabs */}
+      {/* Day chips */}
       <div className="mb-8 flex flex-wrap gap-2">
         {DAYS.map((day) => {
           const isActive = activeDay === day.key;
@@ -120,13 +119,15 @@ const Schedule = () => {
             <button
               key={day.key}
               onClick={() => setSearchParams({ day: day.key })}
-              className={`ink-btn relative px-4 py-2.5 text-xs transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
-                isActive ? "bg-ink text-ink-paper" : "bg-ink-paper text-ink"
+              className={`relative rounded-pill border px-4 py-2 font-body text-[13px] font-medium transition-colors duration-fast ${
+                isActive
+                  ? "border-gold bg-gold text-bg"
+                  : "border-line bg-surface-2 text-muted hover:border-line-strong hover:text-text"
               }`}
             >
               {day.label}
               {isToday && !isActive && (
-                <span className="absolute -right-1 -top-1 h-2.5 w-2.5 border-2 border-ink bg-ink-red" />
+                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-gold" />
               )}
             </button>
           );
@@ -134,23 +135,22 @@ const Schedule = () => {
       </div>
 
       {error ? (
-        <InkEmptyState
-          shout="SIGNAL LOST!!"
-          sub={error?.message || "Could not load the schedule."}
+        <EmptyState
+          glyph="⚠"
+          title="Couldn't load the schedule"
+          sub={error?.message || "The schedule is unreachable. Try again."}
           ctaLabel="Retry"
           ctaTo="/schedule"
         />
       ) : isLoading ? (
-        <InkRowSkeleton count={6} />
+        <RowSkeleton count={6} />
       ) : entries.length === 0 ? (
-        <InkEmptyState
-          shout="NOTHING AIRING!!"
+        <EmptyState
+          title="Nothing airing"
           sub="Try another day of the week."
-          redShadow={false}
-          rotate={2}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
           {entries.map((anime) => (
             <ScheduleRow
               key={anime.mal_id}

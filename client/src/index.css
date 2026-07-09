@@ -1,328 +1,150 @@
-/* Import premium about section styles */
-@import "./styles/premiumAbout.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ============ "Ink & Impact" design system ============ */
+/* ============ "Nova" design system ============
+   Cinematic streaming: muted near-black stage so cover art is the
+   brightest thing on screen. Tokens live in tailwind.config.js;
+   the pattern helpers below come from the design system's patterns.css. */
+
+@layer base {
+  html {
+    background: #0b0b0f;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg font-body text-text antialiased;
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid #ffc53d;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #15151b;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a34;
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #66646f;
+  }
+}
+
 @layer components {
-  /* 3px ink border + paper surface */
-  .ink-card {
-    @apply border-[3px] border-ink bg-ink-paper;
-  }
-
-  /* Hard offset shadow + press-down hover. Shadow color via --ink-sh. */
-  .ink-press {
-    --ink-sh: #f2efe6;
-    box-shadow: 6px 6px 0 var(--ink-sh);
-    transition: all 0.15s;
-  }
-  .ink-press:hover {
-    transform: translate(3px, 3px);
-    box-shadow: 3px 3px 0 var(--ink-sh);
-  }
-  .ink-press-sm {
-    --ink-sh: #f2efe6;
-    box-shadow: 4px 4px 0 var(--ink-sh);
-    transition: all 0.15s;
-  }
-  .ink-press-sm:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 var(--ink-sh);
-  }
-  .ink-sh-red {
-    --ink-sh: #e63946;
-  }
-
-  /* ink shadow at rest, red shadow on press (feature/character cards) */
-  .ink-press-redhov {
-    box-shadow: 6px 6px 0 #f2efe6;
-    transition: all 0.15s;
-  }
-  .ink-press-redhov:hover {
-    transform: translate(3px, 3px);
-    box-shadow: 3px 3px 0 #e63946;
-  }
-
-  /* Static hard shadows (no hover) */
-  .ink-shadow {
-    box-shadow: 6px 6px 0 #f2efe6;
-  }
-  .ink-shadow-sm {
-    box-shadow: 4px 4px 0 #f2efe6;
-  }
-  .ink-shadow-lg {
-    box-shadow: 8px 8px 0 #f2efe6;
-  }
-  .ink-shadow-red {
-    box-shadow: 8px 8px 0 #e63946;
-  }
-
-  /* Buttons: Archivo 900 uppercase */
-  .ink-btn {
-    @apply inline-flex cursor-pointer items-center justify-center border-[3px] border-ink font-body font-black uppercase tracking-[1px];
-  }
-
-  /* Anton display text */
-  .ink-display {
-    @apply font-display uppercase tracking-[1px];
-  }
-
-  /* Halftone dot backgrounds */
-  .ink-halftone {
-    background-image: radial-gradient(
-      circle,
-      rgba(242, 239, 230, 0.13) 1.6px,
-      transparent 1.6px
-    );
-    background-size: 14px 14px;
-  }
-  .ink-halftone-soft {
-    background-image: radial-gradient(
-      circle,
-      rgba(242, 239, 230, 0.07) 1.4px,
-      transparent 1.4px
-    );
-    background-size: 16px 16px;
-  }
-
-  /* Placeholder cover stripes (behind Jikan images while loading) */
-  .ink-stripes {
-    background: repeating-linear-gradient(
-      45deg,
-      #26241f 0,
-      #26241f 14px,
-      #2c2a24 14px,
-      #2c2a24 28px
+  /* ---- Gradient scrims (text over backdrop art) ---- */
+  .ow-scrim-hero {
+    background: linear-gradient(
+      90deg,
+      rgba(11, 11, 15, 0.96) 0%,
+      rgba(11, 11, 15, 0.7) 40%,
+      rgba(11, 11, 15, 0.2) 70%,
+      rgba(11, 11, 15, 0) 100%
     );
   }
+  .ow-scrim-bottom {
+    background: linear-gradient(
+      to top,
+      #0b0b0f 2%,
+      rgba(11, 11, 15, 0) 45%
+    );
+  }
+  .ow-scrim-poster {
+    background: linear-gradient(
+      to top,
+      rgba(11, 11, 15, 0.92) 0%,
+      rgba(11, 11, 15, 0) 55%
+    );
+  }
+
+  /* ---- Glass (sticky nav, floating controls) ---- */
+  .ow-glass {
+    background: rgba(11, 11, 15, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* ---- Cover placeholder ---- */
+  .ow-cover-ph {
+    background: linear-gradient(135deg, #1e1e26, #15151b);
+  }
+
+  /* ---- Poster hover-lift + scrim reveal ---- */
+  .ow-lift {
+    transition: transform 150ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .ow-lift:hover {
+    transform: translateY(-4px);
+  }
+  .ow-lift:hover .ow-mediacard-scrim {
+    opacity: 1;
+  }
+
+  /* ---- Shimmer (skeleton loading) ---- */
+  .ow-shimmer {
+    background: linear-gradient(
+      90deg,
+      #15151b 25%,
+      #1e1e26 37%,
+      #15151b 63%
+    );
+    background-size: 200% 100%;
+    animation: ow-shimmer 1.4s ease-in-out infinite;
+  }
+
+  /* ---- Hide scrollbar on horizontal rails ---- */
+  .ow-scroll::-webkit-scrollbar {
+    height: 0;
+  }
+  .ow-scroll {
+    scrollbar-width: none;
+  }
 }
 
-/* CSS Custom Properties from theme.js */
-:root {
-  /* Colors */
-  --color-bg-primary: #0a0a0f;
-  --color-bg-secondary: #1a1a2e;
-  --color-bg-tertiary: #16213e;
-
-  --color-surface-primary: #1e1e2e;
-  --color-surface-secondary: #2a2a3e;
-  --color-surface-tertiary: #363650;
-  --color-surface-glass: rgba(30, 30, 46, 0.8);
-
-  --color-primary: #06b6d4;
-  --color-primary-hover: #0891b2;
-  --color-primary-dark: #0e7490;
-
-  --color-accent-neon: #00f5ff;
-  --color-accent-magenta: #ff00aa;
-  --color-accent-purple: #8b5cf6;
-  --color-accent-gold: #fbbf24;
-
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-text-tertiary: #94a3b8;
-
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-info: #3b82f6;
-
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
-  --gradient-accent: linear-gradient(135deg, #00f5ff 0%, #ff00aa 100%);
-  --gradient-surface: linear-gradient(
-    135deg,
-    rgba(30, 30, 46, 0.8) 0%,
-    rgba(42, 42, 62, 0.6) 100%
-  );
-  --gradient-hero: linear-gradient(
-    135deg,
-    #0a0a0f 0%,
-    #1a1a2e 50%,
-    #16213e 100%
-  );
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-neon: 0 0 20px rgba(0, 245, 255, 0.5),
-    0 0 40px rgba(0, 245, 255, 0.3);
-  --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.4);
-
-  /* Motion */
-  --duration-fast: 150ms;
-  --duration-normal: 250ms;
-  --duration-slow: 400ms;
-
-  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+/* Keyframes referenced by the helpers above (also defined as Tailwind
+   animations for arbitrary use like animate-[ow-spin_0.8s_linear_infinite]). */
+@keyframes ow-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+@keyframes ow-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes ow-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
-/* Global base styles */
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: "Inter", system-ui, sans-serif;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-surface-primary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-primary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary-hover);
-}
-
-/* Thin scrollbar utility */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: rgba(75, 85, 99, 0.3);
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(107, 114, 128, 0.6);
-  border-radius: 3px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 114, 128, 0.8);
-}
-
-.scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
-  background: rgb(75, 85, 99);
-}
-
-/* Focus styles for accessibility */
-:focus-visible {
-  outline: 2px solid var(--color-accent-neon);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* Reduced motion preferences */
+/* Reduced motion: calm everything down */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* Custom animations */
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-}
-
-@keyframes pulse-neon {
-  0%,
-  100% {
-    box-shadow: var(--shadow-neon);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(0, 245, 255, 0.8), 0 0 60px rgba(0, 245, 255, 0.5);
-  }
-}
-
-@keyframes glow {
-  0%,
-  100% {
-    box-shadow: var(--shadow-glow);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(139, 92, 246, 0.6);
-  }
-}
-
-/* Utility classes */
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface-primary) 25%,
-    var(--color-surface-secondary) 50%,
-    var(--color-surface-primary) 75%
-  );
-  background-size: 200px 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.neon-glow {
-  animation: pulse-neon 2s ease-in-out infinite;
-}
-
-.purple-glow {
-  animation: glow 3s ease-in-out infinite;
-}
-
-.glass-morphism {
-  background: var(--color-surface-glass);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Typography utilities */
-.font-display {
-  font-family: "Orbitron", system-ui, sans-serif;
-}
-
-.font-body {
-  font-family: "Inter", system-ui, sans-serif;
-}
-
-.font-mono {
-  font-family: "JetBrains Mono", monospace;
-}
-
-.gradient-text {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Shimmer animation for skeleton loaders */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
+  .ow-lift,
+  .ow-shimmer {
+    transition: none;
+    animation: none;
   }
 }

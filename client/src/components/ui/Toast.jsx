@@ -1,6 +1,9 @@
 // src/components/ui/Toast.jsx - Premium toast notification system
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Alias so ESLint sees the JSX usage (it misses <motion.div> member syntax)
+const MotionDiv = motion.div;
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
 import { usePrefersReducedMotion } from "../../hooks/useAnimation";
 
@@ -15,26 +18,27 @@ export const useToast = () => {
   return context;
 };
 
-// Toast types and their configurations
+// Toast types and their configurations — Nova: calm surface card with a
+// hairline border, the type color reserved for the icon and accent line.
 const toastConfig = {
   success: {
     icon: CheckCircle,
-    className: "bg-success/10 border-success/30 text-success",
+    className: "border-success/30",
     iconClassName: "text-success",
   },
   error: {
     icon: AlertCircle,
-    className: "bg-danger/10 border-danger/30 text-danger",
+    className: "border-danger/30",
     iconClassName: "text-danger",
   },
   warning: {
     icon: AlertTriangle,
-    className: "bg-warning/10 border-warning/30 text-warning",
+    className: "border-warning/30",
     iconClassName: "text-warning",
   },
   info: {
     icon: Info,
-    className: "bg-info/10 border-info/30 text-info",
+    className: "border-line-strong",
     iconClassName: "text-info",
   },
 };
@@ -72,8 +76,8 @@ const Toast = ({ toast, onClose }) => {
   };
 
   return (
-    <motion.div
-      className={`relative flex items-start gap-3 p-4 rounded-xl border backdrop-blur-sm max-w-md w-full ${config.className}`}
+    <MotionDiv
+      className={`relative flex items-start gap-3 p-4 rounded-lg border bg-surface/95 text-text shadow backdrop-blur-sm max-w-md w-full ${config.className}`}
       variants={toastVariants}
       initial="initial"
       animate="animate"
@@ -104,14 +108,14 @@ const Toast = ({ toast, onClose }) => {
 
       {/* Progress Bar */}
       {toast.duration && toast.duration > 0 && (
-        <motion.div
-          className="absolute bottom-0 left-0 h-1 bg-current opacity-30 rounded-b-xl"
+        <MotionDiv
+          className={`absolute bottom-0 left-0 h-1 opacity-60 rounded-b-lg bg-current ${config.iconClassName}`}
           initial={{ width: "100%" }}
           animate={{ width: "0%" }}
           transition={{ duration: toast.duration / 1000, ease: "linear" }}
         />
       )}
-    </motion.div>
+    </MotionDiv>
   );
 };
 

@@ -3,9 +3,8 @@ import { Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Ticker from "./components/ink/Ticker";
 import PrivateRoute from "./components/PrivateRoute.jsx";
-import Loader from "./components/Loader";
+import { Loader } from "./components/nova";
 import BackendStatus from "./components/BackendStatus";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { WatchlistProvider } from "./context/WatchlistContext";
@@ -50,11 +49,10 @@ function App() {
         <FavoritesProvider>
           <WatchlistProvider>
             <BackendStatus>
-              <div className="min-h-screen bg-ink-bg text-ink flex flex-col font-body">
+              <div className="flex min-h-screen flex-col bg-bg font-body text-text">
                 <Navbar />
-                <Ticker />
                 <main className="flex-1">
-                  <Suspense fallback={<Loader />}>
+                  <Suspense fallback={<Loader fullscreen />}>
                     <Routes>
                       <Route path="/" element={<Home />} />
                       <Route path="/login" element={<Login />} />

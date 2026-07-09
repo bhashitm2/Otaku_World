@@ -1,37 +1,30 @@
-// ForYou — "Ink & Impact": personalized recommendations from your favorites
+// ForYou — Nova: personalized recommendations from your favorites
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useForYouRecommendations } from "../hooks/useForYouRecommendations";
-import InkCover from "../components/ink/InkCover";
-import InkEmptyState from "../components/ink/InkEmptyState";
-import { InkGridSkeleton } from "../components/ink/InkSkeleton";
+import { Cover, EmptyState, GridSkeleton, Badge } from "../components/nova";
 import { getDisplayTitle } from "../utils/title";
 
 const RecCard = ({ anime, onOpen }) => (
-  <div
-    onClick={onOpen}
-    className="ink-card ink-press relative cursor-pointer"
-  >
-    {anime.score && (
-      <div className="ink-display absolute -top-3 -left-2 z-[2] bg-ink px-2 py-[3px] text-[12px] text-ink-paper">
-        ★ {anime.score}
-      </div>
-    )}
-    <div className="h-60 border-b-[3px] border-ink">
-      <InkCover
+  <div onClick={onOpen} className="ow-lift cursor-pointer">
+    <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2 shadow">
+      <Cover
         src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url}
-        alt={anime.title}
-        className="h-full w-full"
+        alt={getDisplayTitle(anime)}
       />
+      {anime.score && (
+        <span className="absolute right-2 top-2">
+          <Badge variant="score" size="sm">★ {anime.score}</Badge>
+        </span>
+      )}
     </div>
-    <div className="p-3 pb-4">
-      <div className="ink-display text-[15px] leading-tight tracking-[.5px] line-clamp-2">
+    <div className="mt-2.5">
+      <div className="overflow-hidden text-ellipsis whitespace-nowrap font-display text-[13.5px] font-semibold leading-snug text-text">
         {getDisplayTitle(anime)}
       </div>
       {anime.becauseOf && (
-        <div className="mt-1.5 text-[10.5px] font-bold text-ink-mut3 line-clamp-1">
-          Because you liked{" "}
-          <span className="text-ink-red">{anime.becauseOf}</span>
+        <div className="mt-1 text-xs text-muted line-clamp-1">
+          Because you liked <span className="text-gold">{anime.becauseOf}</span>
         </div>
       )}
     </div>
@@ -49,11 +42,11 @@ const ForYou = () => {
   } = useForYouRecommendations();
 
   return (
-    <div className="animate-popIn px-6 pb-16 pt-10 md:px-[72px]">
-      <h1 className="ink-display m-0 mb-2 text-4xl md:text-[44px]">
-        For <span className="text-ink-red">You</span>
+    <div className="px-gutter pb-20 pt-10 lg:px-gutter-lg">
+      <h1 className="m-0 mb-2 font-display text-[28px] font-extrabold tracking-tight text-text md:text-[34px]">
+        For you
       </h1>
-      <p className="mb-8 text-[13.5px] font-medium text-ink-mut3">
+      <p className="mb-8 text-[14.5px] text-muted">
         {hasSeeds
           ? `Handpicked from ${seeds
               .slice(0, 2)
@@ -63,26 +56,27 @@ const ForYou = () => {
       </p>
 
       {!hasSeeds && !isLoading ? (
-        <InkEmptyState
-          shout="FAVORITE SOMETHING FIRST!!"
+        <EmptyState
+          title="Nothing to recommend yet"
           sub="Your picks are built from your favorites. Add a few and come back."
-          ctaLabel="Browse Anime →"
+          ctaLabel="Browse anime"
           ctaTo="/anime"
         />
       ) : isLoading ? (
         <>
-          <p className="mb-6 text-sm font-bold text-ink-mut3">
+          <p className="mb-6 text-sm text-faint">
             Curating your picks… this can take a few seconds on first load.
           </p>
-          <InkGridSkeleton count={12} />
+          <GridSkeleton count={12} />
         </>
       ) : error ? (
-        <InkEmptyState
-          shout="SIGNAL LOST!!"
-          sub={error?.message || "Couldn't build recommendations."}
+        <EmptyState
+          glyph="⚠"
+          title="Couldn't build recommendations"
+          sub={error?.message || "Something went wrong. Try again later."}
         />
       ) : recommendations?.length > 0 ? (
-        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-[26px] sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
           {recommendations.map((anime) => (
             <RecCard
               key={anime.mal_id}
@@ -92,10 +86,10 @@ const ForYou = () => {
           ))}
         </div>
       ) : (
-        <InkEmptyState
-          shout="NOTHING NEW RIGHT NOW..."
+        <EmptyState
+          title="Nothing new right now"
           sub="Try favoriting a few more anime to widen your picks."
-          ctaLabel="Browse Anime →"
+          ctaLabel="Browse anime"
           ctaTo="/anime"
         />
       )}

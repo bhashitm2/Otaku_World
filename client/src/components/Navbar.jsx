@@ -1,7 +1,9 @@
-// Ink & Impact sticky nav: paper bg, 4px ink bottom border, filled active link
+// Nova sticky glass nav: blurred dark stage, hairline bottom border,
+// gold "O" wordmark, quiet links that brighten when active.
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
+import { Button } from "./nova";
 
 const NAV_LINKS = [
   { path: "/", label: "Home" },
@@ -14,10 +16,21 @@ const NAV_LINKS = [
 ];
 
 const USER_LINKS = [
-  { path: "/for-you", label: "For You" },
+  { path: "/for-you", label: "For you" },
   { path: "/favorites", label: "Favorites" },
   { path: "/watchlist", label: "Watchlist" },
 ];
+
+const Wordmark = ({ onClick }) => (
+  <Link to="/" onClick={onClick} className="flex items-center gap-2.5 no-underline">
+    <span className="grid h-[26px] w-[26px] place-items-center rounded-[7px] bg-gold font-display text-[15px] font-extrabold text-bg">
+      O
+    </span>
+    <span className="font-display text-[17px] font-bold tracking-tight text-text">
+      Otaku<span className="text-gold">World</span>
+    </span>
+  </Link>
+);
 
 const Navbar = () => {
   const location = useLocation();
@@ -30,37 +43,23 @@ const Navbar = () => {
   const closeMobile = () => setMobileOpen(false);
 
   const linkClass = (path) =>
-    `px-3 py-2 text-[12.5px] font-black uppercase tracking-[1px] transition-all duration-150 hover:bg-ink-red hover:text-ink-paper ${
-      isActive(path) ? "bg-ink text-ink-paper" : "text-ink"
+    `px-2.5 py-2 font-body text-sm no-underline transition-colors duration-fast ${
+      isActive(path)
+        ? "font-semibold text-text"
+        : "text-muted hover:text-text"
     }`;
 
+  const initial = (user?.name || user?.email || "?").charAt(0).toUpperCase();
+
   return (
-    <nav className="sticky top-0 z-50 border-b-4 border-ink bg-ink-paper">
-      <div className="flex h-16 items-center justify-between px-4 md:px-8">
-        {/* Logo */}
-        <Link
-          to="/"
-          onClick={closeMobile}
-          className="flex items-center gap-2.5"
-        >
-          <img
-            src="/Main_Logo.png"
-            alt="Otaku World logo"
-            className="h-9 w-9 object-contain"
-          />
-          <span className="font-display text-[21px] tracking-[1px] text-ink">
-            OTAKU WORLD<span className="text-ink-red">!</span>
-          </span>
-        </Link>
+    <nav className="ow-glass sticky top-0 z-sticky">
+      <div className="flex h-nav items-center justify-between px-gutter lg:px-gutter-lg">
+        <Wordmark onClick={closeMobile} />
 
         {/* Desktop links */}
-        <div className="hidden items-center gap-0.5 xl:flex">
+        <div className="hidden items-center gap-1 xl:flex">
           {links.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={linkClass(link.path)}
-            >
+            <Link key={link.path} to={link.path} className={linkClass(link.path)}>
               {link.label}
             </Link>
           ))}
@@ -69,59 +68,47 @@ const Navbar = () => {
         {/* Auth section */}
         <div className="hidden items-center gap-3 xl:flex">
           {loading ? (
-            <div className="h-8 w-20 animate-pulse bg-ink-stripe2" />
+            <div className="ow-shimmer h-[34px] w-20 rounded" />
           ) : user ? (
             <>
               <Link
                 to="/profile"
-                className="flex items-center gap-2 border-[3px] border-ink bg-ink-paper px-3.5 py-[7px] text-[12.5px] font-black uppercase tracking-[1px] text-ink transition-all duration-150 hover:bg-ink hover:text-ink-paper"
                 title="Your profile"
+                className="grid h-[34px] w-[34px] place-items-center rounded-full bg-gradient-to-br from-gold to-gold-strong font-display text-sm font-bold text-bg no-underline"
               >
-                <span className="inline-block h-2 w-2 rounded-full bg-ink-red" />
-                {user.name || user.email}
+                {initial}
               </Link>
-              <button
-                onClick={logout}
-                className="ink-btn ink-press-sm bg-ink-paper px-4 py-[9px] text-[12.5px] text-ink"
-              >
-                Logout
-              </button>
+              <Button variant="ghost" size="sm" onClick={logout}>
+                Log out
+              </Button>
             </>
           ) : (
-            <button
-              onClick={() => navigate("/login")}
-              className="ink-btn ink-press-sm ink-sh-red bg-ink px-5 py-[9px] text-[13px] text-ink-paper"
-            >
-              Login
-            </button>
+            <Button size="sm" onClick={() => navigate("/login")}>
+              Sign in
+            </Button>
           )}
         </div>
 
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileOpen((open) => !open)}
-          className="border-[3px] border-ink p-1.5 text-ink xl:hidden"
+          className="rounded-sm border border-line-strong p-1.5 text-text xl:hidden"
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
         >
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             {mobileOpen ? (
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={3}
+                strokeWidth={1.5}
                 d="M6 18L18 6M6 6l12 12"
               />
             ) : (
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={3}
+                strokeWidth={1.5}
                 d="M4 6h16M4 12h16M4 18h16"
               />
             )}
@@ -131,53 +118,56 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t-[3px] border-ink bg-ink-paper xl:hidden">
+        <div className="ow-glass max-h-[calc(100vh-68px)] overflow-y-auto border-t border-line xl:hidden">
           <div className="flex flex-col p-4">
             {links.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
                 onClick={closeMobile}
-                className={`px-4 py-3 text-sm font-black uppercase tracking-[1px] ${
+                className={`rounded-sm px-4 py-3 font-body text-[15px] no-underline ${
                   isActive(link.path)
-                    ? "bg-ink text-ink-paper"
-                    : "text-ink hover:bg-ink-red hover:text-ink-paper"
+                    ? "bg-surface-2 font-semibold text-text"
+                    : "text-muted hover:text-text"
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="mt-3 border-t-[3px] border-ink pt-4">
+            <div className="mt-3 border-t border-line pt-4">
               {loading ? null : user ? (
                 <div className="flex items-center justify-between gap-3">
                   <Link
                     to="/profile"
                     onClick={closeMobile}
-                    className="flex items-center gap-2 text-sm font-black uppercase tracking-[1px] text-ink"
+                    className="flex items-center gap-2.5 font-body text-[15px] text-text no-underline"
                   >
-                    <span className="inline-block h-2 w-2 rounded-full bg-ink-red" />
+                    <span className="grid h-[30px] w-[30px] place-items-center rounded-full bg-gradient-to-br from-gold to-gold-strong font-display text-[13px] font-bold text-bg">
+                      {initial}
+                    </span>
                     {user.name || user.email}
                   </Link>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => {
                       closeMobile();
                       logout();
                     }}
-                    className="ink-btn bg-ink-paper px-4 py-2 text-xs text-ink"
                   >
-                    Logout
-                  </button>
+                    Log out
+                  </Button>
                 </div>
               ) : (
-                <button
+                <Button
+                  block
                   onClick={() => {
                     closeMobile();
                     navigate("/login");
                   }}
-                  className="ink-btn ink-press-sm ink-sh-red w-full bg-ink px-5 py-3 text-sm text-ink-paper"
                 >
-                  Login
-                </button>
+                  Sign in
+                </Button>
               )}
             </div>
           </div>

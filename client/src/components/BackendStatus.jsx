@@ -57,48 +57,49 @@ const BackendStatus = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
-      <div className="text-center space-y-6 p-8 max-w-md">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-cyan-400 border-t-transparent mx-auto"></div>
+    <div className="flex min-h-screen items-center justify-center bg-bg font-body text-text">
+      <div className="max-w-md space-y-6 p-8 text-center">
+        <span className="mx-auto block h-12 w-12 animate-ow-spin rounded-full border-4 border-surface-3 border-t-gold" />
 
         <div className="space-y-3">
-          <h2 className="text-2xl font-bold text-white">
-            {backendStatus === "checking" && "Checking Backend Status..."}
-            {backendStatus === "waking" && "Waking Up Server..."}
-            {backendStatus === "error" && "Connection Error"}
+          <h2 className="font-display text-2xl font-bold">
+            {backendStatus === "checking" && "Checking the backend…"}
+            {backendStatus === "waking" && "Waking up the server…"}
+            {backendStatus === "error" && "Connection error"}
           </h2>
 
-          <p className="text-gray-300 text-sm">
-            {backendStatus === "checking" && "Connecting to Otaku World API..."}
+          <p className="text-sm text-muted">
+            {backendStatus === "checking" &&
+              "Connecting to the Otaku World API…"}
             {backendStatus === "waking" &&
-              "The server was sleeping. Please wait 30-60 seconds..."}
+              "The server was sleeping. This can take 30–60 seconds…"}
             {backendStatus === "error" &&
               "Unable to connect to the server. Please try again later."}
           </p>
         </div>
 
         {backendStatus !== "error" && (
-          <div className="w-full bg-gray-700 rounded-full h-2">
+          <div className="h-1.5 w-full rounded-pill bg-surface-3">
             <div
-              className="bg-gradient-to-r from-cyan-400 to-purple-400 h-2 rounded-full transition-all duration-500"
+              className="h-1.5 rounded-pill bg-gradient-to-r from-gold to-gold-strong transition-all duration-500"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
         )}
 
         {backendStatus === "waking" && (
-          <div className="text-xs text-gray-400 space-y-1">
-            <p>🌟 Free hosting takes time to start up</p>
-            <p>⚡ This only happens on the first visit</p>
+          <div className="space-y-1 text-xs text-faint">
+            <p>Free hosting takes a moment to start up</p>
+            <p>This only happens on the first visit</p>
           </div>
         )}
 
         {backendStatus === "error" && (
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
+            className="inline-flex items-center justify-center rounded bg-gold px-6 py-3 font-body text-[14.5px] font-bold leading-none text-bg transition-transform duration-fast active:scale-[0.97]"
           >
-            Try Again
+            Try again
           </button>
         )}
       </div>

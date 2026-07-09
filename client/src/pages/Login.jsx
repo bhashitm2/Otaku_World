@@ -1,13 +1,19 @@
-// Login — "Ink & Impact": centered card, rotated sticker, Firebase Google auth
+// Login — Nova: glass card over a blurred backdrop, Firebase Google auth
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
+import { useTrendingAnime } from "../hooks/useAnimeQueries";
+import { Loader } from "../components/nova";
 
 const Login = () => {
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [signingIn, setSigningIn] = useState(false);
+
+  // Blurred cover art behind the card (usually already cached from Home)
+  const { data: trendingData } = useTrendingAnime(1);
+  const backdrop = trendingData?.data?.[0]?.images?.jpg?.large_image_url;
 
   useEffect(() => {
     if (user && !loading) {
@@ -33,47 +39,53 @@ const Login = () => {
   };
 
   if (loading) {
-    return (
-      <div className="ink-halftone flex min-h-[560px] items-center justify-center bg-ink-bg">
-        <div className="ink-display animate-pulse text-2xl text-ink">
-          LOADING...
-        </div>
-      </div>
-    );
+    return <Loader fullscreen label="Checking your session…" />;
   }
 
   return (
-    <div className="ink-halftone flex min-h-[560px] animate-popIn items-center justify-center bg-ink-bg px-6 py-16">
-      <div className="ink-card ink-shadow-lg relative w-full max-w-[420px] px-9 pb-8 pt-10">
-        {/* rotated sticker */}
-        <div className="ink-display absolute -top-[18px] -right-3.5 rotate-6 animate-bob2 border-[3px] border-ink bg-ink-red px-3.5 py-2 text-sm tracking-[1px] text-ink-paper">
-          FREE FOREVER!
+    <div className="relative flex min-h-[calc(100vh-68px)] items-center justify-center overflow-hidden px-6 py-16">
+      {/* Blurred backdrop */}
+      {backdrop && (
+        <img
+          src={backdrop}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-lg"
+        />
+      )}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-bg/70 to-bg" />
+
+      {/* Glass card */}
+      <div className="relative w-full max-w-[400px] rounded-xl border border-line-strong bg-[rgba(21,21,27,0.85)] p-10 shadow-lg backdrop-blur-[20px]">
+        <div className="mb-6 flex items-center gap-2.5">
+          <span className="grid h-[26px] w-[26px] place-items-center rounded-[7px] bg-gold font-display text-[15px] font-extrabold text-bg">
+            O
+          </span>
+          <span className="font-display text-[17px] font-bold tracking-tight text-text">
+            Otaku<span className="text-gold">World</span>
+          </span>
         </div>
 
-        <img
-          src="/Main_Logo.png"
-          alt="logo"
-          className="mb-3.5 h-14 w-14 object-contain"
-        />
-        <h1 className="ink-display m-0 text-[38px] leading-none">
-          Join the <span className="text-ink-red">crew</span>
+        <h1 className="m-0 font-display text-[26px] font-extrabold tracking-tight text-text">
+          Welcome back
         </h1>
-        <p className="mb-7 mt-3.5 text-[13.5px] font-medium leading-[1.7] text-ink-mut2">
-          One account. Every favorite, every watchlist entry, synced across
-          the multiverse.
+        <p className="mb-7 mt-3 text-[13.5px] leading-relaxed text-muted">
+          Sign in to sync your favorites and watchlist across every device.
         </p>
 
         <button
           onClick={handleGoogle}
           disabled={signingIn}
-          className="ink-btn ink-press-sm mb-3 w-full gap-2.5 bg-ink-paper py-4 text-[13.5px] text-ink disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2.5 rounded border border-line-strong bg-surface-2 py-3.5 font-body text-[14.5px] font-bold leading-none text-text transition-transform duration-fast active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <span className="font-display text-[17px] text-ink-red">G</span>
-          {signingIn ? "Signing in..." : "Continue with Google"}
+          <span className="font-display text-[16px] font-extrabold text-gold">
+            G
+          </span>
+          {signingIn ? "Signing in…" : "Continue with Google"}
         </button>
 
-        <p className="mt-5 text-center text-[11px] font-medium text-ink-mut4">
-          Secure authentication powered by Google.
+        <p className="mt-6 text-center text-[11.5px] text-faint">
+          Free forever · Secure authentication by Google
         </p>
       </div>
     </div>
