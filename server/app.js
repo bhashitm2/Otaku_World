@@ -5,7 +5,11 @@ import helmet from "helmet";
 import compression from "compression";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-import { errorHandler } from "./middleware/errorHandler.js";
+import {
+  errorHandler,
+  redactProductionErrorDetails,
+} from "./middleware/errorHandler.js";
+import { protectAndSync, admin } from "./middleware/auth.js";
 import { rateLimiter } from "./middleware/rateLimiter.js";
 import { performanceMonitor, memoryMonitor } from "./middleware/performance.js";
 import {
@@ -34,19 +38,13 @@ validateEnvironment();
 app.use(helmet(securityConfig.helmet));
 app.use(cors(corsConfig));
 app.use(validateSecurityHeaders);
-app.use(validateSecurity);
+app.use(redactProductionErrorDetails);
 
-// General middleware
-app.use(compression());
-app.use(performanceMonitor);
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
-// Global rate limiting
+// Apply rate limits before parsing a request body so oversized anonymous
+// requests cannot consume parsing resources before being throttled.
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === "production" ? 1000 : 2000, // More lenient in development
+  max: process.env.NODE_ENV === "production" ? 300 : 1000,
   message: {
     success: false,
     message: "Too many requests from this IP, please try again later",
@@ -57,9 +55,15 @@ const globalLimiter = rateLimit({
 });
 
 app.use(globalLimiter);
-
-// Custom rate limiter for specific routes
 app.use(rateLimiter);
+
+// General middleware
+app.use(compression());
+app.use(performanceMonitor);
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use(express.json({ limit: "256kb" }));
+app.use(express.urlencoded({ extended: false, limit: "32kb", parameterLimit: 100 }));
+app.use(validateSecurity);
 
 // Root route - API welcome message
 app.get("/", (req, res) => {
@@ -88,52 +92,13 @@ app.get("/favicon.ico", (req, res) => {
   res.status(204).end();
 });
 
-// Enhanced health check endpoint
-app.get("/health", async (req, res) => {
-  const startTime = Date.now();
-
-  try {
-    // Basic health info
-    const healthData = {
-      success: true,
-      status: "ok",
-      message: "Otaku World API is running",
-      timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version || "1.0.0",
-      environment: process.env.NODE_ENV || "development",
-      uptime: process.uptime(),
-      responseTime: Date.now() - startTime,
-    };
-
-    // Memory usage
-    const memUsage = process.memoryUsage();
-    healthData.memory = {
-      rss: Math.round(memUsage.rss / 1024 / 1024) + " MB",
-      heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024) + " MB",
-      heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) + " MB",
-      external: Math.round(memUsage.external / 1024 / 1024) + " MB",
-    };
-
-    // If cache stats are available
-    if (typeof getCacheStats === "function") {
-      try {
-        const { getCacheStats } = await import("./utils/apiCaching.js");
-        healthData.cache = getCacheStats();
-      } catch (error) {
-        healthData.cache = { error: "Cache stats unavailable" };
-      }
-    }
-
-    res.status(200).json(healthData);
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      status: "error",
-      message: "Health check failed",
-      error: error.message,
-      timestamp: new Date().toISOString(),
-    });
-  }
+// Public health probes intentionally return only liveness information.
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // API routes
@@ -159,10 +124,7 @@ app.get("/api", (req, res) => {
       auth: "/api/auth",
       ai: "/api/ai",
     },
-    endpoints: {
-      health: "/health",
-      cache: "/api/cache/stats",
-    },
+    endpoints: { health: "/health" },
     rateLimit: {
       global: "1000 requests per 15 minutes",
       search: "100 requests per hour",
@@ -171,8 +133,8 @@ app.get("/api", (req, res) => {
   });
 });
 
-// Cache statistics endpoint (for monitoring)
-app.get("/api/cache/stats", async (req, res) => {
+// Cache statistics are operational data and are restricted to application admins.
+app.get("/api/cache/stats", protectAndSync, admin, async (req, res) => {
   try {
     const { getCacheStats } = await import("./utils/apiCaching.js");
     const stats = getCacheStats();
@@ -185,7 +147,6 @@ app.get("/api/cache/stats", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to retrieve cache statistics",
-      error: error.message,
     });
   }
 });

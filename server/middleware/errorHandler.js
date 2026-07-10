@@ -1,5 +1,30 @@
 // server/middleware/errorHandler.js
 
+// Controllers use JSON responses directly in several places. Strip internal
+// error details centrally in production so an unexpected upstream/database
+// message is never reflected to clients.
+export const redactProductionErrorDetails = (req, res, next) => {
+  if (process.env.NODE_ENV !== "production") return next();
+
+  const originalJson = res.json.bind(res);
+  res.json = (body) => {
+    if (
+      body &&
+      typeof body === "object" &&
+      !Array.isArray(body) &&
+      Object.hasOwn(body, "error")
+    ) {
+      const safeBody = { ...body };
+      delete safeBody.error;
+      return originalJson(safeBody);
+    }
+
+    return originalJson(body);
+  };
+
+  next();
+};
+
 // Global error handler middleware
 export const errorHandler = (err, req, res, next) => {
   console.error("Error:", err);
@@ -7,6 +32,15 @@ export const errorHandler = (err, req, res, next) => {
   // Default error
   let error = { ...err };
   error.message = err.message;
+
+  // Body parsers reject oversized or malformed payloads before a route runs.
+  if (err.type === "entity.too.large" || err.status === 413) {
+    error = { message: "Request body is too large", statusCode: 413 };
+  }
+
+  if (err.type === "entity.parse.failed") {
+    error = { message: "Malformed JSON request body", statusCode: 400 };
+  }
 
   // Mongoose bad ObjectId
   if (err.name === "CastError") {

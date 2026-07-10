@@ -1,0 +1,11 @@
+# Never bake credentials or local runtime state into the backend image.
+.env
+.env.*
+serviceAccountKey.json
+*.pem
+*.key
+
+node_modules
+logs
+uploads
+npm-debug.log*

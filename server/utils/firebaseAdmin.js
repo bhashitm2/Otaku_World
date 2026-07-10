@@ -1,10 +1,12 @@
 // server/utils/firebaseAdmin.js
-import admin from "firebase-admin";
+import { cert, getApps, initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-// Check if Firebase credentials are properly configured
+// Authentication must fail closed. Do not replace a missing Firebase identity
+// with a development user: a configuration error must never grant access.
 const isFirebaseConfigured = () => {
   return (
     process.env.FIREBASE_PROJECT_ID &&
@@ -14,53 +16,50 @@ const isFirebaseConfigured = () => {
   );
 };
 
-// Initialize Firebase Admin SDK only if properly configured
 let firebaseInitialized = false;
+let firebaseInitializationError = null;
+let firebaseApp;
 
-if (isFirebaseConfigured() && process.env.DISABLE_AUTH !== "true") {
+if (isFirebaseConfigured()) {
   try {
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert({
+    if (!getApps().length) {
+      firebaseApp = initializeApp({
+        credential: cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
           privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
         }),
       });
-      console.log("✅ Firebase Admin SDK initialized successfully");
-      firebaseInitialized = true;
+    } else {
+      firebaseApp = getApps()[0];
     }
+    firebaseInitialized = true;
+    console.log("✅ Firebase Admin SDK initialized successfully");
   } catch (error) {
-    console.warn("⚠️ Firebase Admin SDK initialization failed:", error.message);
-    console.warn(
-      "🔧 Running in development mode without Firebase authentication"
-    );
+    firebaseInitializationError = error;
+    console.error("Firebase Admin SDK initialization failed:", error.message);
     firebaseInitialized = false;
   }
 } else {
-  console.warn("🔧 Firebase authentication disabled or not configured");
-  console.warn(
-    "📝 To enable Firebase auth, configure credentials in .env and set DISABLE_AUTH=false"
+  firebaseInitializationError = new Error(
+    "Firebase Admin credentials are missing or incomplete"
   );
+  console.error("Firebase Admin SDK is not configured; authentication is unavailable");
   firebaseInitialized = false;
 }
 
+export const isFirebaseAdminInitialized = () => firebaseInitialized;
+
+export const getFirebaseInitializationError = () => firebaseInitializationError;
+
 export const verifyFirebaseToken = async (req, res, next) => {
   try {
-    // Bypass authentication in development mode
-    if (!firebaseInitialized || process.env.DISABLE_AUTH === "true") {
-      req.user = {
-        uid: "dev-user-123",
-        email: "dev@otakuworld.com",
-        name: "Development User",
-        picture: "",
-        emailVerified: true,
-        provider: "development",
-        authTime: Math.floor(Date.now() / 1000),
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 3600,
-      };
-      return next();
+    if (!firebaseInitialized) {
+      return res.status(503).json({
+        success: false,
+        message: "Authentication service is unavailable",
+        code: "AUTH_SERVICE_UNAVAILABLE",
+      });
     }
 
     const authHeader = req.headers.authorization;
@@ -82,13 +81,16 @@ export const verifyFirebaseToken = async (req, res, next) => {
       });
     }
 
-    const decoded = await admin.auth().verifyIdToken(token);
+    // checkRevoked=true prevents a revoked ID token from remaining usable
+    // until its natural expiration time.
+    const decoded = await getAuth(firebaseApp).verifyIdToken(token, true);
     req.user = {
       uid: decoded.uid,
       email: decoded.email,
       name: decoded.name,
       picture: decoded.picture,
       emailVerified: decoded.email_verified,
+      firebase: decoded.firebase,
       authTime: decoded.auth_time,
       iat: decoded.iat,
       exp: decoded.exp,
@@ -121,4 +123,4 @@ export const verifyFirebaseToken = async (req, res, next) => {
     });
   }
 };
-export default admin;
+export default firebaseApp;

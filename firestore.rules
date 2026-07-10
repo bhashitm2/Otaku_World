@@ -12,6 +12,66 @@ service cloud.firestore {
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
+
+    // A document's owner must remain stable throughout an update.
+    function keepsOwnership() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+    function isOptionalScore(value) {
+      return value == null || (value is number && value >= 0 && value <= 10);
+    }
+
+    function isOptionalCount(value) {
+      return value == null || (value is number && value >= 0 && value <= 1000000);
+    }
+
+    function hasValidMediaFields(data) {
+      return data.userId is string && data.userId.size() > 0 && data.userId.size() <= 128 &&
+        data.itemId is int && data.itemId > 0 &&
+        data.type is string && data.type in ["anime", "manga", "character"] &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 300 &&
+        data.image is string && data.image.size() <= 2048 &&
+        data.genres is list && data.genres.size() <= 30 &&
+        isOptionalScore(data.score) &&
+        data.status is string && data.status.size() <= 100 &&
+        isOptionalCount(data.episodes) &&
+        isOptionalCount(data.chapters) &&
+        isOptionalCount(data.volumes) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function hasValidFavoriteFields(data) {
+      return data.keys().hasAll([
+          "userId", "itemId", "type", "title", "image", "genres", "score",
+          "status", "episodes", "chapters", "volumes", "createdAt", "updatedAt"
+        ]) &&
+        data.keys().hasOnly([
+          "userId", "itemId", "type", "title", "image", "genres", "score",
+          "status", "episodes", "chapters", "volumes", "createdAt", "updatedAt"
+        ]) &&
+        hasValidMediaFields(data);
+    }
+
+    function hasValidWatchlistFields(data) {
+      return data.keys().hasAll([
+          "userId", "itemId", "type", "title", "image", "genres", "score",
+          "status", "episodes", "chapters", "volumes", "watchStatus", "userScore",
+          "progress", "notes", "createdAt", "updatedAt"
+        ]) &&
+        data.keys().hasOnly([
+          "userId", "itemId", "type", "title", "image", "genres", "score",
+          "status", "episodes", "chapters", "volumes", "watchStatus", "userScore",
+          "progress", "notes", "createdAt", "updatedAt"
+        ]) &&
+        hasValidMediaFields(data) &&
+        data.watchStatus is string &&
+        data.watchStatus in ["watching", "completed", "on_hold", "dropped", "plan_to_watch"] &&
+        (data.userScore == null || (data.userScore is number && data.userScore >= 1 && data.userScore <= 10)) &&
+        data.progress is number && data.progress >= 0 && data.progress <= 1000000 &&
+        data.notes is string && data.notes.size() <= 1000;
+    }
     
     // Favorites collection rules
     match /favorites/{favoriteId} {
@@ -19,10 +79,14 @@ service cloud.firestore {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       
       // Users can create favorites for themselves
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow create: if isOwner(request.resource.data.userId) &&
+        hasValidFavoriteFields(request.resource.data) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
       
-      // Users can update their own favorites
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Favorites are immutable. Delete and recreate instead of accepting
+      // arbitrary client-side metadata changes.
+      allow update: if false;
       
       // Users can delete their own favorites
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
@@ -34,19 +98,30 @@ service cloud.firestore {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       
       // Users can create watchlist items for themselves
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow create: if isOwner(request.resource.data.userId) &&
+        hasValidWatchlistFields(request.resource.data) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
       
-      // Users can update their own watchlist items
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Only user-progress fields may change after creation; media identity and
+      // metadata remain immutable.
+      allow update: if isOwner(resource.data.userId) &&
+        keepsOwnership() &&
+        hasValidWatchlistFields(request.resource.data) &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "watchStatus", "userScore", "progress", "notes", "updatedAt"
+        ]);
       
       // Users can delete their own watchlist items
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
     
-    // Users collection rules (if you have user profiles)
+    // User profiles are stored and authorized by the backend's MongoDB API.
+    // Deny direct Firestore profile access rather than leave a second,
+    // unconstrained profile store exposed to clients.
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+      allow read, write: if false;
     }
     
     // Deny all other access by default

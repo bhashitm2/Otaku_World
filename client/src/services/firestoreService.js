@@ -8,7 +8,7 @@ import {
   query,
   where,
   orderBy,
-  Timestamp,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebaseClient";
 
@@ -43,8 +43,8 @@ export const addToFavorites = async (userId, item) => {
       episodes: item.episodes || null,
       chapters: item.chapters || null,
       volumes: item.volumes || null,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
 
     await setDoc(doc(db, COLLECTIONS.FAVORITES, docId), favoriteData);
@@ -143,8 +143,8 @@ export const addToWatchlist = async (
       userScore: null, // User's personal rating
       progress: 0, // Episodes/chapters watched/read
       notes: "",
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
 
     await setDoc(doc(db, COLLECTIONS.WATCHLIST, docId), watchlistData);
@@ -168,10 +168,25 @@ export const removeFromWatchlist = async (userId, itemId, type) => {
 
 export const updateWatchlistItem = async (userId, itemId, type, updates) => {
   try {
+    const allowedFields = new Set([
+      "watchStatus",
+      "userScore",
+      "progress",
+      "notes",
+    ]);
+    const updateKeys = Object.keys(updates || {});
+
+    if (
+      updateKeys.length === 0 ||
+      updateKeys.some((field) => !allowedFields.has(field))
+    ) {
+      return { success: false, error: "Invalid watchlist update" };
+    }
+
     const docId = createDocId(userId, itemId, type);
     const updateData = {
       ...updates,
-      updatedAt: Timestamp.now(),
+      updatedAt: serverTimestamp(),
     };
 
     await setDoc(doc(db, COLLECTIONS.WATCHLIST, docId), updateData, {

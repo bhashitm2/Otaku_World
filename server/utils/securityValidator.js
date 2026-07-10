@@ -2,6 +2,7 @@
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import logger from "./logger.js";
+import { isFirebaseAdminInitialized } from "./firebaseAdmin.js";
 
 export const securityConfig = {
   // Helmet configuration for production security
@@ -126,48 +127,54 @@ export const validateSecurity = (req, res, next) => {
   next();
 };
 
-// Enhanced CORS configuration
+const developmentOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
+const normalizeOrigin = (origin) => {
+  try {
+    const parsed = new URL(origin);
+    if (!["http:", "https:"].includes(parsed.protocol)) return null;
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+};
+
+const configuredOrigins = () =>
+  [
+    process.env.FRONTEND_URL,
+    ...(process.env.ADDITIONAL_ALLOWED_ORIGINS || "").split(","),
+    ...(process.env.NODE_ENV === "production" ? [] : developmentOrigins),
+  ]
+    .filter((origin) => typeof origin === "string")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .map(normalizeOrigin)
+    .filter(Boolean);
+
+// CORS accepts only explicit origins. Preview or alternate deployments must be
+// deliberately added through ADDITIONAL_ALLOWED_ORIGINS.
 export const corsConfig = {
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      // Production domains
-      process.env.FRONTEND_URL,
-      "https://otaku-world-c8lxsn6r7-bhashit-maheshwari-s-projects.vercel.app",
-      // Allow all Vercel deployment URLs for this project
-      /^https:\/\/otaku-world-.*\.vercel\.app$/,
-      // Allow main domain when you get one
-      /^https:\/\/.*otaku.*world.*\.vercel\.app$/i,
-    ].filter(Boolean);
+    const allowedOrigins = new Set(configuredOrigins());
 
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
 
-    // Check string origins
-    const isAllowedString = allowedOrigins.some(
-      (allowedOrigin) =>
-        typeof allowedOrigin === "string" && allowedOrigin === origin
-    );
-
-    // Check regex origins
-    const isAllowedRegex = allowedOrigins.some(
-      (allowedOrigin) =>
-        allowedOrigin instanceof RegExp && allowedOrigin.test(origin)
-    );
-
-    if (isAllowedString || isAllowedRegex) {
+    if (allowedOrigins.has(origin)) {
       callback(null, true);
     } else {
       logger.warn("CORS blocked request", {
         origin,
-        allowedOrigins: allowedOrigins.map((o) => o.toString()),
+        allowedOrigins: [...allowedOrigins],
       });
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
+  credentials: false,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
@@ -198,7 +205,13 @@ export const validateSecurityHeaders = (req, res, next) => {
 
 // Environment-specific security checks
 export const validateEnvironment = () => {
-  const requiredEnvVars = ["MONGO_URI", "JWT_SECRET", "FIREBASE_PROJECT_ID"];
+  const requiredEnvVars = [
+    "MONGO_URI",
+    "JWT_SECRET",
+    "FIREBASE_PROJECT_ID",
+    "FIREBASE_CLIENT_EMAIL",
+    "FIREBASE_PRIVATE_KEY",
+  ];
 
   const missing = requiredEnvVars.filter((env) => !process.env[env]);
 
@@ -207,6 +220,31 @@ export const validateEnvironment = () => {
     throw new Error(
       `Missing required environment variables: ${missing.join(", ")}`
     );
+  }
+
+  if (!isFirebaseAdminInitialized()) {
+    logger.error("Firebase Admin SDK failed to initialize");
+    throw new Error("Firebase Admin SDK initialization failed");
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    const productionOrigins = [
+      process.env.FRONTEND_URL,
+      ...(process.env.ADDITIONAL_ALLOWED_ORIGINS || "").split(","),
+    ].filter(Boolean);
+
+    if (productionOrigins.length === 0) {
+      throw new Error("FRONTEND_URL is required in production");
+    }
+
+    const invalidOrigin = productionOrigins.find((origin) => {
+      const normalized = normalizeOrigin(origin.trim());
+      return !normalized || !normalized.startsWith("https://");
+    });
+
+    if (invalidOrigin) {
+      throw new Error("Production CORS origins must be valid HTTPS origins");
+    }
   }
 
   // Validate JWT secret strength

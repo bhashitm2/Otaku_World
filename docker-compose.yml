@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # Frontend
   frontend:
@@ -23,23 +21,32 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - NODE_ENV=production
-      - PORT=5000
-      - MONGODB_URI=${MONGODB_URI}
-      - JWT_SECRET=${JWT_SECRET}
-      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
-      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
-      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      NODE_ENV: production
+      PORT: "5000"
+      MONGO_URI: "${MONGO_URI:?MONGO_URI must be set}"
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET must be set}"
+      FIREBASE_PROJECT_ID: "${FIREBASE_PROJECT_ID:?FIREBASE_PROJECT_ID must be set}"
+      FIREBASE_PRIVATE_KEY: "${FIREBASE_PRIVATE_KEY:?FIREBASE_PRIVATE_KEY must be set}"
+      FIREBASE_CLIENT_EMAIL: "${FIREBASE_CLIENT_EMAIL:?FIREBASE_CLIENT_EMAIL must be set}"
+      FRONTEND_URL: "${FRONTEND_URL:?FRONTEND_URL must be set}"
+      ADDITIONAL_ALLOWED_ORIGINS: "${ADDITIONAL_ALLOWED_ORIGINS:-}"
     networks:
       - anime-network
 
-  # MongoDB (Optional - if not using cloud)
+  # MongoDB is internal-only. Do not publish this port to the host.
   mongodb:
     image: mongo:6
-    ports:
-      - "27017:27017"
+    expose:
+      - "27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_ROOT_USERNAME:?MONGO_ROOT_USERNAME must be set}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_ROOT_PASSWORD:?MONGO_ROOT_PASSWORD must be set}"
+      MONGO_INITDB_DATABASE: otaku_world
+      MONGO_APP_USERNAME: "${MONGO_APP_USERNAME:?MONGO_APP_USERNAME must be set}"
+      MONGO_APP_PASSWORD: "${MONGO_APP_PASSWORD:?MONGO_APP_PASSWORD must be set}"
     volumes:
       - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/01-create-app-user.js:ro
     networks:
       - anime-network
 
