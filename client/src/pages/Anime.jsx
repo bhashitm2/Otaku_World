@@ -36,9 +36,18 @@ const Anime = () => {
     if (value) filters[key] = value;
   }
   const searchQuery = filters.q || "";
-  const hasFilters = ["genres", "status", "type", "min_score", "year"].some(
-    (key) => filters[key]
-  );
+  // order_by counts as a filter: an explicit sort must go through the search
+  // endpoint (which honors order_by). Without this, picking a sort in browse
+  // mode cleared the list but left the cached top-anime query untouched, so
+  // the refill effect never re-fired and the cards vanished.
+  const hasFilters = [
+    "genres",
+    "status",
+    "type",
+    "min_score",
+    "year",
+    "order_by",
+  ].some((key) => filters[key]);
   const isSearchMode = !!searchQuery || hasFilters;
 
   // Sort mode: "match" = relevance (default for text searches, no order_by so
