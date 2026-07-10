@@ -39,12 +39,66 @@ const KEYFRAMES = `
   50% { box-shadow: 0 0 70px rgba(255,197,61,0.35); }
   100% { box-shadow: 0 0 40px rgba(255,197,61,0.18); }
 }
+@keyframes owPreCaret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .ow-preloader * { animation-duration: 0.01s !important; animation-delay: 0s !important; transition-duration: 0.01s !important; }
 }
 `;
 
 const WORDMARK = ["O", "t", "a", "k", "u", "W", "o", "r", "l", "d"];
+
+// Types `text` character by character behind a gold caret (solid while
+// typing, blinking once done). Retypes from scratch whenever `text` changes.
+// With prefers-reduced-motion the full text renders immediately, no caret.
+function Typewriter({ text, speed = 30, startDelay = 0, style }) {
+  const [count, setCount] = useState(0);
+  const reduced = useRef(
+    typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ).current;
+
+  useEffect(() => {
+    if (reduced) {
+      setCount(text.length);
+      return;
+    }
+    setCount(0);
+    let i = 0;
+    let interval;
+    const start = setTimeout(() => {
+      interval = setInterval(() => {
+        i += 1;
+        setCount(i);
+        if (i >= text.length) clearInterval(interval);
+      }, speed);
+    }, startDelay);
+    return () => {
+      clearTimeout(start);
+      clearInterval(interval);
+    };
+  }, [text, speed, startDelay, reduced]);
+
+  const done = count >= text.length;
+  return (
+    <span style={style}>
+      {text.slice(0, count)}
+      {!reduced && (
+        <span
+          aria-hidden
+          style={{
+            display: "inline-block",
+            width: "0.55em",
+            height: "0.95em",
+            marginLeft: 3,
+            verticalAlign: "-0.08em",
+            background: GOLD,
+            animation: done ? "owPreCaret 1.1s steps(1) infinite" : "none",
+          }}
+        />
+      )}
+    </span>
+  );
+}
 
 export default function Preloader({ loading }) {
   const [mounted, setMounted] = useState(true); // unmounts after exit animation
@@ -227,9 +281,11 @@ export default function Preloader({ loading }) {
               />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: MUTED }}>
-                {MESSAGES[msgIdx]}
-              </span>
+              <Typewriter
+                text={MESSAGES[msgIdx]}
+                speed={28}
+                style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: MUTED }}
+              />
               <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: GOLD }}>
                 {mm}:{ss}
               </span>
@@ -249,8 +305,11 @@ export default function Preloader({ loading }) {
             </span>
           </div>
         ) : (
-          /* Warm intro — quiet meta label */
-          <span
+          /* Warm intro — quiet meta label, typed out after the wordmark lands */
+          <Typewriter
+            text="Anime & Manga Library"
+            speed={30}
+            startDelay={1000}
             style={{
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: 11,
@@ -258,11 +317,8 @@ export default function Preloader({ loading }) {
               letterSpacing: "0.32em",
               color: FAINT,
               textTransform: "uppercase",
-              animation: "owPreFade 0.6s ease 1.35s both",
             }}
-          >
-            Anime &amp; Manga Library
-          </span>
+          />
         )}
       </div>
     </div>
