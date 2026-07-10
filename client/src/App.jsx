@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import { Loader } from "./components/nova";
 import BackendStatus from "./components/BackendStatus";
@@ -50,6 +51,7 @@ function App() {
           <WatchlistProvider>
             <BackendStatus>
               <div className="flex min-h-screen flex-col bg-bg font-body text-text">
+                <ScrollToTop />
                 <Navbar />
                 <main className="flex-1">
                   <Suspense fallback={<Loader fullscreen />}>
